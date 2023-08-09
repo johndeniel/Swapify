@@ -61,6 +61,9 @@ proguard-*/proguard-*.rules
 /app/*/build/test-app.apk
 /app/*/build/test-results/
 
+# Firebase Google-Services.json
+/app/google-services.json
+
 # Android Profiler
 /app/.profiler/
 

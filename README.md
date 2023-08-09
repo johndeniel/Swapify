@@ -6,13 +6,34 @@
 
 [![Perfume Banner](https://nichestory.eu/wp-content/uploads/2023/06/zousz-banner-01.jpg)]()
 
-
-
 ## Key Features
-
-- Onboarding Walkthrough Screen
 - Firebase Authentication
-- Firebase Realtime Database
+- Signin With Google
 
-## Feedback and Support
-<div align="justify"> I value your feedback and strive to provide exceptional support. If you have any questions, suggestions, or need assistance, please contact me at www.facebook.com/johndeniel.d37 </div>
+---
+
+### Follow these steps to connect your Android Studio project to Google Authentication using Firebase.
+
+1. **Create a Firebase Project:**
+
+   If you haven't already, go to the [Firebase Console](https://console.firebase.google.com/) and create a new project. 
+
+2. **Add your Android App to the Firebase Project:**
+
+    - In the Firebase Console, click on "Add app" and select Android.
+    - Enter your app's **Package name** (usually in the format `com.example.myapp`) and click **Register app**.
+    - Paste the SHA-1 fingerprint from your project in the appropriate field.
+    - Download the `google-services.json` configuration file.
+
+3. **Add `google-services.json` File:**
+
+    - Copy the downloaded `google-services.json` file to your `app` module's root directory.
+
+4. **Enable Google Sign-In**
+
+    - In the Firebase Console, navigate to the "Authentication" section.
+    - Click on the "Sign-in method" tab.
+    - Enable the "Google" sign-in provider and save your changes.
+
+---   
+Remember to follow these steps carefully to ensure a smooth integration of your Android app with Firebase services.

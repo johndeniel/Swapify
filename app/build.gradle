@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -30,10 +31,20 @@ android {
 
 dependencies {
 
+    // Support library for using newer UI components on older versions of Android.
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.5.0'
+
+    // Material Design components library.
+    implementation 'com.google.android.material:material:1.9.0'
+
+    // Dependencies for Firebase authentication
+    implementation 'com.google.firebase:firebase-auth:22.1.1'
+    implementation 'com.google.android.gms:play-services-auth:20.6.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    testImplementation 'junit:junit:4.13.2'
+
+    // AndroidX Test dependencies for instrumented unit tests.
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'org.robolectric:robolectric:4.6.1'
+    androidTestImplementation 'org.mockito:mockito-core:3.12.4'
 }
