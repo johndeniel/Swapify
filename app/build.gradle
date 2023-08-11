@@ -37,6 +37,9 @@ dependencies {
     // Material Design components library.
     implementation 'com.google.android.material:material:1.9.0'
 
+    // Displaying Circular Images for Avatar
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
+
     // Dependencies for Firebase authentication
     implementation 'com.google.firebase:firebase-auth:22.1.1'
     implementation 'com.google.android.gms:play-services-auth:20.6.0'

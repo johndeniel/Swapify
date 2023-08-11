@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Root menu resource file -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- FAQ Item -->
+    <item
+        android:id="@+id/faq"
+        android:icon="@drawable/faq"
+        android:title="FAQ" />
+
+    <!-- Archive Item -->
+    <item
+        android:id="@+id/archive"
+        android:icon="@drawable/archive"
+        android:title="Archive" />
+
+    <!-- Settings Item -->
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/settings"
+        android:title="Settings"/>
+
+    <!-- Logout Item -->
+    <item
+        android:id="@+id/logout"
+        android:icon="@drawable/logout"
+        android:title="Logout" />
+
+</menu>

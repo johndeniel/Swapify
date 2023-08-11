@@ -1,18 +1,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- Favorite Item -->
     <item
         android:id="@+id/favorite"
         android:icon="@drawable/heart"
-        android:title="favorite"
+        android:title="Favorite"
         app:showAsAction="ifRoom" />
 
+    <!-- Search Item -->
     <item
         android:id="@+id/search"
         android:icon="@drawable/search"
-        android:title="search"
+        android:title="Search"
         app:showAsAction="ifRoom" />
 
+    <!-- More Options Item (Log Out) -->
     <item
         android:id="@+id/more"
         android:title="Log out"

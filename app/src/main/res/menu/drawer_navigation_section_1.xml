@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Root menu resource file -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Upgrade Plan Item -->
+    <item
+        android:id="@+id/plan"
+        android:icon="@drawable/plan"
+        android:title="Upgrade to PRO" />
+
+    <!-- App Theme Item -->
+    <item
+        android:id="@+id/theme"
+        android:icon="@drawable/theme"
+        android:title="App Theme"/>
+
+    <!-- Widgets Item -->
+    <item
+        android:id="@+id/widgets"
+        android:icon="@drawable/widgets"
+        android:title="Widgets" />
+
+</menu>
