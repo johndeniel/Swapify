@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Root CoordinatorLayout -->
+<!-- Root CoordinatorLayout: Contains the entire layout structure -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -13,53 +13,8 @@
         android:id="@+id/drawerLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        style="@style/Widget.Material3.DrawerLayout"
         tools:openDrawer="start">
-
-        <!-- NavigationView for side drawer -->
-        <com.google.android.material.navigation.NavigationView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="start">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <!-- Header for NavigationView -->
-                <com.google.android.material.navigation.NavigationView
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    app:headerLayout="@layout/drawer_header_navigation" />
-
-                <!-- Menu items for NavigationView Section 1 -->
-                <com.google.android.material.navigation.NavigationView
-                    android:id="@+id/navigationView1"
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    app:menu="@menu/drawer_navigation_section_1"/>
-
-                <!-- Menu items for NavigationView Section 2 -->
-                <com.google.android.material.navigation.NavigationView
-                    android:id="@+id/navigationView2"
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    app:menu="@menu/drawer_navigation_section_2"/>
-
-                <!-- Menu items for NavigationView Section 3-->
-                <com.google.android.material.navigation.NavigationView
-                    android:id="@+id/navigationView3"
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    app:menu="@menu/drawer_navigation_section_3"/>
-
-                <!-- Android Version for NavigationView -->
-                <com.google.android.material.navigation.NavigationView
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    app:headerLayout="@layout/drawer_android_version" />
-            </LinearLayout>
-        </com.google.android.material.navigation.NavigationView>
 
         <!-- Main content with AppBar and NestedScrollView -->
         <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -79,7 +34,7 @@
                     android:layout_height="?attr/actionBarSize"
                     app:title="@string/app_name"
                     app:menu="@menu/top_app_bar"
-                    style="@style/Widget.MaterialComponents.Toolbar.Primary" />
+                    app:navigationIcon="@drawable/menu" />
             </com.google.android.material.appbar.AppBarLayout>
 
             <!-- NestedScrollView for scrollable content -->
@@ -89,7 +44,45 @@
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
                 <!-- Scrollable content -->
             </androidx.core.widget.NestedScrollView>
-            
+
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <!-- NavigationView for side drawer -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/navigationView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start">
+
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!-- Header for NavigationView -->
+                    <com.google.android.material.navigation.NavigationView
+                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent"
+                        app:headerLayout="@layout/drawer_header_navigation"/>
+
+                    <!-- Menu items for NavigationView Section 1 -->
+                    <com.google.android.material.navigation.NavigationView
+                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent"
+                        android:layout_marginTop="-28dp"
+                        app:menu="@menu/drawer_navigation_item"/>
+
+                    <!-- Android Version for NavigationView -->
+                    <com.google.android.material.navigation.NavigationView
+                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent"
+                        app:headerLayout="@layout/drawer_android_version"/>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.google.android.material.navigation.NavigationView>
     </androidx.drawerlayout.widget.DrawerLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

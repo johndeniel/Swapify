@@ -12,8 +12,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginTop="9dp"
+        android:layout_marginBottom="3dp"
         android:textAppearance="?attr/textAppearanceBody2"
         android:textColor="@color/material_on_surface_emphasis_medium"
         android:text="Danielle Mobile v1.125.0 (738)" />
