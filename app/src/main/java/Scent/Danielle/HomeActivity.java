@@ -95,11 +95,7 @@ public class HomeActivity extends AppCompatActivity {
      * Handle press of the more item in the app bar.
      */
     private void handleMoreItemPress() {
-        // Sign out the user and navigate to the authentication screen
-        FirebaseAuth.getInstance().signOut();
-        Intent intent = new Intent(this, AuthActivity.class);
-        startActivity(intent);
-        finish();
+        // TODO: Implement more icon press functionality
     }
 
     /**
@@ -138,48 +134,53 @@ public class HomeActivity extends AppCompatActivity {
      * Handle press of the messages item in the navigation view.
      */
     private void handleMessageItemClick() {
-        Toast.makeText(this, "Logged out successfully.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Message", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * Handle press of the store item in the navigation view.
      */
     private void handleStoreItemClick() {
-        Toast.makeText(this, "Messages.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Store", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * Handle press of the purchases item in the navigation view.
      */
     private void handlePurchasesItemClick() {
-        Toast.makeText(this, "Purchases.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Purchases", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * Handle press of the FAQ item in the navigation view.
      */
     private void handleFAQItemClick() {
-        Toast.makeText(this, "FAQ.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "FAQ", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * Handle press of the archive item in the navigation view.
      */
     private void handleArchiveItemClick() {
-        Toast.makeText(this, "Archive.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Archive", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * Handle press of the settings item in the navigation view.
      */
     private void handleSettingsItemClick() {
-        Toast.makeText(this, "Settings.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * Handle press of the logout item in the navigation view.
      */
     private void handleLogoutItemClick() {
-        Toast.makeText(this, "Logout.", Toast.LENGTH_SHORT).show();
+        // Sign out the user and navigate to the authentication screen
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(this, AuthActivity.class);
+        startActivity(intent);
+        finish();
+        Toast.makeText(this, "Logout", Toast.LENGTH_SHORT).show();
     }
 }

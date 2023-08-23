@@ -52,37 +52,9 @@
             android:id="@+id/navigationView"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="start">
-
-            <androidx.core.widget.NestedScrollView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <!-- Header for NavigationView -->
-                    <com.google.android.material.navigation.NavigationView
-                        android:layout_height="wrap_content"
-                        android:layout_width="match_parent"
-                        app:headerLayout="@layout/drawer_header_navigation"/>
-
-                    <!-- Menu items for NavigationView Section 1 -->
-                    <com.google.android.material.navigation.NavigationView
-                        android:layout_height="wrap_content"
-                        android:layout_width="match_parent"
-                        android:layout_marginTop="-28dp"
-                        app:menu="@menu/drawer_navigation_item"/>
-
-                    <!-- Android Version for NavigationView -->
-                    <com.google.android.material.navigation.NavigationView
-                        android:layout_height="wrap_content"
-                        android:layout_width="match_parent"
-                        app:headerLayout="@layout/drawer_android_version"/>
-                </LinearLayout>
-            </androidx.core.widget.NestedScrollView>
+            android:layout_gravity="start"
+            app:headerLayout="@layout/drawer_header_navigation"
+            app:menu="@menu/drawer_navigation_item">
         </com.google.android.material.navigation.NavigationView>
     </androidx.drawerlayout.widget.DrawerLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
