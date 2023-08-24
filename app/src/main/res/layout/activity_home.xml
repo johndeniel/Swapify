@@ -13,7 +13,6 @@
         android:id="@+id/drawerLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        style="@style/Widget.Material3.DrawerLayout"
         tools:openDrawer="start">
 
         <!-- Main content with AppBar and NestedScrollView -->
@@ -37,14 +36,14 @@
                     app:navigationIcon="@drawable/menu" />
             </com.google.android.material.appbar.AppBarLayout>
 
-            <!-- NestedScrollView for scrollable content -->
-            <androidx.core.widget.NestedScrollView
+            <!-- FrameLayout container for fragments -->
+            <FrameLayout
+                android:id="@+id/content_frame"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior">
-                <!-- Scrollable content -->
-            </androidx.core.widget.NestedScrollView>
-
+                android:background="?android:attr/windowBackground"
+                app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+                android:layout_gravity="top|start" />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         <!-- NavigationView for side drawer -->

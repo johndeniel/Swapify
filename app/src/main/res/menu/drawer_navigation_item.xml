@@ -4,19 +4,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
     <!-- Main Item Menu for Premium -->
-    <item
-        android:id="@+id/main_item"
-        android:title="Premium">
-
+    <item android:title="Premium">
         <menu>
             <!-- Upgrade Plan Item -->
             <item
                 android:id="@+id/plan"
                 android:icon="@drawable/plan"
                 android:title="Upgrade to PRO"
-                android:checkable="true"
                 app:showAsAction="ifRoom"/>
 
             <!-- App Theme Item -->
@@ -24,7 +19,6 @@
                 android:id="@+id/theme"
                 android:icon="@drawable/theme"
                 android:title="App Theme"
-                android:checkable="true"
                 app:showAsAction="ifRoom"/>
 
             <!-- Widgets Item -->
@@ -32,55 +26,51 @@
                 android:id="@+id/widgets"
                 android:icon="@drawable/widgets"
                 android:title="Widgets"
-                android:checkable="true"
                 app:showAsAction="ifRoom"/>
         </menu>
     </item>
 
-
-    <!-- Main ITSSeM Item Menu for Danielle -->
-    <item
-        android:id="@+id/main_itssem"
-        android:title="@string/app_name">
-
+    <!-- Main Item Menu for Danielle -->
+    <item android:title="@string/app_name">
         <menu>
+            <!-- Messages Item -->
+            <item
+                android:id="@+id/feed"
+                android:icon="@drawable/logo"
+                android:title="Feed"
+                app:showAsAction="ifRoom"/>
+
             <!-- Messages Item -->
             <item
                 android:id="@+id/messages"
                 android:icon="@drawable/envelope"
                 android:title="Messages"
-                android:checkable="true"
                 app:showAsAction="ifRoom"/>
 
             <!-- Store Item -->
             <item
                 android:id="@+id/store"
                 android:icon="@drawable/store"
-                android:title="Store"/>
+                android:title="Store"
+                app:showAsAction="ifRoom"/>
 
             <!-- Purchases Item -->
             <item
                 android:id="@+id/purchases"
                 android:icon="@drawable/purchases"
                 android:title="Purchases"
-                android:checkable="true"
                 app:showAsAction="ifRoom"/>
         </menu>
     </item>
 
-
-    <!-- Main ITSSeDASm Item Menu for More -->
-    <item
-        android:id="@+id/main_itssedasm"
-        android:title="More">
-
+    <!-- Main Item Menu for More -->
+    <item android:title="More">
         <menu>
             <!-- FAQ Item -->
             <item
                 android:id="@+id/faq"
                 android:icon="@drawable/faq"
                 android:title="FAQ"
-                android:checkable="true"
                 app:showAsAction="ifRoom"/>
 
             <!-- Archive Item -->
@@ -88,7 +78,6 @@
                 android:id="@+id/archive"
                 android:icon="@drawable/archive"
                 android:title="Archive"
-                android:checkable="true"
                 app:showAsAction="ifRoom"/>
 
             <!-- Settings Item -->
@@ -96,7 +85,6 @@
                 android:id="@+id/settings"
                 android:icon="@drawable/settings"
                 android:title="Settings"
-                android:checkable="true"
                 app:showAsAction="ifRoom"/>
 
             <!-- Logout Item -->
@@ -104,9 +92,7 @@
                 android:id="@+id/logout"
                 android:icon="@drawable/logout"
                 android:title="Logout"
-                android:checkable="true"
                 app:showAsAction="ifRoom"/>
         </menu>
     </item>
-
 </menu>

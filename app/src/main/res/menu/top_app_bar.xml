@@ -18,7 +18,7 @@
     <!-- More Options Item (Log Out) -->
     <item
         android:id="@+id/more"
-        android:title="Log out"
+        android:title="More"
         app:showAsAction="never" />
 
 </menu>

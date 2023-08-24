@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Widget.App.Toolbar" parent="Widget.Material3.Toolbar">
-        <item name="android:statusBarColor">?attr/colorPrimary</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
-    </style>
-</resources>

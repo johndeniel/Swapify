@@ -32,6 +32,12 @@ public class HomeActivity extends AppCompatActivity {
         // Initialize views and set up event listeners
         initViews();
         initListener();
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.content_frame, new FeedActivity())
+                    .commit();
+        }
     }
 
     /**
@@ -77,23 +83,14 @@ public class HomeActivity extends AppCompatActivity {
         return false;
     }
 
-    /**
-     * Handle press of the favorite icon.
-     */
     private void handleFavoriteIconPress() {
         // TODO: Implement favorite icon press functionality
     }
 
-    /**
-     * Handle press of the search icon.
-     */
     private void handleSearchIconPress() {
         // TODO: Implement search icon press functionality
     }
 
-    /**
-     * Handle press of the more item in the app bar.
-     */
     private void handleMoreItemPress() {
         // TODO: Implement more icon press functionality
     }
@@ -104,7 +101,19 @@ public class HomeActivity extends AppCompatActivity {
     private boolean handleNavigationItemClick(MenuItem menuItem) {
         int itemId = menuItem.getItemId();
 
-        if (itemId == R.id.messages) {
+        if (itemId == R.id.feed) {
+            handleUpgradeFeedItemClick();
+            return true;
+        } else if (itemId == R.id.plan) {
+            handleUpgradePlanItemClick();
+            return true;
+        } else if (itemId == R.id.theme) {
+            handleAppThemeItemClick();
+            return true;
+        } else if (itemId == R.id.widgets) {
+            handleWidgetsItemClick();
+            return true;
+        } else if (itemId == R.id.messages) {
             handleMessageItemClick();
             return true;
         } else if (itemId == R.id.store) {
@@ -130,53 +139,55 @@ public class HomeActivity extends AppCompatActivity {
         return false;
     }
 
-    /**
-     * Handle press of the messages item in the navigation view.
-     */
-    private void handleMessageItemClick() {
-        Toast.makeText(this, "Message", Toast.LENGTH_SHORT).show();
+    private void handleUpgradeFeedItemClick() {
+        Toast.makeText(this, "Feed", Toast.LENGTH_SHORT).show();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, new FeedActivity())
+                .commit();
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
-    /**
-     * Handle press of the store item in the navigation view.
-     */
+    private void handleUpgradePlanItemClick() {
+        Toast.makeText(this, "Upgrade Plan", Toast.LENGTH_SHORT).show();
+    }
+
+    private void handleAppThemeItemClick() {
+        Toast.makeText(this, "App Theme", Toast.LENGTH_SHORT).show();
+    }
+
+    private void handleWidgetsItemClick() {
+        Toast.makeText(this, "Widgets", Toast.LENGTH_SHORT).show();
+    }
+
+    private void handleMessageItemClick() {
+        Toast.makeText(this, "Message", Toast.LENGTH_SHORT).show();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, new MessageActivity())
+                .commit();
+        drawerLayout.closeDrawer(GravityCompat.START);
+    }
+
     private void handleStoreItemClick() {
         Toast.makeText(this, "Store", Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * Handle press of the purchases item in the navigation view.
-     */
     private void handlePurchasesItemClick() {
         Toast.makeText(this, "Purchases", Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * Handle press of the FAQ item in the navigation view.
-     */
     private void handleFAQItemClick() {
         Toast.makeText(this, "FAQ", Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * Handle press of the archive item in the navigation view.
-     */
     private void handleArchiveItemClick() {
         Toast.makeText(this, "Archive", Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * Handle press of the settings item in the navigation view.
-     */
     private void handleSettingsItemClick() {
         Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * Handle press of the logout item in the navigation view.
-     */
     private void handleLogoutItemClick() {
-        // Sign out the user and navigate to the authentication screen
         FirebaseAuth.getInstance().signOut();
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
