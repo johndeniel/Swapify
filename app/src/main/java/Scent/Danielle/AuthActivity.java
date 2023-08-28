@@ -60,7 +60,7 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     public void startHomeActivity() {
-        Intent intent = new Intent(this, HomeActivity.class);
+        Intent intent = new Intent(this, NavigationActivity.class);
         startActivity(intent);
         finish(); // Close the current activity
     }

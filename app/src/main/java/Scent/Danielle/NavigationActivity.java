@@ -2,8 +2,11 @@ package Scent.Danielle;
 
 // Import necessary Android libraries
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 // Import AppCompatActivity and MaterialToolbar from androidx
@@ -15,23 +18,35 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
-// Import FirebaseAuth from com.google.firebase.auth for user authentication
+// Import Glide for image loading
+import com.bumptech.glide.Glide;
+
+// Import GoogleSignIn and GoogleSignInAccount for authentication
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+
+// Import FirebaseAuth for user authentication
 import com.google.firebase.auth.FirebaseAuth;
 
-public class HomeActivity extends AppCompatActivity {
+public class NavigationActivity extends AppCompatActivity {
 
     private MaterialToolbar topAppBar;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
+    private ImageView avatarImageView;
+    private TextView fullNameTextView, emailTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_navigation);
 
         // Initialize views and set up event listeners
         initViews();
         initListener();
+
+        // Retrieve user information and display it
+        displayUserInfo();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -47,6 +62,30 @@ public class HomeActivity extends AppCompatActivity {
         topAppBar = findViewById(R.id.topAppBar);
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
+        avatarImageView = navigationView.getHeaderView(0).findViewById(R.id.avatarImageView);
+        fullNameTextView = navigationView.getHeaderView(0).findViewById(R.id.fullName);
+        emailTextView = navigationView.getHeaderView(0).findViewById(R.id.gmailAddress);
+    }
+
+    /**
+     * Display user's information in the views.
+     */
+    private void displayUserInfo() {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+
+        if (account != null) {
+            String fullName = account.getDisplayName();
+            String email = account.getEmail();
+            Uri photoUri = account.getPhotoUrl();
+
+            fullNameTextView.setText(fullName);
+            emailTextView.setText(email);
+            if (photoUri != null) {
+                Glide.with(this)
+                        .load(photoUri)
+                        .into(avatarImageView);
+            }
+        }
     }
 
     /**
@@ -122,8 +161,8 @@ public class HomeActivity extends AppCompatActivity {
         } else if (itemId == R.id.purchases) {
             handlePurchasesItemClick();
             return true;
-        } else if (itemId == R.id.faq) {
-            handleFAQItemClick();
+        } else if (itemId == R.id.about) {
+            handleAboutItemClick();
             return true;
         } else if (itemId == R.id.archive) {
             handleArchiveItemClick();
@@ -175,8 +214,12 @@ public class HomeActivity extends AppCompatActivity {
         Toast.makeText(this, "Purchases", Toast.LENGTH_SHORT).show();
     }
 
-    private void handleFAQItemClick() {
-        Toast.makeText(this, "FAQ", Toast.LENGTH_SHORT).show();
+    private void handleAboutItemClick() {
+        Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, new AboutActivity())
+                .commit();
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private void handleArchiveItemClick() {

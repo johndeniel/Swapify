@@ -68,9 +68,9 @@
         <menu>
             <!-- FAQ Item -->
             <item
-                android:id="@+id/faq"
-                android:icon="@drawable/faq"
-                android:title="FAQ"
+                android:id="@+id/about"
+                android:icon="@drawable/about"
+                android:title="About"
                 app:showAsAction="ifRoom"/>
 
             <!-- Archive Item -->
