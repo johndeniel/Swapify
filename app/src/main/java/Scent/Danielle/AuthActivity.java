@@ -132,19 +132,4 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
         Log.e(TAG, "Google Play Services connection failed: " + connectionResult.getErrorMessage());
         Toast.makeText(this, "Google Play Services error. Please try again later.", Toast.LENGTH_SHORT).show();
     }
-
-    // Sign out from Google when the activity is destroyed
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mGoogleSignInClient != null) {
-            mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
-                if (task.isSuccessful()) {
-                    Log.d(TAG, "Google Sign-Out successful");
-                } else {
-                    Log.e(TAG, "Error during Google Sign-Out: " + task.getException());
-                }
-            });
-        }
-    }
 }

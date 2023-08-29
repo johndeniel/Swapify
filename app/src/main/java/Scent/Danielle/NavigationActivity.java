@@ -1,6 +1,5 @@
 package Scent.Danielle;
 
-// Import necessary Android libraries
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,25 +8,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-// Import AppCompatActivity and MaterialToolbar from androidx
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-// Import MaterialToolbar and NavigationView from com.google.android.material
-import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.navigation.NavigationView;
-
-// Import Glide for image loading
-import com.bumptech.glide.Glide;
-
-// Import GoogleSignIn and GoogleSignInAccount for authentication
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-
-// Import FirebaseAuth for user authentication
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-
+import com.bumptech.glide.Glide;
 public class NavigationActivity extends AppCompatActivity {
 
     private MaterialToolbar topAppBar;
@@ -35,11 +27,19 @@ public class NavigationActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private ImageView avatarImageView;
     private TextView fullNameTextView, emailTextView;
+    private GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
+
+        // Initialize the GoogleSignInClient
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         // Initialize views and set up event listeners
         initViews();
@@ -230,7 +230,18 @@ public class NavigationActivity extends AppCompatActivity {
         Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
     }
 
+
     private void handleLogoutItemClick() {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if (account != null) {
+            mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(this, "Google Sign-Out successful", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Error during Google Sign-Out: " + task.getException(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
         FirebaseAuth.getInstance().signOut();
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
