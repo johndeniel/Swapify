@@ -1,6 +1,5 @@
 package Scent.Danielle.Utils;
 
-
 public class Items {
     private String userId;
     private String fullName;

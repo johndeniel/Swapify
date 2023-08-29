@@ -15,6 +15,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -29,16 +32,21 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import Scent.Danielle.Utils.ItemAdapter;
 import Scent.Danielle.Utils.Items;
 
 public class FeedActivity extends Fragment {
-
     private static final int PICK_IMAGE_REQUEST = 1;
-
     private DatabaseReference databaseReference;
     private FirebaseAuth firebaseAuth;
     private FirebaseStorage storage;
-
+    private RecyclerView itemRecyclerView;
+    private ItemAdapter itemAdapter;
+    private List<Items> itemList;
     private ImageView uploadImageView;
     private Uri imageUri;
     private EditText titleEditText;
@@ -56,6 +64,14 @@ public class FeedActivity extends Fragment {
 
         ExtendedFloatingActionButton extendedFab = rootView.findViewById(R.id.extended_fab);
         uploadImageView = new ImageView(requireContext());
+
+        itemRecyclerView = rootView.findViewById(R.id.itemRecyclerView);
+        itemRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        itemList = new ArrayList<>();
+        itemAdapter = new ItemAdapter(itemList);
+        itemRecyclerView.setAdapter(itemAdapter);
+
+        loadItemsFromFirebase();
 
         extendedFab.setOnClickListener(view -> showAddItemDialog(inflater, container));
 
@@ -83,9 +99,9 @@ public class FeedActivity extends Fragment {
         try {
             String sampleUserId = "RZCVBq2uI6SErP4BUcC0qS8G4Az2";
             String sampleFullName = "John Deniel Dela Peña";
-            String sampleTitle = "Ducati Italia";
-            String sampleDescription = "Ducati: Italian precision since 1926...";
-            String sampleImageUrl = "https://images.unsplash.com/photo-1568772585407...";
+            String sampleTitle = "SuperSport S";
+            String sampleDescription = "The Ducati SuperSport S is a suitable everyday two-wheeler, with its blend of comfort and versatility. Locally launched last 2018, this super sport bike has a sporty yet elegant design that’s sure to turn heads. ";
+            String sampleImageUrl = "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
 
             Items sampleUpload = new Items(sampleUserId, sampleFullName, sampleTitle, sampleDescription, sampleImageUrl);
 
@@ -101,6 +117,25 @@ public class FeedActivity extends Fragment {
         } catch (Exception e) {
             showErrorToast("Error creating sample upload: " + e.getMessage());
         }
+    }
+
+    private void loadItemsFromFirebase() {
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                itemList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Items item = snapshot.getValue(Items.class);
+                    itemList.add(item);
+                }
+                itemAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                showErrorToast("Database error: " + databaseError.getMessage());
+            }
+        });
     }
 
     private void showAddItemDialog(LayoutInflater inflater, ViewGroup container) {

@@ -6,7 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".FeedActivity">
 
+    <!-- RecyclerView: Displays a list of items in a scrollable manner. -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/itemRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Extended Floating Action Button: Allows users to add a new item to the list. -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/extended_fab"
         android:layout_width="wrap_content"
@@ -16,5 +25,4 @@
         android:contentDescription="extended_fab_content_desc"
         android:text="Add New Item"
         app:icon="@drawable/logo"/>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

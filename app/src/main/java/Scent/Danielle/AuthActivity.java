@@ -29,44 +29,50 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
+
 public class AuthActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
-    // Constants variables
-    public static final String TAG = AuthActivity.class.getSimpleName(); // Tag for logging and debugging purposes
-    public static final int RC_SIGN_IN = 9001; // Request code for the Google Sign-In activity result
+    // Constants
+    public static final String TAG = AuthActivity.class.getSimpleName();
+    public static final int RC_SIGN_IN = 9001;
 
-    // Member variables
-    public FirebaseAuth mAuth; // Firebase Authentication instance
-    public GoogleSignInClient mGoogleSignInClient; // Google Sign-In client
-    public Button signInButton; // Button for initiating Google Sign-In
+    // Firebase Authentication
+    private FirebaseAuth mAuth;
+    private GoogleSignInClient mGoogleSignInClient;
+
+    // UI Elements
+    private Button signInButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
 
-        mAuth = FirebaseAuth.getInstance(); // Initialize Firebase Authentication
+        // Initialize Firebase Authentication
+        mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
-        // Check if a user is already authenticated; if yes, navigate to HomeActivity
+        // Check if the user is already authenticated
         if (currentUser != null) {
-            startHomeActivity();
+            startHomeActivity(); // User is authenticated, move to HomeActivity
         } else {
-            initializeGoogleSignIn(); // Initialize Google Sign-In options
+            initializeGoogleSignIn(); // User not authenticated, set up Google Sign-In
 
+            // Set click listener for Google Sign-In button
             signInButton = findViewById(R.id.google_login_button);
-            signInButton.setOnClickListener(v -> signIn()); // Set click listener for Google Sign-In button
+            signInButton.setOnClickListener(v -> signIn());
         }
     }
 
+    // Navigate to HomeActivity
     public void startHomeActivity() {
         Intent intent = new Intent(this, NavigationActivity.class);
         startActivity(intent);
         finish(); // Close the current activity
     }
 
+    // Initialize Google Sign-In options
     public void initializeGoogleSignIn() {
-        // Configure Google Sign-In with necessary parameters
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id)) // Request ID token for authentication
                 .requestEmail() // Request user's email
@@ -81,16 +87,16 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
         startActivityForResult(signInIntent, RC_SIGN_IN); // Start the Google Sign-In activity
     }
 
+    // Handle the result of Google Sign-In activity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Check the result of the Google Sign-In activity
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleGoogleSignInResult(task);
         } else {
-            Log.w(TAG, "Unknown request code: " + requestCode);
+            Log.w(TAG, "Unknown Request Code: " + requestCode);
         }
     }
 
@@ -100,10 +106,11 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             firebaseAuthWithGoogle(account);
         } catch (ApiException e) {
-            Log.w(TAG, "Google Sign-In failed: " + e.getStatusCode());
+            Log.e(TAG, "Google Sign-In Failed: " + e.getStatusCode(), e);
         }
     }
 
+    // Authenticate with Firebase using Google credentials
     public void firebaseAuthWithGoogle(GoogleSignInAccount account) {
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
@@ -117,19 +124,21 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
                 });
     }
 
+    // Handle successful authentication
     public void handleAuthenticationSuccess(FirebaseUser user) {
-        Toast.makeText(this, "Authentication successful.", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Authentication successful.");
+        Toast.makeText(this, "Authentication Successful", Toast.LENGTH_SHORT).show();
         startHomeActivity(); // Start HomeActivity after successful authentication
     }
 
+    // Handle authentication failure
     public void handleAuthenticationFailure(Exception exception) {
-        Log.e(TAG, "Authentication failed: " + exception.getMessage(), exception);
-        Toast.makeText(this, "Authentication failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+        Log.e(TAG, "Authentication Failed: " + exception.getMessage(), exception);
     }
 
+    // Handle Google Play Services connection failure
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.e(TAG, "Google Play Services connection failed: " + connectionResult.getErrorMessage());
-        Toast.makeText(this, "Google Play Services error. Please try again later.", Toast.LENGTH_SHORT).show();
+        Log.e(TAG, "Google Play Services Connection Failed: " + connectionResult.getErrorMessage());
     }
 }

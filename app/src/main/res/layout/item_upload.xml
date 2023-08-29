@@ -29,5 +29,4 @@
         android:src="@drawable/logo"
         android:scaleType="centerInside"
         android:adjustViewBounds="true" />
-
 </LinearLayout>
