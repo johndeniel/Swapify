@@ -8,18 +8,15 @@
     android:layout_height="match_parent"
     tools:context=".MessageActivity">
 
-    <!-- Centered LinearLayout: Contains a TextView displayed at the center of the layout. -->
-    <LinearLayout
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:layout_height="match_parent"/>
 
-        <!-- TextView: Displays a headline message. -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceHeadline6"
-            android:text="Message Activity" />
-    </LinearLayout>
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:dividerInsetStart="16dp"
+        app:dividerInsetEnd="16dp"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

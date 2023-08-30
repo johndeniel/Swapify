@@ -1,32 +1,52 @@
 package Scent.Danielle;
 
+// Android components
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+// AndroidX components
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+// Google Sign-In components
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+
+// Google Material components
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
+
+// Firebase components
+import com.google.android.material.search.SearchView;
 import com.google.firebase.auth.FirebaseAuth;
+
+// Third-party library
 import com.bumptech.glide.Glide;
+
 public class NavigationActivity extends AppCompatActivity {
 
+    // Constants
+    public static final String TAG = NavigationActivity.class.getSimpleName();
+
+    // UI Elements
     private MaterialToolbar topAppBar;
     private NavigationView navigationView;
+    private SearchView searchView;
     private DrawerLayout drawerLayout;
     private ImageView avatarImageView;
-    private TextView fullNameTextView, emailTextView;
+    private TextView fullNameTextView;
+    private TextView emailTextView;
+
+    // Authentication
     private GoogleSignInClient mGoogleSignInClient;
 
     @Override
@@ -174,32 +194,31 @@ public class NavigationActivity extends AppCompatActivity {
             handleLogoutItemClick();
             return true;
         }
-
         return false;
     }
 
+    private void handleUpgradePlanItemClick() {
+        Log.d(TAG, "Plan item clicked");
+    }
+
+    private void handleAppThemeItemClick() {
+        Log.d(TAG, "AppTheme item clicked");
+    }
+
+    private void handleWidgetsItemClick() {
+        Log.d(TAG, "Widgets item clicked");
+    }
+
     private void handleUpgradeFeedItemClick() {
-        Toast.makeText(this, "Feed", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Feed item clicked");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new FeedActivity())
                 .commit();
         drawerLayout.closeDrawer(GravityCompat.START);
     }
 
-    private void handleUpgradePlanItemClick() {
-        Toast.makeText(this, "Upgrade Plan", Toast.LENGTH_SHORT).show();
-    }
-
-    private void handleAppThemeItemClick() {
-        Toast.makeText(this, "App Theme", Toast.LENGTH_SHORT).show();
-    }
-
-    private void handleWidgetsItemClick() {
-        Toast.makeText(this, "Widgets", Toast.LENGTH_SHORT).show();
-    }
-
     private void handleMessageItemClick() {
-        Toast.makeText(this, "Message", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Message item clicked");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new MessageActivity())
                 .commit();
@@ -207,15 +226,15 @@ public class NavigationActivity extends AppCompatActivity {
     }
 
     private void handleStoreItemClick() {
-        Toast.makeText(this, "Store", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Store item clicked");
     }
 
     private void handlePurchasesItemClick() {
-        Toast.makeText(this, "Purchases", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Purchases item clicked");
     }
 
     private void handleAboutItemClick() {
-        Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "About item clicked");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new AboutActivity())
                 .commit();
@@ -223,29 +242,42 @@ public class NavigationActivity extends AppCompatActivity {
     }
 
     private void handleArchiveItemClick() {
-        Toast.makeText(this, "Archive", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Archive item clicked");
     }
 
     private void handleSettingsItemClick() {
-        Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Settings item clicked");
     }
 
-
     private void handleLogoutItemClick() {
+        Log.d(TAG, "Logout item clicked");
+
+        // Sign out from Google account
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         if (account != null) {
-            mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
-                if (task.isSuccessful()) {
-                    Toast.makeText(this, "Google Sign-Out successful", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Error during Google Sign-Out: " + task.getException(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            mGoogleSignInClient.signOut()
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Google Sign-Out successful");
+                            Toast.makeText(this, "Logout Successful", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e(TAG, "Error during Google Sign-Out", task.getException());
+                            Toast.makeText(this, "Error during Google Sign-Out", Toast.LENGTH_SHORT).show();
+                        }
+                        performLocalSignOut();
+                    });
+        } else {
+            Toast.makeText(this, "Error during Google Sign-Out", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void performLocalSignOut() {
+        // Sign out from Firebase authentication
         FirebaseAuth.getInstance().signOut();
+
+        // Start AuthActivity and finish current activity
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
         finish();
-        Toast.makeText(this, "Logout", Toast.LENGTH_SHORT).show();
     }
 }

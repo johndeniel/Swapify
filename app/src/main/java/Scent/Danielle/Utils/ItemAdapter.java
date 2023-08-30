@@ -52,7 +52,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         Glide.with(holder.itemView.getContext()).load(currentItem.getImageUrl()).into(holder.mediaImageView);
 
         // Set click listeners for buttons
-        holder.messageButton.setOnClickListener(v -> showToast(holder.itemView.getContext(), "Message Button"));
+        holder.messageButton.setOnClickListener(v -> showToast(holder.itemView.getContext(), "Message"));
         holder.wishListButton.setOnClickListener(v -> showToast(holder.itemView.getContext(), "Wish List"));
     }
 
