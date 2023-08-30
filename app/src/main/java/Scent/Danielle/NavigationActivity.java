@@ -199,14 +199,22 @@ public class NavigationActivity extends AppCompatActivity {
 
     private void handleUpgradePlanItemClick() {
         Log.d(TAG, "Plan item clicked");
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, new SubscriptionActivity())
+                .commit();
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private void handleAppThemeItemClick() {
         Log.d(TAG, "AppTheme item clicked");
+        replaceFragmentWithText("AppTheme Activity");
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private void handleWidgetsItemClick() {
         Log.d(TAG, "Widgets item clicked");
+        replaceFragmentWithText("Widgets Activity");
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private void handleUpgradeFeedItemClick() {
@@ -227,10 +235,14 @@ public class NavigationActivity extends AppCompatActivity {
 
     private void handleStoreItemClick() {
         Log.d(TAG, "Store item clicked");
+        replaceFragmentWithText("Store Activity");
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private void handlePurchasesItemClick() {
         Log.d(TAG, "Purchases item clicked");
+        replaceFragmentWithText("Purchases Activity");
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private void handleAboutItemClick() {
@@ -243,10 +255,14 @@ public class NavigationActivity extends AppCompatActivity {
 
     private void handleArchiveItemClick() {
         Log.d(TAG, "Archive item clicked");
+        replaceFragmentWithText("Archive Activity");
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private void handleSettingsItemClick() {
         Log.d(TAG, "Settings item clicked");
+        replaceFragmentWithText("Settings Activity");
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private void handleLogoutItemClick() {
@@ -279,5 +295,11 @@ public class NavigationActivity extends AppCompatActivity {
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private void replaceFragmentWithText(String text) {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, EmptyActivity.newInstance(text))
+                .commit();
     }
 }
