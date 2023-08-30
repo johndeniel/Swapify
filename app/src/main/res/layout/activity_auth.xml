@@ -1,31 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
     tools:context=".AuthActivity">
 
-        <!-- Logo ImageView: Displays the app logo at the center of the screen. -->
-        <ImageView
-            android:id="@+id/logo_image"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_centerHorizontal="true"
-            android:layout_gravity="center_vertical|center_horizontal"
-            android:src="@drawable/logo"
-            android:layout_centerVertical="true" />
-
-        <!-- Google Login Button: Allows users to log in using their Google account. -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/google_login_button"
+        <!-- Relative layout to center-align its contents vertically -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/logo_image"
-            android:layout_gravity="bottom"
-            android:layout_marginTop="16dp"
-            android:text="Login with Google"
-            style="@style/Widget.MaterialComponents.Button" />
+            android:layout_gravity="center_vertical">
+
+                <!-- Title TextView: Displays the title at the center top of the screen. -->
+                <TextView
+                    android:id="@+id/title_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Welcome to Danielle"
+                    android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                    android:textStyle="bold"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="16dp"/>
+
+                <!-- Logo ImageView: Displays the app logo below the title. -->
+                <ImageView
+                    android:id="@+id/logo_image"
+                    android:layout_width="160dp"
+                    android:layout_height="120dp"
+                    android:src="@drawable/logo"
+                    android:layout_below="@id/title_text"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="32dp"
+                    android:layout_marginBottom="24dp"/>
+
+                <!-- Google Login Button: Allows users to log in using their Google account. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/google_login_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Login with Google"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_below="@id/logo_image"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="12dp"/>
+        </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

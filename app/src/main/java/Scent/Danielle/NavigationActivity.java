@@ -26,7 +26,6 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
 // Firebase components
-import com.google.android.material.search.SearchView;
 import com.google.firebase.auth.FirebaseAuth;
 
 // Third-party library
@@ -40,7 +39,6 @@ public class NavigationActivity extends AppCompatActivity {
     // UI Elements
     private MaterialToolbar topAppBar;
     private NavigationView navigationView;
-    private SearchView searchView;
     private DrawerLayout drawerLayout;
     private ImageView avatarImageView;
     private TextView fullNameTextView;
@@ -134,24 +132,37 @@ public class NavigationActivity extends AppCompatActivity {
         } else if (itemId == R.id.search) {
             handleSearchIconPress();
             return true;
-        } else if (itemId == R.id.more) {
-            handleMoreItemPress();
+        } else if (itemId == R.id.morePlan) {
+            handleMorePlanItemPress();
+            return true;
+        } else if (itemId == R.id.moreAbout) {
+            handleMoreAboutItemPress();
             return true;
         }
-
         return false;
     }
 
     private void handleFavoriteIconPress() {
         // TODO: Implement favorite icon press functionality
+        Log.d(TAG, "Favorite item clicked");
     }
 
     private void handleSearchIconPress() {
         // TODO: Implement search icon press functionality
+        Log.d(TAG, "Search item clicked");
     }
 
-    private void handleMoreItemPress() {
-        // TODO: Implement more icon press functionality
+    private void handleMorePlanItemPress() {
+        Log.d(TAG, "Plan item clicked");
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, new SubscriptionActivity())
+                .commit();
+    }
+    private void handleMoreAboutItemPress() {
+        Log.d(TAG, "About item clicked");
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, new AboutActivity())
+                .commit();
     }
 
     /**
@@ -163,58 +174,18 @@ public class NavigationActivity extends AppCompatActivity {
         if (itemId == R.id.feed) {
             handleUpgradeFeedItemClick();
             return true;
-        } else if (itemId == R.id.plan) {
-            handleUpgradePlanItemClick();
-            return true;
-        } else if (itemId == R.id.theme) {
-            handleAppThemeItemClick();
-            return true;
-        } else if (itemId == R.id.widgets) {
-            handleWidgetsItemClick();
-            return true;
         } else if (itemId == R.id.messages) {
             handleMessageItemClick();
             return true;
-        } else if (itemId == R.id.store) {
-            handleStoreItemClick();
-            return true;
-        } else if (itemId == R.id.purchases) {
-            handlePurchasesItemClick();
-            return true;
+
         } else if (itemId == R.id.about) {
             handleAboutItemClick();
             return true;
-        } else if (itemId == R.id.archive) {
-            handleArchiveItemClick();
-            return true;
-        } else if (itemId == R.id.settings) {
-            handleSettingsItemClick();
-            return true;
-        } else if (itemId == R.id.logout) {
+        }else if (itemId == R.id.logout) {
             handleLogoutItemClick();
             return true;
         }
         return false;
-    }
-
-    private void handleUpgradePlanItemClick() {
-        Log.d(TAG, "Plan item clicked");
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.content_frame, new SubscriptionActivity())
-                .commit();
-        drawerLayout.closeDrawer(GravityCompat.START);
-    }
-
-    private void handleAppThemeItemClick() {
-        Log.d(TAG, "AppTheme item clicked");
-        replaceFragmentWithText("AppTheme Activity");
-        drawerLayout.closeDrawer(GravityCompat.START);
-    }
-
-    private void handleWidgetsItemClick() {
-        Log.d(TAG, "Widgets item clicked");
-        replaceFragmentWithText("Widgets Activity");
-        drawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private void handleUpgradeFeedItemClick() {
@@ -233,35 +204,11 @@ public class NavigationActivity extends AppCompatActivity {
         drawerLayout.closeDrawer(GravityCompat.START);
     }
 
-    private void handleStoreItemClick() {
-        Log.d(TAG, "Store item clicked");
-        replaceFragmentWithText("Store Activity");
-        drawerLayout.closeDrawer(GravityCompat.START);
-    }
-
-    private void handlePurchasesItemClick() {
-        Log.d(TAG, "Purchases item clicked");
-        replaceFragmentWithText("Purchases Activity");
-        drawerLayout.closeDrawer(GravityCompat.START);
-    }
-
     private void handleAboutItemClick() {
         Log.d(TAG, "About item clicked");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new AboutActivity())
                 .commit();
-        drawerLayout.closeDrawer(GravityCompat.START);
-    }
-
-    private void handleArchiveItemClick() {
-        Log.d(TAG, "Archive item clicked");
-        replaceFragmentWithText("Archive Activity");
-        drawerLayout.closeDrawer(GravityCompat.START);
-    }
-
-    private void handleSettingsItemClick() {
-        Log.d(TAG, "Settings item clicked");
-        replaceFragmentWithText("Settings Activity");
         drawerLayout.closeDrawer(GravityCompat.START);
     }
 
@@ -295,11 +242,5 @@ public class NavigationActivity extends AppCompatActivity {
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
         finish();
-    }
-
-    private void replaceFragmentWithText(String text) {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.content_frame, EmptyActivity.newInstance(text))
-                .commit();
     }
 }

@@ -15,10 +15,15 @@
         android:title="Search"
         app:showAsAction="ifRoom" />
 
-    <!-- More Options Item (Log Out) -->
+    <!-- More Options Item -->
     <item
-        android:id="@+id/more"
-        android:title="More"
+        android:id="@+id/morePlan"
+        android:title="Upgrade to PRO"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/moreAbout"
+        android:title="About"
         app:showAsAction="never" />
 
 </menu>

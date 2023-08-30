@@ -3,37 +3,10 @@
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
     <!-- Main Item Menu for Premium -->
-    <item android:title="Premium">
-        <menu>
-            <!-- Upgrade Plan Item -->
-            <item
-                android:id="@+id/plan"
-                android:icon="@drawable/plan"
-                android:title="Upgrade to PRO"
-                app:showAsAction="ifRoom"/>
-
-            <!-- App Theme Item -->
-            <item
-                android:id="@+id/theme"
-                android:icon="@drawable/theme"
-                android:title="App Theme"
-                app:showAsAction="ifRoom"/>
-
-            <!-- Widgets Item -->
-            <item
-                android:id="@+id/widgets"
-                android:icon="@drawable/widgets"
-                android:title="Widgets"
-                app:showAsAction="ifRoom"/>
-        </menu>
-    </item>
-
-    <!-- Main Item Menu for Danielle -->
     <item android:title="@string/app_name">
         <menu>
-            <!-- Messages Item -->
+            <!-- Feed Item -->
             <item
                 android:id="@+id/feed"
                 android:icon="@drawable/logo"
@@ -47,44 +20,11 @@
                 android:title="Messages"
                 app:showAsAction="ifRoom"/>
 
-            <!-- Store Item -->
-            <item
-                android:id="@+id/store"
-                android:icon="@drawable/store"
-                android:title="Store"
-                app:showAsAction="ifRoom"/>
-
-            <!-- Purchases Item -->
-            <item
-                android:id="@+id/purchases"
-                android:icon="@drawable/purchases"
-                android:title="Purchases"
-                app:showAsAction="ifRoom"/>
-        </menu>
-    </item>
-
-    <!-- Main Item Menu for More -->
-    <item android:title="More">
-        <menu>
-            <!-- FAQ Item -->
+            <!-- About Item -->
             <item
                 android:id="@+id/about"
                 android:icon="@drawable/about"
                 android:title="About"
-                app:showAsAction="ifRoom"/>
-
-            <!-- Archive Item -->
-            <item
-                android:id="@+id/archive"
-                android:icon="@drawable/archive"
-                android:title="Archive"
-                app:showAsAction="ifRoom"/>
-
-            <!-- Settings Item -->
-            <item
-                android:id="@+id/settings"
-                android:icon="@drawable/settings"
-                android:title="Settings"
                 app:showAsAction="ifRoom"/>
 
             <!-- Logout Item -->
