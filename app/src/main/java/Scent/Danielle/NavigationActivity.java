@@ -149,7 +149,7 @@ public class NavigationActivity extends AppCompatActivity {
         Log.d(TAG, "Search item clicked");
 
         View customView = getLayoutInflater().inflate(R.layout.item_search, null);
-        SearchBar searchBar2 = customView.findViewById(R.id.search_bar);
+        //SearchBar searchBar2 = customView.findViewById(R.id.search_bar);
         //SearchView searchView2 = customView.findViewById(R.id.search_view);
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle("Search Item")
@@ -181,7 +181,7 @@ public class NavigationActivity extends AppCompatActivity {
         int itemId = menuItem.getItemId();
 
         if (itemId == R.id.feed) {
-            handleUpgradeFeedItemClick();
+            handleFeedItemClick();
             return true;
         } else if (itemId == R.id.chat) {
             handleChatItemClick();
@@ -197,7 +197,7 @@ public class NavigationActivity extends AppCompatActivity {
         return false;
     }
 
-    private void handleUpgradeFeedItemClick() {
+    private void handleFeedItemClick() {
         Log.d(TAG, "Feed item clicked");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new FeedActivity())
