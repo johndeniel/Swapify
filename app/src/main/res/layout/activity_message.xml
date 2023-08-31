@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This XML layout defines the UI for the MessageActivity, displaying a centered message. -->
+<!-- This layout is used to display a list of messages in a RecyclerView. -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -8,11 +8,13 @@
     android:layout_height="match_parent"
     tools:context=".MessageActivity">
 
+    <!-- RecyclerView for displaying messages -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <!-- Divider to separate items in the RecyclerView -->
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/divider"
         android:layout_width="match_parent"

@@ -1,19 +1,22 @@
 package Scent.Danielle;
 
-// Import statements
+// Android core components
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+// AndroidX components
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+// Java standard imports
 import java.util.ArrayList;
 import java.util.List;
 
+// Custom class imports
 import Scent.Danielle.Utils.ChatAdapter;
 import Scent.Danielle.Utils.ChatItem;
 

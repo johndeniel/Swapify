@@ -1,11 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- Favorite Item -->
+    <!-- Heart Item -->
     <item
-        android:id="@+id/favorite"
+        android:id="@+id/heart"
         android:icon="@drawable/heart"
-        android:title="Favorite"
+        android:title="Heart"
         app:showAsAction="ifRoom" />
 
     <!-- Search Item -->

@@ -7,11 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".SubscriptionActivity">
 
+    <!-- NestedScrollView to allow scrolling within the layout -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_anchorGravity="fill">
 
+        <!-- Vertical LinearLayout for holding subscription plans -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -26,32 +28,36 @@
                 app:cardElevation="4dp"
                 app:cardCornerRadius="8dp">
 
+                <!-- Contents of Plan 1 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Plan Name -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Basic Plan"
+                        android:text="Starter Plan"
                         android:textSize="24sp"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="8dp"/>
 
+                    <!-- Plan Description -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Unlock essential features with the Basic Plan."
+                        android:text="Get the essential features of the Starter Plan."
                         android:textSize="16sp"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="16dp"/>
 
+                    <!-- Upgrade Button -->
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Upgrade to Basic"
+                        android:text="Upgrade to Starter"
                         android:textSize="16sp"
                         android:textColor="@android:color/white"
                         android:layout_gravity="center_horizontal"/>
@@ -66,32 +72,36 @@
                 app:cardElevation="4dp"
                 app:cardCornerRadius="8dp">
 
+                <!-- Contents of Plan 2 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Plan Name -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Premium Plan"
+                        android:text="Basic Plan"
                         android:textSize="24sp"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="8dp"/>
 
+                    <!-- Plan Description -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Unlock advanced features with the Premium Plan."
+                        android:text="Unlock essential features with the Basic Plan."
                         android:textSize="16sp"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="16dp"/>
 
+                    <!-- Upgrade Button -->
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Upgrade to Premium"
+                        android:text="Upgrade to Basic"
                         android:textSize="16sp"
                         android:textColor="@android:color/white"
                         android:layout_gravity="center_horizontal"/>
@@ -106,32 +116,36 @@
                 app:cardElevation="4dp"
                 app:cardCornerRadius="8dp">
 
+                <!-- Contents of Plan 3 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Plan Name -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Enterprise Plan"
+                        android:text="Premium Plan"
                         android:textSize="24sp"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="8dp"/>
 
+                    <!-- Plan Description -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Unlock all features with the Enterprise Plan."
+                        android:text="Unlock advanced features with the Premium Plan."
                         android:textSize="16sp"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="16dp"/>
 
+                    <!-- Upgrade Button -->
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Upgrade to Enterprise"
+                        android:text="Upgrade to Premium"
                         android:textSize="16sp"
                         android:textColor="@android:color/white"
                         android:layout_gravity="center_horizontal"/>
@@ -142,15 +156,62 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 app:cardElevation="4dp"
                 app:cardCornerRadius="8dp">
 
+                <!-- Contents of Plan 4 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Plan Name -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Enterprise Plan"
+                        android:textSize="24sp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="8dp"/>
+
+                    <!-- Plan Description -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Unlock all features with the Enterprise Plan."
+                        android:textSize="16sp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="16dp"/>
+
+                    <!-- Upgrade Button -->
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Upgrade to Enterprise"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/white"
+                        android:layout_gravity="center_horizontal"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Plan 5 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="8dp">
+
+                <!-- Contents of Plan 5 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Plan Name -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -159,6 +220,7 @@
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="8dp"/>
 
+                    <!-- Plan Description -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -167,6 +229,7 @@
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="16dp"/>
 
+                    <!-- Upgrade Button -->
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -178,5 +241,4 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

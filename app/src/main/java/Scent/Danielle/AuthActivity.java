@@ -1,29 +1,29 @@
 package Scent.Danielle;
 
-// Import Android components
+// Android core components
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
-// Import androidx components
+// AndroidX components
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-// Import Firebase components for authentication
+// Firebase components for authentication
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 
-// Import Google Sign-In components
+// Google Sign-In components
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
-// Import Google API client and connection-related components
+// Google API client and connection-related components
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ApiException;
@@ -36,7 +36,7 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
     public static final String TAG = AuthActivity.class.getSimpleName();
     public static final int RC_SIGN_IN = 9001;
 
-    // Firebase Authentication
+    // Authentication
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
 
@@ -100,7 +100,6 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     }
 
-    // Handle the result of Google Sign-In attempt
     public void handleGoogleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
@@ -110,7 +109,6 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     }
 
-    // Authenticate with Firebase using Google credentials
     public void firebaseAuthWithGoogle(GoogleSignInAccount account) {
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
@@ -124,19 +122,16 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
                 });
     }
 
-    // Handle successful authentication
     public void handleAuthenticationSuccess(FirebaseUser user) {
         Log.d(TAG, "Authentication successful.");
         Toast.makeText(this, "Authentication Successful", Toast.LENGTH_SHORT).show();
         startHomeActivity(); // Start HomeActivity after successful authentication
     }
 
-    // Handle authentication failure
     public void handleAuthenticationFailure(Exception exception) {
         Log.e(TAG, "Authentication Failed: " + exception.getMessage(), exception);
     }
 
-    // Handle Google Play Services connection failure
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(TAG, "Google Play Services Connection Failed: " + connectionResult.getErrorMessage());
