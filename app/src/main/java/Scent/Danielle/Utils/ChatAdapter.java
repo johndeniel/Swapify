@@ -21,7 +21,7 @@ import Scent.Danielle.R;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
-    private List<ChatItem> chatItems;
+    private final List<ChatItem> chatItems;
 
     public ChatAdapter(List<ChatItem> chatItems) {
         this.chatItems = chatItems;

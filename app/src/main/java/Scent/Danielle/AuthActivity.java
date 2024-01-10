@@ -40,9 +40,6 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
 
-    // UI Elements
-    private Button signInButton;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +56,7 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
             initializeGoogleSignIn(); // User not authenticated, set up Google Sign-In
 
             // Set click listener for Google Sign-In button
-            signInButton = findViewById(R.id.google_login_button);
+            Button signInButton = findViewById(R.id.google_login_button);
             signInButton.setOnClickListener(v -> signIn());
         }
     }
@@ -114,15 +111,14 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        handleAuthenticationSuccess(user);
+                        handleAuthenticationSuccess();
                     } else {
                         handleAuthenticationFailure(task.getException());
                     }
                 });
     }
 
-    public void handleAuthenticationSuccess(FirebaseUser user) {
+    public void handleAuthenticationSuccess() {
         Log.d(TAG, "Authentication successful.");
         Toast.makeText(this, "Authentication Successful", Toast.LENGTH_SHORT).show();
         startHomeActivity(); // Start HomeActivity after successful authentication

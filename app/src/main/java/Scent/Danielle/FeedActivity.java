@@ -204,10 +204,13 @@ public class FeedActivity extends Fragment {
 
                     Items upload = new Items(userId, fullName, title, description, imageUrl);
 
-                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("items");
-                    databaseReference.push().setValue(upload)
+                    DatabaseReference itemsReference = FirebaseDatabase.getInstance().getReference("items");
+                    DatabaseReference newUploadReference = itemsReference.push();
+                    newUploadReference.setValue(upload)
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
+                                    DatabaseReference galleryReference = FirebaseDatabase.getInstance().getReference("gallery").child(firebaseAuth.getCurrentUser().getUid());
+                                    galleryReference.push().setValue(newUploadReference.getKey());
                                     showToast("Upload Successful");
                                 } else {
                                     showErrorToast("Upload Failed: " + task.getException().getMessage());
@@ -228,6 +231,7 @@ public class FeedActivity extends Fragment {
             }
         }
     }
+
 
     private String generateUniqueFileName() {
         String timestamp = String.valueOf(System.currentTimeMillis());

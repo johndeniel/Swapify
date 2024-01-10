@@ -24,7 +24,7 @@ import java.util.List;
 import Scent.Danielle.R;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
-    private List<Items> itemList;
+    private final List<Items> itemList;
 
     public ItemAdapter(List<Items> itemList) {
         this.itemList = itemList;
