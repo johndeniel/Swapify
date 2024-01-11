@@ -1,25 +1,19 @@
 package Scent.Danielle;
 
 // Android core components
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 // AndroidX components
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 // Google Sign-In components
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -32,7 +26,6 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
 // Firebase components
-import com.google.android.material.search.SearchBar;
 import com.google.firebase.auth.FirebaseAuth;
 
 // Third-party library for image loading
@@ -46,8 +39,6 @@ public class NavigationActivity extends AppCompatActivity {
     // UI Elements
     private MaterialToolbar topAppBar;
     private NavigationView navigationView;
-    private SearchBar searchBar;
-    private SearchView searchView;
     private DrawerLayout drawerLayout;
     private ImageView avatarImageView;
     private TextView fullNameTextView;
@@ -90,8 +81,6 @@ public class NavigationActivity extends AppCompatActivity {
         topAppBar = findViewById(R.id.topAppBar);
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
-        searchBar = findViewById(R.id.search_bar);
-        searchView = findViewById(R.id.search_view);
         avatarImageView = navigationView.getHeaderView(0).findViewById(R.id.avatarImageView);
         fullNameTextView = navigationView.getHeaderView(0).findViewById(R.id.fullName);
         emailTextView = navigationView.getHeaderView(0).findViewById(R.id.gmailAddress);
@@ -123,14 +112,7 @@ public class NavigationActivity extends AppCompatActivity {
 
     private boolean handleMenuItemClick(MenuItem menuItem) {
         int itemId = menuItem.getItemId();
-
-        if (itemId == R.id.heart) {
-            handleHeartIconPress();
-            return true;
-        } else if (itemId == R.id.search) {
-            handleSearchIconPress();
-            return true;
-        } else if (itemId == R.id.morePlan) {
+        if (itemId == R.id.morePlan) {
             handleMorePlanItemPress();
             return true;
         } else if (itemId == R.id.moreAbout) {
@@ -138,30 +120,6 @@ public class NavigationActivity extends AppCompatActivity {
             return true;
         }
         return false;
-    }
-
-    private void handleHeartIconPress() {
-        // TODO: Implement favorite icon press functionality
-        Log.d(TAG, "Heart item clicked");
-    }
-
-    private void handleSearchIconPress() {
-        Log.d(TAG, "Search item clicked");
-
-        View customView = getLayoutInflater().inflate(R.layout.item_search, null);
-        //SearchBar searchBar2 = customView.findViewById(R.id.search_bar);
-        //SearchView searchView2 = customView.findViewById(R.id.search_view);
-        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
-                .setTitle("Search Item")
-                .setView(customView)
-                .setPositiveButton("Search", null)
-                .setNegativeButton("Cancel", (dialogInterface, which) -> dialogInterface.dismiss())
-                .show();
-
-        Button searchButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        searchButton.setOnClickListener(v -> {
-            dialog.dismiss();
-        });
     }
 
     private void handleMorePlanItemPress() {
@@ -183,10 +141,12 @@ public class NavigationActivity extends AppCompatActivity {
         if (itemId == R.id.feed) {
             handleFeedItemClick();
             return true;
+        } else if (itemId == R.id.gallery) {
+            handleGalleryItemClick();
+            return true;
         } else if (itemId == R.id.chat) {
             handleChatItemClick();
             return true;
-
         } else if (itemId == R.id.about) {
             handleAboutItemClick();
             return true;
@@ -201,6 +161,14 @@ public class NavigationActivity extends AppCompatActivity {
         Log.d(TAG, "Feed item clicked");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new FeedActivity())
+                .commit();
+        drawerLayout.closeDrawer(GravityCompat.START);
+    }
+
+    private void handleGalleryItemClick() {
+        Log.d(TAG, "Gallery item clicked");
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, new GalleryActivity())
                 .commit();
         drawerLayout.closeDrawer(GravityCompat.START);
     }

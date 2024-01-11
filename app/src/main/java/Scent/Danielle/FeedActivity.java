@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Custom class imports
-import Scent.Danielle.Utils.ItemAdapter;
+import Scent.Danielle.Utils.ItemFeedAdapter;
 import Scent.Danielle.Utils.Items;
 
 public class FeedActivity extends Fragment {
@@ -59,7 +59,7 @@ public class FeedActivity extends Fragment {
     private FirebaseAuth firebaseAuth;
     private FirebaseStorage storage;
     private RecyclerView itemRecyclerView;
-    private ItemAdapter itemAdapter;
+    private ItemFeedAdapter itemAdapter;
     private List<Items> itemList;
     private ImageView uploadImageView;
     private Uri imageUri;
@@ -82,7 +82,7 @@ public class FeedActivity extends Fragment {
         itemRecyclerView = rootView.findViewById(R.id.itemRecyclerView);
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         itemList = new ArrayList<>();
-        itemAdapter = new ItemAdapter(itemList);
+        itemAdapter = new ItemFeedAdapter(itemList);
         itemRecyclerView.setAdapter(itemAdapter);
 
         loadItemsFromFirebase();
@@ -189,7 +189,6 @@ public class FeedActivity extends Fragment {
         String title = titleEditText.getText().toString().trim();
         String description = descriptionEditText.getText().toString().trim();
 
-        // Check if title and description are not empty
         if (imageUri != null && !title.isEmpty() && !description.isEmpty()) {
             try {
                 String uniqueFileName = generateUniqueFileName();
@@ -221,7 +220,6 @@ public class FeedActivity extends Fragment {
                 showErrorToast("Upload failed: " + e.getMessage());
             }
         } else {
-            // Show appropriate error message if any of the fields are empty
             if (imageUri == null) {
                 showErrorToast("Please select an image");
             } else if (title.isEmpty()) {

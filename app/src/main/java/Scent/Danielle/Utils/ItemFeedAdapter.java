@@ -23,10 +23,10 @@ import java.util.List;
 // Reference to your app's resources
 import Scent.Danielle.R;
 
-public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
+public class ItemFeedAdapter extends RecyclerView.Adapter<ItemFeedAdapter.ItemViewHolder> {
     private final List<Items> itemList;
 
-    public ItemAdapter(List<Items> itemList) {
+    public ItemFeedAdapter(List<Items> itemList) {
         this.itemList = itemList;
     }
 
@@ -34,7 +34,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     @Override
     public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Inflate the layout for each item in the RecyclerView
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_fetch, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_feed, parent, false);
         return new ItemViewHolder(view);
     }
 

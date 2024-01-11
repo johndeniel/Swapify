@@ -1,20 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- Heart Item -->
-    <item
-        android:id="@+id/heart"
-        android:icon="@drawable/heart"
-        android:title="Heart"
-        app:showAsAction="ifRoom" />
-
-    <!-- Search Item -->
-    <item
-        android:id="@+id/search"
-        android:icon="@drawable/search"
-        android:title="Search"
-        app:showAsAction="ifRoom" />
-
     <!-- More Options Item -->
     <item
         android:id="@+id/morePlan"

@@ -31,6 +31,7 @@
                     android:id="@+id/topAppBar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
+                    app:titleCentered="true"
                     app:title="@string/app_name"
                     app:menu="@menu/top_app_bar"
                     app:navigationIcon="@drawable/menu" />
