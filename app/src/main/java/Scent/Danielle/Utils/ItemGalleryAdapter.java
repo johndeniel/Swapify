@@ -1,6 +1,7 @@
 package Scent.Danielle.Utils;
 // Android core components
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 // Third-party libraries
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 // List of items
 import java.util.List;
@@ -25,6 +32,8 @@ import Scent.Danielle.R;
 public class ItemGalleryAdapter extends RecyclerView.Adapter<ItemGalleryAdapter.ItemViewHolder> {
 
     private final List<Items> itemList;
+    private static final String ITEMS_REFERENCE = "items";
+    private static final String GALLERY_REFERENCE = "gallery";
 
     public ItemGalleryAdapter(List<Items> itemList) {
         this.itemList = itemList;
@@ -53,7 +62,14 @@ public class ItemGalleryAdapter extends RecyclerView.Adapter<ItemGalleryAdapter.
 
         // Set click listeners for buttons
         holder.editButton.setOnClickListener(v -> showToast(holder.itemView.getContext(), "Edit"));
-        holder.deleteButton.setOnClickListener(v -> showToast(holder.itemView.getContext(), "Delete"));
+
+        holder.deleteButton.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition != RecyclerView.NO_POSITION) {
+                deleteItem(adapterPosition);
+            }
+        });
+
     }
 
     @Override
@@ -78,6 +94,42 @@ public class ItemGalleryAdapter extends RecyclerView.Adapter<ItemGalleryAdapter.
             deleteButton = itemView.findViewById(R.id.deleteButton);
         }
     }
+
+    // Delete item from Firebase and local list
+    private void deleteItem(int position) {
+        Items deletedItem = itemList.get(position);
+
+        // Remove item from local list
+        itemList.remove(position);
+        notifyItemRemoved(position);
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference(ITEMS_REFERENCE);
+        String itemKey = deletedItem.getKey();
+
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+
+        // Remove item from Firebase Realtime Database
+        databaseReference.child(itemKey).removeValue();
+
+        DatabaseReference galleryReference = FirebaseDatabase.getInstance()
+                .getReference(GALLERY_REFERENCE)
+                .child(firebaseAuth.getCurrentUser().getUid());
+
+        galleryReference.orderByValue().equalTo(itemKey).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    snapshot.getRef().removeValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Handle errors here
+            }
+        });
+    }
+
 
     // Display a short toast message
     private void showToast(Context context, String message) {

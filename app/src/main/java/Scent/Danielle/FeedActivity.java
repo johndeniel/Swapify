@@ -111,21 +111,26 @@ public class FeedActivity extends Fragment {
     private void createSampleUpload() {
         // Create and upload sample data to Firebase
         try {
+            DatabaseReference itemsReference = FirebaseDatabase.getInstance().getReference("items");
+            DatabaseReference newUploadReference = itemsReference.push();
+
             String sampleUserId = "RZCVBq2uI6SErP4BUcC0qS8G4Az2";
             String sampleFullName = "John Deniel Dela Peña";
             String sampleTitle = "SuperSport S";
             String sampleDescription = "The Ducati SuperSport S is a suitable everyday two-wheeler, with its blend of comfort and versatility. Locally launched last 2018, this super sport bike has a sporty yet elegant design that’s sure to turn heads. ";
             String sampleImageUrl = "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
+            String key = newUploadReference.getKey();
 
-            Items sampleUpload = new Items(sampleUserId, sampleFullName, sampleTitle, sampleDescription, sampleImageUrl);
+            Items sampleUpload = new Items(sampleUserId, sampleFullName, sampleTitle, sampleDescription, sampleImageUrl, key);
 
-            DatabaseReference newUploadRef = databaseReference.push();
-            newUploadRef.setValue(sampleUpload)
+            newUploadReference.setValue(sampleUpload)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            showToast("Sample Upload Created");
+                            DatabaseReference galleryReference = FirebaseDatabase.getInstance().getReference("gallery").child(firebaseAuth.getCurrentUser().getUid());
+                            galleryReference.push().setValue(key);
+                            showToast("Upload Successful");
                         } else {
-                            showErrorToast("Failed to Create Sample Upload: " + task.getException().getMessage());
+                            showErrorToast("Upload Failed: " + task.getException().getMessage());
                         }
                     });
         } catch (Exception e) {
@@ -196,20 +201,23 @@ public class FeedActivity extends Fragment {
                 UploadTask uploadTask = storageReference.putFile(imageUri);
 
                 uploadTask.addOnSuccessListener(taskSnapshot -> storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
+
+                    DatabaseReference itemsReference = FirebaseDatabase.getInstance().getReference("items");
+                    DatabaseReference newUploadReference = itemsReference.push();
+
                     String userId = firebaseAuth.getCurrentUser().getUid();
                     String imageUrl = uri.toString();
                     GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(requireContext());
                     String fullName = account.getDisplayName();
+                    String key = newUploadReference.getKey();
 
-                    Items upload = new Items(userId, fullName, title, description, imageUrl);
+                    Items upload = new Items(userId, fullName, title, description, imageUrl, key);
 
-                    DatabaseReference itemsReference = FirebaseDatabase.getInstance().getReference("items");
-                    DatabaseReference newUploadReference = itemsReference.push();
                     newUploadReference.setValue(upload)
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
                                     DatabaseReference galleryReference = FirebaseDatabase.getInstance().getReference("gallery").child(firebaseAuth.getCurrentUser().getUid());
-                                    galleryReference.push().setValue(newUploadReference.getKey());
+                                    galleryReference.push().setValue(key);
                                     showToast("Upload Successful");
                                 } else {
                                     showErrorToast("Upload Failed: " + task.getException().getMessage());
