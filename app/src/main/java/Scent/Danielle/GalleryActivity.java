@@ -61,7 +61,7 @@ public class GalleryActivity extends Fragment {
     private void setupRecyclerView() {
         galleryRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         itemList = new ArrayList<>();
-        galleryAdapter = new ItemGalleryAdapter(itemList);
+        galleryAdapter = new ItemGalleryAdapter(requireContext() ,itemList);
         galleryRecyclerView.setAdapter(galleryAdapter);
     }
 

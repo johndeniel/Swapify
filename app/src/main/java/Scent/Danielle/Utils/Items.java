@@ -1,25 +1,27 @@
 package Scent.Danielle.Utils;
 
 public class Items {
-    private String userId;
+    private String key;
     private String fullName;
     private String title;
     private String description;
+    private String fileName;
     private String imageUrl;
-    private String key;
 
     public Items() {
         // Empty constructor required for Firebase
     }
 
-    public Items(String userId, String fullName, String title, String description, String imageUrl, String key) {
-        this.userId = userId;
+    public Items(String key, String fullName, String title, String description, String fileName, String imageUrl) {
+        this.key = key;
         this.fullName = fullName;
         this.title = title;
         this.description = description;
+        this.fileName = fileName;
         this.imageUrl = imageUrl;
-        this.key = key;
     }
+
+    public String getKey() { return key; }
 
     public String getFullName() {
         return fullName;
@@ -33,8 +35,7 @@ public class Items {
         return description;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
-    public String getKey() { return key; }
+    public String getFileName() { return fileName; }
+
+    public String getImageUrl() { return imageUrl; }
 }

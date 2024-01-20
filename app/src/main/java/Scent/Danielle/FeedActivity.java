@@ -4,6 +4,7 @@ package Scent.Danielle;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,13 +36,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 // Firebase imports
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -50,14 +48,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Custom class imports
+import Scent.Danielle.Utils.FirebaseInitialization;
 import Scent.Danielle.Utils.ItemFeedAdapter;
 import Scent.Danielle.Utils.Items;
 
 public class FeedActivity extends Fragment {
+    private final String TAG = FeedActivity.class.getSimpleName();
     private static final int PICK_IMAGE_REQUEST = 1;
-    private DatabaseReference databaseReference;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseStorage storage;
     private RecyclerView itemRecyclerView;
     private ItemFeedAdapter itemAdapter;
     private List<Items> itemList;
@@ -69,12 +66,6 @@ public class FeedActivity extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.activity_feed, container, false);
-
-        firebaseAuth = FirebaseAuth.getInstance();
-        storage = FirebaseStorage.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("items");
-
-        checkAndCreateInitialData();
 
         ExtendedFloatingActionButton extendedFab = rootView.findViewById(R.id.extended_fab);
         uploadImageView = new ImageView(requireContext());
@@ -92,70 +83,52 @@ public class FeedActivity extends Fragment {
         return rootView;
     }
 
-    private void checkAndCreateInitialData() {
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.exists()) {
-                    createSampleUpload();
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                showErrorToast("Database error: " + databaseError.getMessage());
-            }
-        });
-    }
+    private void loadItemsFromFirebase() {
 
-    private void createSampleUpload() {
-        // Create and upload sample data to Firebase
-        try {
-            DatabaseReference itemsReference = FirebaseDatabase.getInstance().getReference("items");
-            DatabaseReference newUploadReference = itemsReference.push();
+        DatabaseReference itemsReference = FirebaseInitialization.getItemsDatabaseReference();
 
-            String sampleUserId = "RZCVBq2uI6SErP4BUcC0qS8G4Az2";
-            String sampleFullName = "John Deniel Dela Peña";
-            String sampleTitle = "SuperSport S";
-            String sampleDescription = "The Ducati SuperSport S is a suitable everyday two-wheeler, with its blend of comfort and versatility. Locally launched last 2018, this super sport bike has a sporty yet elegant design that’s sure to turn heads. ";
-            String sampleImageUrl = "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
-            String key = newUploadReference.getKey();
+        if (itemsReference != null) {
 
-            Items sampleUpload = new Items(sampleUserId, sampleFullName, sampleTitle, sampleDescription, sampleImageUrl, key);
-
-            newUploadReference.setValue(sampleUpload)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            DatabaseReference galleryReference = FirebaseDatabase.getInstance().getReference("gallery").child(firebaseAuth.getCurrentUser().getUid());
-                            galleryReference.push().setValue(key);
-                            showToast("Upload Successful");
+            itemsReference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    try {
+                        if (itemList != null) {
+                            itemList.clear();
                         } else {
-                            showErrorToast("Upload Failed: " + task.getException().getMessage());
+                            itemList = new ArrayList<>();
                         }
-                    });
-        } catch (Exception e) {
-            showErrorToast("Error creating sample upload: " + e.getMessage());
+
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            Items item = snapshot.getValue(Items.class);
+                            if (item != null) {
+                                itemList.add(item);
+                            }
+                        }
+
+                        if (itemAdapter != null) {
+                            itemAdapter.notifyDataSetChanged();
+                            Log.d(TAG, "Items updated successfully. Notifying adapter.");
+                        } else {
+                            Log.e(TAG, "Adapter is null. Unable to update UI.");
+                        }
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error processing data", e);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e(TAG, "Database error", databaseError.toException());
+                }
+            });
+        } else {
+            Log.e(TAG, "Database reference is null. Unable to fetch data.");
         }
     }
 
-    private void loadItemsFromFirebase() {
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                itemList.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Items item = snapshot.getValue(Items.class);
-                    itemList.add(item);
-                }
-                itemAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                showErrorToast("Database error: " + databaseError.getMessage());
-            }
-        });
-    }
 
     private void showAddItemDialog(LayoutInflater inflater, ViewGroup container) {
         View dialogView = inflater.inflate(R.layout.item_upload, container, false);
@@ -197,27 +170,25 @@ public class FeedActivity extends Fragment {
         if (imageUri != null && !title.isEmpty() && !description.isEmpty()) {
             try {
                 String uniqueFileName = generateUniqueFileName();
-                StorageReference storageReference = storage.getReference().child("uploads/" + firebaseAuth.getCurrentUser().getUid() + "/" + uniqueFileName);
+                StorageReference storageReference = FirebaseInitialization.getStorageReference().child("uploads/" + FirebaseInitialization.getUserId() + "/" + uniqueFileName);
                 UploadTask uploadTask = storageReference.putFile(imageUri);
 
                 uploadTask.addOnSuccessListener(taskSnapshot -> storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
 
-                    DatabaseReference itemsReference = FirebaseDatabase.getInstance().getReference("items");
-                    DatabaseReference newUploadReference = itemsReference.push();
+                    DatabaseReference newUploadReference = FirebaseInitialization.getItemsDatabaseReference().push();
 
-                    String userId = firebaseAuth.getCurrentUser().getUid();
+                    String key = newUploadReference.getKey();
                     String imageUrl = uri.toString();
                     GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(requireContext());
                     String fullName = account.getDisplayName();
-                    String key = newUploadReference.getKey();
 
-                    Items upload = new Items(userId, fullName, title, description, imageUrl, key);
+                    Items upload = new Items(key, fullName, title, description, uniqueFileName, imageUrl);
 
                     newUploadReference.setValue(upload)
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
-                                    DatabaseReference galleryReference = FirebaseDatabase.getInstance().getReference("gallery").child(firebaseAuth.getCurrentUser().getUid());
-                                    galleryReference.push().setValue(key);
+                                    DatabaseReference galleryDatabaseReference = FirebaseInitialization.getGalleryDatabaseReference();
+                                    galleryDatabaseReference.push().setValue(key);
                                     showToast("Upload Successful");
                                 } else {
                                     showErrorToast("Upload Failed: " + task.getException().getMessage());
