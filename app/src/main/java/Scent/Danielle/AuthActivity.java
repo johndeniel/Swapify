@@ -1,7 +1,10 @@
 package Scent.Danielle;
 
 // Android core components
+import static androidx.core.content.ContentProviderCompat.requireContext;
+
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -12,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 // Firebase components for authentication
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.AuthCredential;
@@ -28,6 +32,9 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+
+import Scent.Danielle.Utils.Database.FirebaseInitialization;
+import Scent.Danielle.Utils.User;
 
 public class AuthActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -110,6 +117,7 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
+                        handleUserInfo();
                         handleAuthenticationSuccess();
                     } else {
                         handleAuthenticationFailure(task.getException());
@@ -117,13 +125,31 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
                 });
     }
 
-    public void handleAuthenticationSuccess() {
+    private void handleUserInfo() {
+        String userId = FirebaseInitialization.getCurrentUser().getUid();
+        String userFullName = GoogleSignIn.getLastSignedInAccount(this).getDisplayName();
+        Uri userPhotoUrl = GoogleSignIn.getLastSignedInAccount(this).getPhotoUrl();
+
+        User user = new User(userId, userFullName, userPhotoUrl);
+        FirebaseInitialization.getUserDocumentReference().set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "User document set successfully");
+                } else {
+                    Log.e(TAG, "Error setting user document", task.getException());
+                }
+            }
+        });
+    }
+
+    private void handleAuthenticationSuccess() {
         Log.d(TAG, "Authentication successful.");
         Toast.makeText(this, "Authentication Successful", Toast.LENGTH_SHORT).show();
         startHomeActivity(); // Start HomeActivity after successful authentication
     }
 
-    public void handleAuthenticationFailure(Exception exception) {
+    private void handleAuthenticationFailure(Exception exception) {
         Log.e(TAG, "Authentication Failed: " + exception.getMessage(), exception);
     }
 

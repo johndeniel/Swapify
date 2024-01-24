@@ -1,6 +1,6 @@
 package Scent.Danielle.Utils;
 
-public class Items {
+public class Item {
     private String key;
     private String fullName;
     private String title;
@@ -8,11 +8,11 @@ public class Items {
     private String fileName;
     private String imageUrl;
 
-    public Items() {
+    public Item() {
         // Empty constructor required for Firebase
     }
 
-    public Items(String key, String fullName, String title, String description, String fileName, String imageUrl) {
+    public Item(String key, String fullName, String title, String description, String fileName, String imageUrl) {
         this.key = key;
         this.fullName = fullName;
         this.title = title;

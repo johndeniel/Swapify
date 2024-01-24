@@ -1,12 +1,15 @@
 package Scent.Danielle;
 
 // Android core components
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 // AndroidX components
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Custom class imports
-import Scent.Danielle.Utils.ChatAdapter;
-import Scent.Danielle.Utils.ChatItem;
+import Scent.Danielle.Utils.Chat;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MessageActivity extends Fragment {
 
@@ -32,30 +35,79 @@ public class MessageActivity extends Fragment {
         View rootView = inflater.inflate(R.layout.activity_message, container, false);
 
         // Create sample chat items
-        List<ChatItem> chatItems = new ArrayList<>();
-        chatItems.add(new ChatItem(R.drawable.about, "Alice", "Hi there! How's your day going? Everything alright?"));
-        chatItems.add(new ChatItem(R.drawable.about, "Bob", "Hey, how's it going? Long time no see!"));
-        chatItems.add(new ChatItem(R.drawable.about, "Charlie", "Hello from the other side. How's your family?"));
-        chatItems.add(new ChatItem(R.drawable.about, "David", "Long time no chat! We should catch up sometime."));
-        chatItems.add(new ChatItem(R.drawable.about, "Emily", "What's new with you? I heard you got a new job!"));
-        chatItems.add(new ChatItem(R.drawable.about, "Frank", "How's your day been? I'm planning a trip next month."));
-        chatItems.add(new ChatItem(R.drawable.about, "Grace", "Hey there! Remember that party last weekend? It was amazing!"));
-        chatItems.add(new ChatItem(R.drawable.about, "Henry", "Hi, hope you're doing well. I'm excited for the upcoming concert."));
-        chatItems.add(new ChatItem(R.drawable.about, "Ivy", "Hey, I found a great recipe. Let's try it when we meet."));
-        chatItems.add(new ChatItem(R.drawable.about, "Jack", "Hello! I just finished reading that book you recommended."));
-        chatItems.add(new ChatItem(R.drawable.about, "Kate", "Hi, how's your pet? I saw the cute pictures you posted."));
-        chatItems.add(new ChatItem(R.drawable.about, "Liam", "Hey, did you hear about the new cafe in town? Let's check it out."));
+        List<Chat> chats = new ArrayList<>();
+        chats.add(new Chat(R.drawable.about, "Alice", "Hi there! How's your day going? Everything alright?"));
 
         // Set up RecyclerView
         RecyclerView recyclerView = rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        ChatAdapter adapter = new ChatAdapter(chatItems);
+        ChatAdapter adapter = new ChatAdapter(chats);
         recyclerView.setAdapter(adapter);
 
         // Add divider decoration to RecyclerView
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
-        recyclerView.addItemDecoration(dividerItemDecoration);
+//        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
+//        recyclerView.addItemDecoration(dividerItemDecoration);
 
         return rootView;
+    }
+
+
+
+    private class ChatAdapter extends RecyclerView.Adapter<MessageActivity.ChatViewHolder> {
+
+        private final List<Chat> chats;
+
+        public ChatAdapter(List<Chat> chats) {
+            this.chats = chats;
+        }
+
+        @NonNull
+        @Override
+        public MessageActivity.ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            // Inflate the chat item layout and create a new ChatViewHolder
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chat, parent, false);
+            return new MessageActivity.ChatViewHolder(view);
+        }
+
+        // Bind data to the views within the ChatViewHolder
+        @Override
+        public void onBindViewHolder(@NonNull MessageActivity.ChatViewHolder holder, int position) {
+            Chat chat = this.chats.get(position);
+            holder.avatarImageView.setImageResource(chat.getAvatarResId());
+            holder.nameTextView.setText(chat.getName());
+            holder.messageTextView.setText(chat.getMessage());
+        }
+
+        // Return the number of chat items in the list
+        @Override
+        public int getItemCount() { return chats.size();}
+
+
+    }
+
+    private class ChatViewHolder extends RecyclerView.ViewHolder {
+        CircleImageView avatarImageView;
+        TextView nameTextView;
+        TextView messageTextView;
+
+        public ChatViewHolder(@NonNull View itemView) {
+            super(itemView);
+            // Initialize the views within the chat item layout
+            avatarImageView = itemView.findViewById(R.id.avatarImageView);
+            nameTextView = itemView.findViewById(R.id.nameTextView);
+            messageTextView = itemView.findViewById(R.id.messageTextView);
+
+            // Set click listener for the entire item view
+            itemView.setOnClickListener(view -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    Intent intent = new Intent(itemView.getContext(), ChatActivity.class);
+                    intent.putExtra("id", "6sKKu36sF4P5pqPRPwlhFTZvy122");
+                    intent.putExtra("name", "John Deniel");
+                    intent.putExtra("avatar", "avatar");
+                    startActivity(intent);
+                }
+            });
+        }
     }
 }

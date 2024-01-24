@@ -22,7 +22,7 @@
                     android:id="@+id/title_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Welcome to Danielle"
+                    android:text="Welcome to SwapNest"
                     android:textAppearance="?attr/textAppearanceHeadlineMedium"
                     android:textStyle="bold"
                     android:layout_centerHorizontal="true"
