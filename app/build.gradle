@@ -54,4 +54,7 @@ dependencies {
 
     implementation 'com.google.firebase:firebase-firestore:24.10.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+
+    implementation 'com.firebaseui:firebase-ui-firestore:8.0.2'
 }

@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -45,6 +46,10 @@ public class FirebaseInitialization {
     public static DocumentReference getChatroomReference(String chatroomId){
         return store.collection(CHATROOM_REFERENCE).document(chatroomId);
     }
+    public static CollectionReference getChatroomMessageReference(String chatroomId){
+        return getChatroomReference(chatroomId).collection(CHATROOM_REFERENCE);
+    }
+
 
 
     // FirebaseDatabase
