@@ -128,7 +128,7 @@ public class AuthActivity extends AppCompatActivity implements GoogleApiClient.O
     private void handleUserInfo() {
         String userId = FirebaseInitialization.getCurrentUser().getUid();
         String userFullName = GoogleSignIn.getLastSignedInAccount(this).getDisplayName();
-        Uri userPhotoUrl = GoogleSignIn.getLastSignedInAccount(this).getPhotoUrl();
+        String userPhotoUrl = GoogleSignIn.getLastSignedInAccount(this).getPhotoUrl().toString();
 
         User user = new User(userId, userFullName, userPhotoUrl);
         FirebaseInitialization.getUserDocumentReference().set(user).addOnCompleteListener(new OnCompleteListener<Void>() {

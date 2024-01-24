@@ -50,6 +50,10 @@ public class FirebaseInitialization {
         return getChatroomReference(chatroomId).collection(CHATROOM_REFERENCE);
     }
 
+    public static CollectionReference allUserCollectionReference(){
+        return FirebaseFirestore.getInstance().collection("users");
+    }
+
 
 
     // FirebaseDatabase

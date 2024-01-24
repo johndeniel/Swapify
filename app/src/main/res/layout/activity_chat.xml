@@ -1,20 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ChatActivity">
+
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary">
+
+            <LinearLayout
+                android:id="@+id/linearlayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical">
+
+                <ImageButton
+                    android:id="@+id/back_btn"
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:src="@drawable/back"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+                <ImageView
+                    android:id="@+id/profile_pic_layout"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:contentDescription="Profile Picture"
+                    android:src="@drawable/logo"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:id="@+id/other_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sample"
+                    android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+
+            </LinearLayout>
+
+        </androidx.appcompat.widget.Toolbar>
+
+
+
+
+
+
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/chat_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="8dp"
             android:layout_above="@id/bottom_layout"
-            android:id="@+id/chat_recycler_view"/>
+            android:layout_below="@id/topAppBar"
+            />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -39,18 +89,17 @@
                 android:id="@+id/chat_message_input"/>
 
             <ImageButton
+                android:id="@+id/message_send_btn"
+                android:src="@drawable/send"
+                android:padding="8dp"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/gallery"
                 android:layout_alignParentEnd="true"
                 android:layout_centerInParent="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:id="@+id/message_send_btn"
-                android:padding="8dp"
                 android:layout_marginStart="10dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 />
 
         </RelativeLayout>
-
     </RelativeLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

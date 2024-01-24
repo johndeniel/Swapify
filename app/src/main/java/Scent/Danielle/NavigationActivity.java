@@ -175,9 +175,8 @@ public class NavigationActivity extends AppCompatActivity {
 
     private void handleChatItemClick() {
         Log.d(TAG, "Chat item clicked");
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.content_frame, new MessageActivity())
-                .commit();
+        Intent intent = new Intent(this, MessageActivity.class);
+        startActivity(intent);
         drawerLayout.closeDrawer(GravityCompat.START);
     }
 

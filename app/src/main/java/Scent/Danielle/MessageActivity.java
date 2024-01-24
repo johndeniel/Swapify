@@ -1,113 +1,152 @@
 package Scent.Danielle;
 
-// Android core components
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Toast;
 
-// AndroidX components
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-// Java standard imports
-import java.util.ArrayList;
-import java.util.List;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.material.appbar.MaterialToolbar;
+import android.widget.SearchView;
+import com.google.firebase.firestore.Query;
 
-// Custom class imports
-import Scent.Danielle.Utils.Chat;
-import de.hdodenhof.circleimageview.CircleImageView;
+import Scent.Danielle.Utils.Database.FirebaseInitialization;
+import Scent.Danielle.Utils.SearchUserRecyclerAdapter;
+import Scent.Danielle.Utils.User;
 
-public class MessageActivity extends Fragment {
+public class MessageActivity extends AppCompatActivity {
 
-    public MessageActivity() {
-        // Required empty public constructor
+    private static final String TAG = MessageActivity.class.getSimpleName();
+    private RecyclerView recyclerView;
+    private SearchUserRecyclerAdapter adapter;
+    private MaterialToolbar chatTopAppBar;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_message);
+
+        initializeViews();
+
+        chatTopAppBar.setNavigationOnClickListener(this::handleBackItemClick);
+        SearchView searchView = (SearchView)  chatTopAppBar.findViewById(R.id.searches);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // Handle the query submission (optional)
+                if (isValidSearchTerm(query)) {
+                    Log.d(TAG, "Search query submitted: " + query);
+                    // Perform actions when the user submits the search query
+                    setupSearchRecyclerView(query);
+                } else {
+                 //   showToast("Invalid search term. Please enter at least 3 characters.");
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Handle the query text changes
+                if (isValidSearchTerm(newText)) {
+                    Log.d(TAG, "Search query entered: " + newText);
+                    // Perform actions as the user types in the search query
+                    setupSearchRecyclerView(newText);
+                } else {
+                   // showToast("Invalid search term. Please enter at least 3 characters.");
+                }
+                return true;
+            }
+        });
+
+
+
+    }
+
+
+    private void handleBackItemClick(View view) {
+        onBackPressed();
+    }
+
+    private void initializeViews() {
+        chatTopAppBar = findViewById(R.id.chatTopAppBar);
+        recyclerView = findViewById(R.id.search_user_recycler_view);
+    }
+
+    private boolean isValidSearchTerm(String searchTerm) {
+        return !searchTerm.isEmpty() && searchTerm.length() >= 3;
+    }
+
+    private void setupSearchRecyclerView(String searchTerm) {
+        try {
+            Query query = FirebaseInitialization.allUserCollectionReference()
+                    .whereGreaterThanOrEqualTo("fullName", searchTerm)
+                    .whereLessThanOrEqualTo("fullName", searchTerm + '\uf8ff');
+
+            FirestoreRecyclerOptions<User> options = new FirestoreRecyclerOptions.Builder<User>()
+                    .setQuery(query, User.class)
+                    .build();
+
+            adapter = new SearchUserRecyclerAdapter(options, this);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            recyclerView.setAdapter(adapter);
+            adapter.startListening();
+
+            Log.d(TAG, "Search RecyclerView set up for term: " + searchTerm);
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up RecyclerView", e);
+            showToast("An error occurred while setting up the search. Please try again.");
+        }
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.activity_message, container, false);
-
-        // Create sample chat items
-        List<Chat> chats = new ArrayList<>();
-        chats.add(new Chat(R.drawable.about, "Alice", "Hi there! How's your day going? Everything alright?"));
-
-        // Set up RecyclerView
-        RecyclerView recyclerView = rootView.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        ChatAdapter adapter = new ChatAdapter(chats);
-        recyclerView.setAdapter(adapter);
-
-        // Add divider decoration to RecyclerView
-//        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
-//        recyclerView.addItemDecoration(dividerItemDecoration);
-
-        return rootView;
+    protected void onStart() {
+        super.onStart();
+        startAdapterListening();
+        Log.d(TAG, "Activity started");
     }
 
-
-
-    private class ChatAdapter extends RecyclerView.Adapter<MessageActivity.ChatViewHolder> {
-
-        private final List<Chat> chats;
-
-        public ChatAdapter(List<Chat> chats) {
-            this.chats = chats;
-        }
-
-        @NonNull
-        @Override
-        public MessageActivity.ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            // Inflate the chat item layout and create a new ChatViewHolder
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chat, parent, false);
-            return new MessageActivity.ChatViewHolder(view);
-        }
-
-        // Bind data to the views within the ChatViewHolder
-        @Override
-        public void onBindViewHolder(@NonNull MessageActivity.ChatViewHolder holder, int position) {
-            Chat chat = this.chats.get(position);
-            holder.avatarImageView.setImageResource(chat.getAvatarResId());
-            holder.nameTextView.setText(chat.getName());
-            holder.messageTextView.setText(chat.getMessage());
-        }
-
-        // Return the number of chat items in the list
-        @Override
-        public int getItemCount() { return chats.size();}
-
-
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopAdapterListening();
+        Log.d(TAG, "Activity stopped");
     }
 
-    private class ChatViewHolder extends RecyclerView.ViewHolder {
-        CircleImageView avatarImageView;
-        TextView nameTextView;
-        TextView messageTextView;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startAdapterListening();
+        Log.d(TAG, "Activity resumed");
+    }
 
-        public ChatViewHolder(@NonNull View itemView) {
-            super(itemView);
-            // Initialize the views within the chat item layout
-            avatarImageView = itemView.findViewById(R.id.avatarImageView);
-            nameTextView = itemView.findViewById(R.id.nameTextView);
-            messageTextView = itemView.findViewById(R.id.messageTextView);
+    private void startAdapterListening() {
+        try {
+            if (adapter != null) {
+                adapter.startListening();
+                Log.d(TAG, "Adapter started listening");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error starting adapter listening", e);
+        }
+    }
 
-            // Set click listener for the entire item view
-            itemView.setOnClickListener(view -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    Intent intent = new Intent(itemView.getContext(), ChatActivity.class);
-                    intent.putExtra("id", "6sKKu36sF4P5pqPRPwlhFTZvy122");
-                    intent.putExtra("name", "John Deniel");
-                    intent.putExtra("avatar", "avatar");
-                    startActivity(intent);
-                }
-            });
+    private void stopAdapterListening() {
+        try {
+            if (adapter != null) {
+                adapter.stopListening();
+                Log.d(TAG, "Adapter stopped listening");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error stopping adapter listening", e);
         }
     }
 }
