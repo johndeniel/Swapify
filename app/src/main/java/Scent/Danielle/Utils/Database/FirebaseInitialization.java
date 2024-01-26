@@ -10,6 +10,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.List;
+
 public class FirebaseInitialization {
     private static final String USER_REFERENCE = "users";
     private static final String CHATROOM_REFERENCE = "chatroom";
@@ -52,6 +54,16 @@ public class FirebaseInitialization {
 
     public static CollectionReference allUserCollectionReference(){
         return FirebaseFirestore.getInstance().collection("users");
+    }
+    public static CollectionReference allChatroomCollectionReference(){
+        return FirebaseFirestore.getInstance().collection(CHATROOM_REFERENCE);
+    }
+    public static DocumentReference getOtherUserFromChatroom(List<String> userIds){
+        if(userIds.get(0).equals(userId)){
+            return allUserCollectionReference().document(userIds.get(1));
+        }else{
+            return allUserCollectionReference().document(userIds.get(0));
+        }
     }
 
 

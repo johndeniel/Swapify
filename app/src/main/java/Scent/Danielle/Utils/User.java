@@ -1,9 +1,6 @@
 package Scent.Danielle.Utils;
 
-import android.net.Uri;
-
 public class User {
-
     private String id;
     private String fullName;
     private String avatar;

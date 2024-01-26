@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/edit_text_rounded_corner"
-        android:backgroundTint="@color/black"
+        android:backgroundTint="@color/green"
         android:layout_alignParentEnd="true"
         android:padding="8dp"
         android:layout_marginStart="80dp"

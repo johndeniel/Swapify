@@ -15,8 +15,7 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary">
+            android:layout_height="?attr/actionBarSize">
 
             <LinearLayout
                 android:id="@+id/linearlayout"
@@ -28,34 +27,29 @@
                     android:id="@+id/back_btn"
                     android:layout_width="62dp"
                     android:layout_height="62dp"
-                    android:src="@drawable/back"
-                    android:background="?attr/selectableItemBackgroundBorderless" />
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/back" />
 
-                <ImageView
+                <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/profile_pic_layout"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:contentDescription="Profile Picture"
-                    android:src="@drawable/logo"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"/>
+                    android:scaleType="centerCrop"
+                    android:layout_gravity="center"
+                    android:src="@drawable/common_google_signin_btn_icon_light_normal"
+                    android:background="@drawable/circle" />
 
                 <TextView
                     android:id="@+id/other_username"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Sample"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
                     android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp" />
-
             </LinearLayout>
-
         </androidx.appcompat.widget.Toolbar>
-
-
-
-
-
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/chat_recycler_view"
@@ -86,6 +80,7 @@
                 android:elevation="4dp"
                 android:hint="Write message here"
                 android:padding="10dp"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
                 android:id="@+id/chat_message_input"/>
 
             <ImageButton
