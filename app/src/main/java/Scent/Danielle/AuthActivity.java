@@ -1,10 +1,8 @@
 package Scent.Danielle;
 
 // Android core components
-import static androidx.core.content.ContentProviderCompat.requireContext;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -34,7 +32,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
-import Scent.Danielle.Utils.User;
+import Scent.Danielle.Utils.DataModel.User;
 
 public class AuthActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 

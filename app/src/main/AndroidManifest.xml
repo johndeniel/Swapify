@@ -16,7 +16,7 @@
         android:theme="@style/Theme.Danielle"
         tools:targetApi="31">
         <activity
-            android:name=".ChatActivity"
+            android:name=".ConversationActivity"
             android:exported="false" />
         <activity
             android:name=".GalleryActivity"

@@ -4,38 +4,43 @@
     android:layout_height="wrap_content"
     android:padding="8dp">
 
+    <!-- Container for left message -->
     <LinearLayout
+        android:id="@+id/leftMessageContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:backgroundTint="@color/colorPrimary"
         android:padding="8dp"
         android:layout_marginEnd="80dp"
-        android:id="@+id/left_chat_layout"
-        android:orientation="vertical">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:text="Hello"
-            android:id="@+id/left_chat_textview"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorPrimary"
         android:background="@drawable/edit_text_rounded_corner"
-        android:backgroundTint="@color/green"
-        android:layout_alignParentEnd="true"
-        android:padding="8dp"
-        android:layout_marginStart="80dp"
-        android:id="@+id/right_chat_layout">
+        android:orientation="vertical">
+
+        <!-- Text view for left chat message -->
         <TextView
+            android:id="@+id/left_chat_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
             android:textSize="18sp"
-            android:id="@+id/right_chat_textview"/>
+            android:textColor="@color/white"/>
     </LinearLayout>
 
+    <!-- Container for right message -->
+    <LinearLayout
+        android:id="@+id/rightMessageContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:layout_marginStart="80dp"
+        android:backgroundTint="@color/green"
+        android:background="@drawable/edit_text_rounded_corner"
+        android:layout_alignParentEnd="true">
+
+        <!-- Text view for right chat message -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:id="@+id/right_chat_textview"/>
+    </LinearLayout>
 </RelativeLayout>

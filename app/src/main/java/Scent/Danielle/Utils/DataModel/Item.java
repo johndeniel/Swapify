@@ -1,4 +1,4 @@
-package Scent.Danielle.Utils;
+package Scent.Danielle.Utils.DataModel;
 
 public class Item {
     private String key;

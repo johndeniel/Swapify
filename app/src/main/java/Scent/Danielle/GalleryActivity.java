@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
-import Scent.Danielle.Utils.Item;
+import Scent.Danielle.Utils.DataModel.Item;
 
 public class GalleryActivity extends Fragment {
 

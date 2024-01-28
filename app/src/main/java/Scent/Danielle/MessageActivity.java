@@ -1,96 +1,97 @@
 package Scent.Danielle;
 
-import static java.security.AccessController.getContext;
-
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.SearchView;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.appbar.MaterialToolbar;
-import android.widget.SearchView;
 import com.google.firebase.firestore.Query;
-
-import Scent.Danielle.Utils.ChatroomModel;
+import de.hdodenhof.circleimageview.CircleImageView;
+import Scent.Danielle.Utils.DataModel.Chatroom;
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
-import Scent.Danielle.Utils.RecentChatRecyclerAdapter;
-import Scent.Danielle.Utils.SearchUserRecyclerAdapter;
-import Scent.Danielle.Utils.User;
+import Scent.Danielle.Utils.DataModel.User;
 
 public class MessageActivity extends AppCompatActivity {
 
     private static final String TAG = MessageActivity.class.getSimpleName();
-    private RecyclerView recyclerView;
-    private RecyclerView recentChats;
-    private SearchView searchView;
-    private SearchUserRecyclerAdapter adapter;
-    RecentChatRecyclerAdapter adapter2;
-    private MaterialToolbar chatTopAppBar;
-
+    private RecyclerView searchRecipientRecyclerView;
+    private RecyclerView recentChatRecyclerView;
+    private SearchRecipientRecyclerAdapter searchRecipientRecyclerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
 
-        // Initialize UI views
-        initializeViews();
-        // Setup listeners for UI elements
-        setupListeners();
+        handleSetupTopAppBar();
 
-        setupHistory();
-        handleSearchItemClick();
+        searchRecipientRecyclerView = findViewById(R.id.search_user_recycler_view);
+        recentChatRecyclerView = findViewById(R.id.recentChats);
+        handleRecentChatActivity();
     }
 
-    private void initializeViews() {
-        chatTopAppBar = findViewById(R.id.chatTopAppBar);
-        searchView = chatTopAppBar.findViewById(R.id.searches);
-        recyclerView = findViewById(R.id.search_user_recycler_view);
-        recentChats = findViewById(R.id.recentChats);
-    }
-
-    private void setupListeners() {
-        chatTopAppBar.setNavigationOnClickListener(this::handleBackItemClick);
-    }
-
-    private void handleBackItemClick(View view) {
-        onBackPressed();
-    }
-
-    private void setupHistory() {
-        Query query = FirebaseInitialization.allChatroomCollectionReference()
-                .whereArrayContains("userIds",FirebaseInitialization.getCurrentUserId())
-                .orderBy("lastMessageTimestamp",Query.Direction.DESCENDING);
-        FirestoreRecyclerOptions<ChatroomModel> options = new FirestoreRecyclerOptions.Builder<ChatroomModel>()
-                .setQuery(query, ChatroomModel.class).build();
-
-        adapter2 = new RecentChatRecyclerAdapter(options,this);
-        recentChats.setLayoutManager(new LinearLayoutManager(this));
-        recentChats.setAdapter(adapter2);
-        adapter2.startListening();
-    }
-
-    private void handleSearchItemClick() {
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+    private void handleSetupTopAppBar() {
+        MaterialToolbar chatTopAppBar = findViewById(R.id.chatTopAppBar);
+        SearchView searchRecipient = chatTopAppBar.findViewById(R.id.searches);
+        chatTopAppBar.setOnClickListener(view -> onBackPressed());
+        searchRecipient.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                setupSearchRecyclerView(query);
+            public boolean onQueryTextSubmit(String search) {
+                handleSearchRecipientResults(search);
                 return true;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                setupSearchRecyclerView(newText);
+            public boolean onQueryTextChange(String search) {
+                handleSearchRecipientResults(search);
                 return true;
             }
         });
     }
 
-    private void setupSearchRecyclerView(String searchTerm) {
+
+    private void handleRecentChatActivity() {
+        Query query = FirebaseInitialization.allChatroomCollectionReference()
+                .whereArrayContains("userIds", FirebaseInitialization.getCurrentUserId())
+                .orderBy("lastMessageTimestamp", Query.Direction.DESCENDING);
+
+        FirestoreRecyclerOptions<Chatroom> options = new FirestoreRecyclerOptions.Builder<Chatroom>()
+                .setQuery(query, Chatroom.class).build();
+
+        RecentChatRecyclerAdapter recentChatRecyclerAdapter = new RecentChatRecyclerAdapter(options, this);
+        recentChatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recentChatRecyclerView.setAdapter(recentChatRecyclerAdapter);
+        recentChatRecyclerAdapter.startListening();
+    }
+
+    private void handleSearchRecipientResults(String search) {
+        if(search.length() > 2){
+            handleSearchRecyclerView(search);
+        }else {
+            if (searchRecipientRecyclerAdapter != null) {
+                searchRecipientRecyclerAdapter.stopListening();
+                searchRecipientRecyclerAdapter = null;
+                searchRecipientRecyclerView.setAdapter(null);
+                Log.d(TAG, "Cleared search results");
+            }
+        }
+    }
+
+    private void handleSearchRecyclerView(String searchTerm) {
         try {
             Query query = FirebaseInitialization.allUserCollectionReference()
                     .whereGreaterThanOrEqualTo("fullName", searchTerm)
@@ -100,15 +101,145 @@ public class MessageActivity extends AppCompatActivity {
                     .setQuery(query, User.class)
                     .build();
 
-            adapter = new SearchUserRecyclerAdapter(options, this);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            recyclerView.setAdapter(adapter);
-            adapter.startListening();
+            searchRecipientRecyclerAdapter = new SearchRecipientRecyclerAdapter(options, this);
+            searchRecipientRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            searchRecipientRecyclerView.setAdapter(searchRecipientRecyclerAdapter);
+            searchRecipientRecyclerAdapter.startListening();
 
             Log.d(TAG, "Search RecyclerView set up for term: " + searchTerm);
         } catch (Exception e) {
             Log.e(TAG, "Error setting up RecyclerView", e);
+        }
+    }
 
+
+    private static class SearchRecipientRecyclerAdapter extends FirestoreRecyclerAdapter<User, MessageActivity.UserModelViewHolder> {
+        private final Context context;
+
+        public SearchRecipientRecyclerAdapter(@NonNull FirestoreRecyclerOptions<User> options, Context context) {
+            super(options);
+            this.context = context;
+        }
+
+        @NonNull
+        @Override
+        public MessageActivity.UserModelViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_chat, parent, false);
+            return new MessageActivity.UserModelViewHolder(view, context);
+        }
+
+        @Override
+        protected void onBindViewHolder(@NonNull MessageActivity.UserModelViewHolder holder, int position, @NonNull User model) {
+            holder.bindItem(model);
+        }
+    }
+
+
+    private static class UserModelViewHolder extends RecyclerView.ViewHolder{
+        CircleImageView avatarImageView;
+        TextView nameTextView;
+        TextView messageTextView;
+        Context context;
+
+        public UserModelViewHolder(@NonNull View itemView,  Context context) {
+            super(itemView);
+            this.context = context;
+            avatarImageView = itemView.findViewById(R.id.avatarImageView);
+            nameTextView = itemView.findViewById(R.id.nameTextView);
+            messageTextView = itemView.findViewById(R.id.messageTextView);
+        }
+
+        private void bindItem(@NonNull User model) {
+            Glide.with(context)
+                    .load(model.getAvatar())
+                    .into(avatarImageView);
+
+            nameTextView.setText(model.getFullName());
+            messageTextView.setText("empty");
+
+            itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, ConversationActivity.class);
+                intent.putExtra("id", model.getId());
+                intent.putExtra("name", model.getFullName());
+                intent.putExtra("avatar", model.getAvatar());
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            });
+        }
+    }
+
+
+    public static class RecentChatRecyclerAdapter extends FirestoreRecyclerAdapter<Chatroom, MessageActivity.ChatroomModelViewHolder> {
+        private final Context context;
+
+        public RecentChatRecyclerAdapter(@NonNull FirestoreRecyclerOptions<Chatroom> options, Context context) {
+            super(options);
+            this.context = context;
+        }
+
+        @NonNull
+        @Override
+        public MessageActivity.ChatroomModelViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_chat, parent, false);
+            return new ChatroomModelViewHolder(view, context);
+        }
+
+        @Override
+        protected void onBindViewHolder(@NonNull MessageActivity.ChatroomModelViewHolder holder, int position, @NonNull Chatroom model) {
+            holder.bindItem(model);
+        }
+    }
+
+
+    private static class ChatroomModelViewHolder extends RecyclerView.ViewHolder {
+        CircleImageView avatarImageView;
+        TextView nameTextView;
+        TextView messageTextView;
+        Context context;
+
+        public ChatroomModelViewHolder(@NonNull View itemView, Context context) {
+            super(itemView);
+            this.context = context;
+            avatarImageView = itemView.findViewById(R.id.avatarImageView);
+            nameTextView = itemView.findViewById(R.id.nameTextView);
+            messageTextView = itemView.findViewById(R.id.messageTextView);
+        }
+
+        private void bindItem(@NonNull Chatroom model) {
+            FirebaseInitialization.getOtherUserFromChatroom(model.getUserIds())
+                    .get().addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            try {
+                                User otherUserModel = task.getResult().toObject(User.class);
+
+                                Glide.with(context)
+                                        .load(otherUserModel.getAvatar())
+                                        .into(avatarImageView);
+
+                                nameTextView.setText(otherUserModel.getFullName());
+
+                                boolean lastMessageSentByMe = model.getLastMessageSenderId().equals(FirebaseInitialization.getCurrentUserId());
+                                String messageText = lastMessageSentByMe ? "You : " + model.getLastMessage() : model.getLastMessage();
+                                messageTextView.setText(messageText);
+
+                                Log.d(TAG, "Setting Message: " + messageText);
+
+                                itemView.setOnClickListener(v -> {
+                                    Intent intent = new Intent(context, ConversationActivity.class);
+                                    intent.putExtra("id", otherUserModel.getId());
+                                    intent.putExtra("name", otherUserModel.getFullName());
+                                    intent.putExtra("avatar", otherUserModel.getAvatar());
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    context.startActivity(intent);
+                                });
+
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error processing user data", e);
+                            }
+                        } else {
+                            Log.e(TAG, "Error getting other user data: " + task.getException());
+                        }
+                    });
         }
     }
 }

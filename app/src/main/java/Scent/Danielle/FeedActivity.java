@@ -47,7 +47,7 @@ import java.util.List;
 
 // Custom class imports
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
-import Scent.Danielle.Utils.Item;
+import Scent.Danielle.Utils.DataModel.Item;
 
 public class FeedActivity extends Fragment {
     private final String TAG = FeedActivity.class.getSimpleName();

@@ -1,20 +1,21 @@
-package Scent.Danielle.Utils;
+package Scent.Danielle.Utils.DataModel;
 
 import com.google.firebase.Timestamp;
 
 import java.util.List;
 
-public class ChatroomModel {
+public class Chatroom {
     String chatroomId;
     List<String> userIds;
     Timestamp lastMessageTimestamp;
     String lastMessageSenderId;
     String lastMessage;
 
-    public ChatroomModel() {
+    public Chatroom() {
+        // Required empty public constructor
     }
 
-    public ChatroomModel(String chatroomId, List<String> userIds, Timestamp lastMessageTimestamp, String lastMessageSenderId) {
+    public Chatroom(String chatroomId, List<String> userIds, Timestamp lastMessageTimestamp, String lastMessageSenderId) {
         this.chatroomId = chatroomId;
         this.userIds = userIds;
         this.lastMessageTimestamp = lastMessageTimestamp;

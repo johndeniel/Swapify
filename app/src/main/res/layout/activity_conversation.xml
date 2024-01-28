@@ -5,13 +5,14 @@
     android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ChatActivity">
+    tools:context=".ConversationActivity">
 
-
+    <!-- Top app bar section -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <!-- Toolbar with back button, profile picture, and username -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
@@ -23,51 +24,56 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical">
 
+                <!-- Back button -->
                 <ImageButton
-                    android:id="@+id/back_btn"
+                    android:id="@+id/backButton"
                     android:layout_width="62dp"
                     android:layout_height="62dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/back" />
 
+                <!-- Profile picture -->
                 <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/profile_pic_layout"
+                    android:id="@+id/recipientProfileImageView"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:contentDescription="Profile Picture"
                     android:scaleType="centerCrop"
                     android:layout_gravity="center"
                     android:src="@drawable/common_google_signin_btn_icon_light_normal"
                     android:background="@drawable/circle" />
 
+                <!-- Username -->
                 <TextView
-                    android:id="@+id/other_username"
+                    android:id="@+id/recipientUsernameTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Sample"
                     android:textAppearance="?attr/textAppearanceTitleMedium"
                     android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp" />
+                    android:layout_marginEnd="8dp" />
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 
+        <!-- RecyclerView for displaying chat messages -->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/chat_recycler_view"
+            android:id="@+id/conversationRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="8dp"
             android:layout_above="@id/bottom_layout"
-            android:layout_below="@id/topAppBar"
-            />
+            android:layout_below="@id/topAppBar" />
 
+        <!-- Bottom layout containing message input and send button -->
         <RelativeLayout
+            android:id="@+id/bottom_layout"
             android:layout_width="match_parent"
             android:layout_height="80dp"
             android:layout_alignParentBottom="true"
-            android:padding="8dp"
-            android:id="@+id/bottom_layout">
+            android:padding="8dp">
 
+            <!-- Message input field -->
             <EditText
+                android:id="@+id/chat_message_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
@@ -75,26 +81,24 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="10dp"
-                android:layout_toLeftOf="@id/message_send_btn"
+                android:layout_toLeftOf="@id/sendMessageButton"
                 android:background="@drawable/edit_text_rounded_corner"
                 android:elevation="4dp"
                 android:hint="Write message here"
                 android:padding="10dp"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:id="@+id/chat_message_input"/>
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
 
+            <!-- Send button -->
             <ImageButton
-                android:id="@+id/message_send_btn"
-                android:src="@drawable/send"
-                android:padding="8dp"
+                android:id="@+id/sendMessageButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerInParent="true"
                 android:layout_marginStart="10dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                />
-
+                android:padding="8dp"
+                android:src="@drawable/send" />
         </RelativeLayout>
     </RelativeLayout>
 </RelativeLayout>
