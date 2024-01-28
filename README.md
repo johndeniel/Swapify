@@ -1,10 +1,11 @@
-# Danielle Barter App
+# Swapify Barter App
 
-Welcome to the Danielle Barter App – your premier platform for modern bartering and trading. Step into a realm of smart exchanges, tailor-made for individuals who value the art of swapping goods and services. Discover a dynamic marketplace where you can redefine the way you acquire what you desire. Elevate your personal interactions and create meaningful connections through our meticulously designed bartering platform. Whether you're seeking unique items or offering your specialized skills, the Danielle Barter App is your gateway to a new world of exchange.
+Welcome to the Swapify Barter App – your premier platform for modern bartering and trading. Step into a realm of smart exchanges, tailor-made for individuals who value the art of swapping goods and services. Discover a dynamic marketplace where you can redefine the way you acquire what you desire. Elevate your personal interactions and create meaningful connections through our meticulously designed bartering platform. Whether you're seeking unique items or offering your specialized skills, the Swapify Barter App is your gateway to a new world of exchange.
 
 ## Key Features
 - Sign in With Google
 - Firebase Authentication
+- Firebase Cloud Firestore
 - Firebase Realtime Database
 - Firebase Storage
 
@@ -33,11 +34,28 @@ Follow these steps to seamlessly integrate Firebase services, including Google A
    - Click on the "Sign-in method" tab.
    - Enable the "Google" sign-in provider and save your changes.
 
-5. **Enable Real-Time Database:**
+
+5. **Enable Firestore Database:**
+
+   - In the Firebase Console, navigate to the "Firestore" section.
+   - Set up your database rules and configure the database according to your app's needs.
+
+    ```firebase
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /{document=**} {
+          allow read, write: if request.auth != null;
+        }
+      }
+    }
+    ```
+
+6. **Enable Real-Time Database:**
 
    - In the Firebase Console, navigate to the "Database" section.
-   - Choose the "Real-Time Database" option.
    - Set up your database rules and configure the database according to your app's needs.
+
     ```json
     {
       "rules": {
@@ -47,10 +65,10 @@ Follow these steps to seamlessly integrate Firebase services, including Google A
     }
     ```
 
-6. **Enable Storage:**
+7. **Enable Storage:**
 
    - In the Firebase Console, navigate to the "Storage" section.
-   - Set up your storage rules and start using Firebase Storage to store and manage your app's files.
+   - Set up your database rules and configure the database according to your app's needs.
 
     ```firebase
     rules_version = '2';

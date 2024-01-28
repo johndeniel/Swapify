@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Danielle</string>
+    <string name="app_name">Swapify</string>
+    <string name="welcome_screen">Welcome to Swapify</string>
 </resources>
