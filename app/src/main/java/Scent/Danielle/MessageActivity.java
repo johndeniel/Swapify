@@ -50,13 +50,13 @@ public class MessageActivity extends AppCompatActivity {
         chatTopAppBar.setOnClickListener(view -> onBackPressed());
         searchRecipient.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String search) {
+            public boolean onQueryTextSubmit(final String search) {
                 handleSearchRecipientResults(search);
                 return true;
             }
 
             @Override
-            public boolean onQueryTextChange(String search) {
+            public boolean onQueryTextChange(final String search) {
                 handleSearchRecipientResults(search);
                 return true;
             }
@@ -78,7 +78,7 @@ public class MessageActivity extends AppCompatActivity {
         recentChatRecyclerAdapter.startListening();
     }
 
-    private void handleSearchRecipientResults(String search) {
+    private void handleSearchRecipientResults(final String search) {
         if(search.length() > 2){
             handleSearchRecyclerView(search);
         }else {
@@ -91,11 +91,11 @@ public class MessageActivity extends AppCompatActivity {
         }
     }
 
-    private void handleSearchRecyclerView(String searchTerm) {
+    private void handleSearchRecyclerView(final String search) {
         try {
             Query query = FirebaseInitialization.allUserCollectionReference()
-                    .whereGreaterThanOrEqualTo("fullName", searchTerm)
-                    .whereLessThanOrEqualTo("fullName", searchTerm + '\uf8ff');
+                    .whereGreaterThanOrEqualTo("fullName", search)
+                    .whereLessThanOrEqualTo("fullName", search + '\uf8ff');
 
             FirestoreRecyclerOptions<User> options = new FirestoreRecyclerOptions.Builder<User>()
                     .setQuery(query, User.class)
@@ -105,8 +105,7 @@ public class MessageActivity extends AppCompatActivity {
             searchRecipientRecyclerView.setLayoutManager(new LinearLayoutManager(this));
             searchRecipientRecyclerView.setAdapter(searchRecipientRecyclerAdapter);
             searchRecipientRecyclerAdapter.startListening();
-
-            Log.d(TAG, "Search RecyclerView set up for term: " + searchTerm);
+            Log.d(TAG, "Search RecyclerView set up for term: " + search);
         } catch (Exception e) {
             Log.e(TAG, "Error setting up RecyclerView", e);
         }
@@ -116,7 +115,7 @@ public class MessageActivity extends AppCompatActivity {
     private static class SearchRecipientRecyclerAdapter extends FirestoreRecyclerAdapter<User, MessageActivity.UserModelViewHolder> {
         private final Context context;
 
-        public SearchRecipientRecyclerAdapter(@NonNull FirestoreRecyclerOptions<User> options, Context context) {
+        public SearchRecipientRecyclerAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull Context context) {
             super(options);
             this.context = context;
         }
@@ -136,12 +135,12 @@ public class MessageActivity extends AppCompatActivity {
 
 
     private static class UserModelViewHolder extends RecyclerView.ViewHolder{
-        CircleImageView avatarImageView;
-        TextView nameTextView;
-        TextView messageTextView;
-        Context context;
+        private final CircleImageView avatarImageView;
+        private final TextView nameTextView;
+        private final TextView messageTextView;
+        private final Context context;
 
-        public UserModelViewHolder(@NonNull View itemView,  Context context) {
+        public UserModelViewHolder(@NonNull View itemView, @NonNull Context context) {
             super(itemView);
             this.context = context;
             avatarImageView = itemView.findViewById(R.id.avatarImageView);
@@ -172,7 +171,7 @@ public class MessageActivity extends AppCompatActivity {
     public static class RecentChatRecyclerAdapter extends FirestoreRecyclerAdapter<Chatroom, MessageActivity.ChatroomModelViewHolder> {
         private final Context context;
 
-        public RecentChatRecyclerAdapter(@NonNull FirestoreRecyclerOptions<Chatroom> options, Context context) {
+        public RecentChatRecyclerAdapter(@NonNull FirestoreRecyclerOptions<Chatroom> options, @NonNull Context context) {
             super(options);
             this.context = context;
         }
@@ -192,12 +191,12 @@ public class MessageActivity extends AppCompatActivity {
 
 
     private static class ChatroomModelViewHolder extends RecyclerView.ViewHolder {
-        CircleImageView avatarImageView;
-        TextView nameTextView;
-        TextView messageTextView;
-        Context context;
+        private final CircleImageView avatarImageView;
+        private final TextView nameTextView;
+        private final TextView messageTextView;
+        private final Context context;
 
-        public ChatroomModelViewHolder(@NonNull View itemView, Context context) {
+        public ChatroomModelViewHolder(@NonNull View itemView, @NonNull Context context) {
             super(itemView);
             this.context = context;
             avatarImageView = itemView.findViewById(R.id.avatarImageView);
@@ -211,28 +210,7 @@ public class MessageActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             try {
                                 User otherUserModel = task.getResult().toObject(User.class);
-
-                                Glide.with(context)
-                                        .load(otherUserModel.getAvatar())
-                                        .into(avatarImageView);
-
-                                nameTextView.setText(otherUserModel.getFullName());
-
-                                boolean lastMessageSentByMe = model.getLastMessageSenderId().equals(FirebaseInitialization.getCurrentUserId());
-                                String messageText = lastMessageSentByMe ? "You : " + model.getLastMessage() : model.getLastMessage();
-                                messageTextView.setText(messageText);
-
-                                Log.d(TAG, "Setting Message: " + messageText);
-
-                                itemView.setOnClickListener(v -> {
-                                    Intent intent = new Intent(context, ConversationActivity.class);
-                                    intent.putExtra("id", otherUserModel.getId());
-                                    intent.putExtra("name", otherUserModel.getFullName());
-                                    intent.putExtra("avatar", otherUserModel.getAvatar());
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    context.startActivity(intent);
-                                });
-
+                                setupViews(otherUserModel, model);
                             } catch (Exception e) {
                                 Log.e(TAG, "Error processing user data", e);
                             }
@@ -240,6 +218,38 @@ public class MessageActivity extends AppCompatActivity {
                             Log.e(TAG, "Error getting other user data: " + task.getException());
                         }
                     });
+        }
+
+        private void setupViews(@NonNull User otherUserModel, @NonNull Chatroom model) {
+            // Display user information
+            Glide.with(context)
+                    .load(otherUserModel.getAvatar())
+                    .into(avatarImageView);
+            nameTextView.setText(otherUserModel.getFullName());
+
+            // Set message text appropriately
+            String messageText = buildMessageText(model);
+            messageTextView.setText(messageText);
+
+            // Log for debugging
+            Log.d(TAG, "Setting Message: " + messageText);
+
+            // Set click listener for conversation
+            itemView.setOnClickListener(v -> navigateToConversation(otherUserModel));
+        }
+
+        private String buildMessageText(@NonNull Chatroom model) {
+            boolean lastMessageSentByMe = model.getLastMessageSenderId().equals(FirebaseInitialization.getCurrentUserId());
+            return lastMessageSentByMe ? "You: " + model.getLastMessage() : model.getLastMessage();
+        }
+
+        private void navigateToConversation(@NonNull User otherUserModel) {
+            Intent intent = new Intent(context, ConversationActivity.class);
+            intent.putExtra("id", otherUserModel.getId());
+            intent.putExtra("name", otherUserModel.getFullName());
+            intent.putExtra("avatar", otherUserModel.getAvatar());
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
         }
     }
 }

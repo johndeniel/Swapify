@@ -64,7 +64,7 @@ public class NavigationActivity extends AppCompatActivity {
         // If no saved instance state, replace content frame with FeedActivity
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.content_frame, new FeedActivity())
+                    .replace(R.id.content_frame, new SwipeActivity())
                     .commit();
         }
     }
@@ -138,8 +138,8 @@ public class NavigationActivity extends AppCompatActivity {
     private boolean handleNavigationItemClick(MenuItem menuItem) {
         int itemId = menuItem.getItemId();
 
-        if (itemId == R.id.feed) {
-            handleFeedItemClick();
+        if (itemId == R.id.swipe) {
+            handleSwipeItemClick();
             return true;
         } else if (itemId == R.id.gallery) {
             handleGalleryItemClick();
@@ -157,10 +157,10 @@ public class NavigationActivity extends AppCompatActivity {
         return false;
     }
 
-    private void handleFeedItemClick() {
-        Log.d(TAG, "Feed item clicked");
+    private void handleSwipeItemClick() {
+        Log.d(TAG, "Swipe item clicked");
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.content_frame, new FeedActivity())
+                .replace(R.id.content_frame, new SwipeActivity())
                 .commit();
         drawerLayout.closeDrawer(GravityCompat.START);
     }
@@ -218,7 +218,7 @@ public class NavigationActivity extends AppCompatActivity {
         FirebaseAuth.getInstance().signOut();
 
         // Start AuthActivity and finish current activity
-        Intent intent = new Intent(this, AuthActivity.class);
+        Intent intent = new Intent(this, AuthenticationActivity.class);
         startActivity(intent);
         finish();
     }

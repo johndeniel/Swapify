@@ -1,6 +1,8 @@
 package Scent.Danielle;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,18 +11,24 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +39,13 @@ import Scent.Danielle.Utils.DataModel.Item;
 public class GalleryActivity extends Fragment {
 
     private final String TAG = GalleryActivity.class.getSimpleName();
+    private static final int PICK_IMAGE_REQUEST = 1;
     private final List<Item> itemList = new ArrayList<>();
     private ItemGalleryAdapter galleryAdapter;
+    private ImageView uploadImageView;
+    private Uri imageUri;
+    private EditText titleEditText;
+    private EditText descriptionEditText;
 
 
     // Define a callback interface
@@ -47,10 +60,21 @@ public class GalleryActivity extends Fragment {
         void deleteItemFromStorageUploadImage(final String fileName);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == requireActivity().RESULT_OK && data != null && data.getData() != null) {
+            imageUri = data.getData();
+            Glide.with(this).load(imageUri).into(uploadImageView);
+        }
+    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.activity_gallery, container, false);
+
+        ExtendedFloatingActionButton extendedFab = rootView.findViewById(R.id.extended_fab);
+        extendedFab.setOnClickListener(view -> showAddItemDialog(inflater, container));
 
         RecyclerView itemGalleryRecyclerView = rootView.findViewById(R.id.galleryRecyclerView);
         itemGalleryRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -67,8 +91,7 @@ public class GalleryActivity extends Fragment {
         return rootView;
     }
 
-
-    private void fetchGalleryItemKeys(GalleryItemKeysCallback callback) {
+    private void fetchGalleryItemKeys(final GalleryItemKeysCallback callback) {
         ArrayList<String> galleryItemKeys = new ArrayList<>();
         FirebaseInitialization.getGalleryDatabaseReference().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -88,8 +111,7 @@ public class GalleryActivity extends Fragment {
         });
     }
 
-
-    private void loadGalleryItems(ArrayList<String> galleryItemKeys) {
+    private void loadGalleryItems(final ArrayList<String> galleryItemKeys) {
         FirebaseInitialization.getItemsDatabaseReference().addValueEventListener(new ValueEventListener() {
             @SuppressLint("NotifyDataSetChanged")
             @Override
@@ -111,8 +133,7 @@ public class GalleryActivity extends Fragment {
         });
     }
 
-
-    private void updateItemFromLocalListAndFirebase(ViewGroup container, int position, Item currentItem) {
+    private void updateItemFromLocalListAndFirebase(@NonNull ViewGroup container, int position, @NonNull Item currentItem) {
         View dialogView = LayoutInflater.from(getContext())
                 .inflate(R.layout.item_update, container, false);
 
@@ -138,7 +159,6 @@ public class GalleryActivity extends Fragment {
                 .show();
     }
 
-
     private void deleteItemFromLocalListAndFirebase(int position) {
         // Get the item key from the list
         String itemKey = itemList.get(position).getKey();
@@ -158,6 +178,79 @@ public class GalleryActivity extends Fragment {
                 })
                 .setNegativeButton("No", null)
                 .show();
+    }
+
+    private void showAddItemDialog(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
+        Log.d(TAG, "Showing Add Item dialog");
+        View dialogView = inflater.inflate(R.layout.item_upload, container, false);
+        titleEditText = dialogView.findViewById(R.id.title_edit_text);
+        descriptionEditText = dialogView.findViewById(R.id.description_edit_text);
+        uploadImageView = dialogView.findViewById(R.id.uploadImageView);
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Add New Item")
+                .setView(dialogView)
+                .setPositiveButton("Submit", (dialog, which) -> uploadFile())
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
+
+        uploadImageView.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            startActivityForResult(intent, PICK_IMAGE_REQUEST);
+        });
+    }
+
+    private void uploadFile() {
+        // Gather necessary information before starting the upload process
+        String title = titleEditText.getText().toString().trim();
+        String description = descriptionEditText.getText().toString().trim();
+
+        // Ensure all required fields are present
+        if (imageUri == null) {
+            Toast.makeText(requireActivity(), "Please select an image", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (title.isEmpty()) {
+            Toast.makeText(requireActivity(), "Please enter a title", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (description.isEmpty()) {
+            Toast.makeText(requireActivity(), "Please enter a description", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String uniqueFileName = "image_" + System.currentTimeMillis() + ".jpg";
+        StorageReference storageReference = FirebaseInitialization.getPhotoStorageReferences().child(uniqueFileName);
+
+        // Initiate file upload with chained success and failure listeners
+        UploadTask uploadTask = storageReference.putFile(imageUri);
+        uploadTask.continueWithTask(task -> storageReference.getDownloadUrl())
+                .addOnCompleteListener(task -> {
+                    try {
+                        String key = FirebaseInitialization.getItemsDatabaseReference().push().getKey();
+                        String fullName = GoogleSignIn.getLastSignedInAccount(requireContext()).getDisplayName();
+                        String imageUrl = task.getResult().toString();
+
+                        // Create and store the upload data
+                        Item upload = new Item(key, fullName, title, description, uniqueFileName, imageUrl);
+                        FirebaseInitialization.getItemsDatabaseReference().child(key).setValue(upload)
+                                .addOnCompleteListener(databaseTask -> {
+                                    if (databaseTask.isSuccessful()) {
+                                        FirebaseInitialization.getGalleryDatabaseReference().push().setValue(key);
+                                        itemList.add(upload);
+                                        // Notify the adapter that a new item has been inserted
+                                        galleryAdapter.notifyItemInserted(itemList.size() - 1);
+                                        Toast.makeText(requireActivity(), "Upload Successful", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Log.e(TAG, "Upload failed: " + databaseTask.getException().getMessage());
+                                    }
+                                });
+                    } catch (Exception e) {
+                        Log.e(TAG, "Upload failed: " + e.getMessage());
+                    }
+                }).addOnFailureListener(e -> Log.e(TAG, "Upload failed: " + e.getMessage()));
     }
 
 
@@ -228,9 +321,12 @@ public class GalleryActivity extends Fragment {
 
 
     private class ItemViewHolder extends RecyclerView.ViewHolder {
-        ImageView mediaImageView;
-        TextView titleTextView, nameTextView, descriptionTextView;
-        MaterialButton editButton, deleteButton;
+        private final ImageView mediaImageView;
+        private final TextView titleTextView;
+        private final TextView nameTextView;
+        private final TextView descriptionTextView;
+        private final MaterialButton editButton;
+        private final MaterialButton deleteButton;
 
         private ItemViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -242,7 +338,7 @@ public class GalleryActivity extends Fragment {
             deleteButton = itemView.findViewById(R.id.deleteButton);
         }
 
-        private void bindItem(Item currentItem) {
+        private void bindItem(@NonNull Item currentItem) {
             titleTextView.setText(currentItem.getTitle());
             nameTextView.setText("By: " + currentItem.getFullName());
             descriptionTextView.setText(currentItem.getDescription());

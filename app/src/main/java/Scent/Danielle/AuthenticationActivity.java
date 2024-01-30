@@ -34,10 +34,10 @@ import com.google.android.gms.tasks.Task;
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
 import Scent.Danielle.Utils.DataModel.User;
 
-public class AuthActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
+public class AuthenticationActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     // Constants
-    public static final String TAG = AuthActivity.class.getSimpleName();
+    public static final String TAG = AuthenticationActivity.class.getSimpleName();
     public static final int RC_SIGN_IN = 9001;
 
     // Authentication

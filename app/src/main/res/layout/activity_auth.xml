@@ -9,7 +9,7 @@
     android:paddingEnd="16dp"
     android:paddingTop="32dp"
     android:paddingBottom="32dp"
-    tools:context=".AuthActivity">
+    tools:context=".AuthenticationActivity">
 
         <!-- Relative Layout for content -->
         <RelativeLayout

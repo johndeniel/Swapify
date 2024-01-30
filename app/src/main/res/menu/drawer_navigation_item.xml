@@ -8,9 +8,9 @@
         <menu>
             <!-- Feed Item -->
             <item
-                android:id="@+id/feed"
+                android:id="@+id/swipe"
                 android:icon="@drawable/logo"
-                android:title="Feed"
+                android:title="Swipe"
                 app:showAsAction="ifRoom"/>
 
             <!-- Gallery Item -->

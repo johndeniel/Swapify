@@ -28,7 +28,7 @@
             android:name=".AboutActivity"
             android:exported="false" />
         <activity
-            android:name=".FeedActivity"
+            android:name=".SwipeActivity"
             android:exported="false" />
         <activity
             android:name=".MessageActivity"
@@ -38,7 +38,7 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".AuthActivity"
+            android:name=".AuthenticationActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
