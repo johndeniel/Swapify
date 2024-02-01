@@ -24,8 +24,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -47,16 +50,9 @@ public class GalleryActivity extends Fragment {
     private EditText titleEditText;
     private EditText descriptionEditText;
 
-
-    // Define a callback interface
-    interface GalleryItemKeysCallback {
-        void onGalleryItemKeysLoaded(ArrayList<String> galleryItemKeys);
-    }
-
     // Define a methods for deleting data in Firebase
     interface FirebaseDataDeletionService {
         void deleteItemFromUserItems(final String itemKey);
-        void deleteItemFromUserGallery(final String itemKey);
         void deleteItemFromStorageUploadImage(final String fileName);
     }
 
@@ -81,57 +77,35 @@ public class GalleryActivity extends Fragment {
         galleryAdapter = new ItemGalleryAdapter(itemList);
         itemGalleryRecyclerView.setAdapter(galleryAdapter);
 
-        fetchGalleryItemKeys(new GalleryItemKeysCallback() {
-            @Override
-            public void onGalleryItemKeysLoaded(ArrayList<String> galleryItemKeys) {
-                loadGalleryItems(galleryItemKeys);
-            }
-        });
-
+        loadGalleryItems();
         return rootView;
     }
 
-    private void fetchGalleryItemKeys(final GalleryItemKeysCallback callback) {
-        ArrayList<String> galleryItemKeys = new ArrayList<>();
-        FirebaseInitialization.getGalleryDatabaseReference().addListenerForSingleValueEvent(new ValueEventListener() {
+    private void loadGalleryItems() {
+        DatabaseReference databaseReference = FirebaseInitialization.getItemsDatabaseReference();
+        String currentUserID = FirebaseInitialization.getCurrentUserId();
+        Query query = databaseReference.orderByChild("userId").equalTo(currentUserID);
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                itemList.clear(); // Clear the existing list
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    String galleryItemKey = snapshot.getValue(String.class);
-                    galleryItemKeys.add(galleryItemKey);
-                    Log.i("GalleryData", "Fetched gallery item key: " + galleryItemKey);
-                }
-                callback.onGalleryItemKeysLoaded(galleryItemKeys);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.e("FirebaseError", "Error fetching gallery item keys: " + databaseError.getMessage());
-            }
-        });
-    }
-
-    private void loadGalleryItems(final ArrayList<String> galleryItemKeys) {
-        FirebaseInitialization.getItemsDatabaseReference().addValueEventListener(new ValueEventListener() {
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                itemList.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    if (galleryItemKeys.contains(snapshot.getKey())) {
-                        Item galleryItem = snapshot.getValue(Item.class);
-                        itemList.add(galleryItem);
+                    Item item = snapshot.getValue(Item.class);
+                    if (item != null) {
+                        itemList.add(item);
                     }
                 }
-                galleryAdapter.notifyDataSetChanged();
+                galleryAdapter.notifyDataSetChanged(); // Notify the adapter of changes
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.e("FirebaseError", "Error loading gallery items: " + databaseError.getMessage());
+                Log.e(TAG, "Error loading gallery items: " + databaseError.getMessage());
+                // Handle the error (e.g., show a toast)
             }
         });
     }
+
 
     private void updateItemFromLocalListAndFirebase(@NonNull ViewGroup container, int position, @NonNull Item currentItem) {
         View dialogView = LayoutInflater.from(getContext())
@@ -154,6 +128,7 @@ public class GalleryActivity extends Fragment {
                     String description = descriptionEditText.getText().toString();
                     FirebaseInitialization.getItemsDatabaseReference().child(itemKey).child("title").setValue(title);
                     FirebaseInitialization.getItemsDatabaseReference().child(itemKey).child("description").setValue(description);
+                    Toast.makeText(requireActivity(), "Update Successful", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -173,7 +148,6 @@ public class GalleryActivity extends Fragment {
 
                     FirebaseDataDeletionManager purgeExecutor = new FirebaseDataDeletionManager();
                     purgeExecutor.deleteItemFromUserItems(itemKey);
-                    purgeExecutor.deleteItemFromUserGallery(itemKey);
                     purgeExecutor.deleteItemFromStorageUploadImage(fileName);
                 })
                 .setNegativeButton("No", null)
@@ -232,16 +206,13 @@ public class GalleryActivity extends Fragment {
                         String key = FirebaseInitialization.getItemsDatabaseReference().push().getKey();
                         String fullName = GoogleSignIn.getLastSignedInAccount(requireContext()).getDisplayName();
                         String imageUrl = task.getResult().toString();
+                        String userId = FirebaseInitialization.getCurrentUserId();
 
                         // Create and store the upload data
-                        Item upload = new Item(key, fullName, title, description, uniqueFileName, imageUrl);
+                        Item upload = new Item(key, userId, fullName, title, description, uniqueFileName, imageUrl);
                         FirebaseInitialization.getItemsDatabaseReference().child(key).setValue(upload)
                                 .addOnCompleteListener(databaseTask -> {
                                     if (databaseTask.isSuccessful()) {
-                                        FirebaseInitialization.getGalleryDatabaseReference().push().setValue(key);
-                                        itemList.add(upload);
-                                        // Notify the adapter that a new item has been inserted
-                                        galleryAdapter.notifyItemInserted(itemList.size() - 1);
                                         Toast.makeText(requireActivity(), "Upload Successful", Toast.LENGTH_SHORT).show();
                                     } else {
                                         Log.e(TAG, "Upload failed: " + databaseTask.getException().getMessage());
@@ -260,27 +231,10 @@ public class GalleryActivity extends Fragment {
             try {
                 FirebaseInitialization.getItemsDatabaseReference().child(itemKey).removeValue();
                 Log.d(TAG, "Item deleted successfully");
+                Toast.makeText(requireActivity(), "Delete Successful", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Log.e(TAG, "Error deleting item: " + e.getMessage(), e);
             }
-        }
-
-        @Override
-        public void deleteItemFromUserGallery(final String itemKey) {
-            FirebaseInitialization.getGalleryDatabaseReference().orderByValue().equalTo(itemKey).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        snapshot.getRef().removeValue();
-                        Log.d(TAG, "Item deleted from gallery successfully");
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.e(TAG, "Error deleting item from user gallery: " + databaseError.getMessage());
-                }
-            });
         }
 
         @Override
@@ -323,24 +277,21 @@ public class GalleryActivity extends Fragment {
     private class ItemViewHolder extends RecyclerView.ViewHolder {
         private final ImageView mediaImageView;
         private final TextView titleTextView;
-        private final TextView nameTextView;
         private final TextView descriptionTextView;
         private final MaterialButton editButton;
         private final MaterialButton deleteButton;
 
-        private ItemViewHolder(@NonNull View itemView) {
-            super(itemView);
-            mediaImageView = itemView.findViewById(R.id.mediaImageView);
-            titleTextView = itemView.findViewById(R.id.titleTextView);
-            nameTextView = itemView.findViewById(R.id.nameTextView);
-            descriptionTextView = itemView.findViewById(R.id.descriptionTextView);
-            editButton = itemView.findViewById(R.id.editButton);
-            deleteButton = itemView.findViewById(R.id.deleteButton);
+        private ItemViewHolder(@NonNull View view) {
+            super(view);
+            mediaImageView = view.findViewById(R.id.mediaImageView);
+            titleTextView = view.findViewById(R.id.titleTextView);
+            descriptionTextView = view.findViewById(R.id.descriptionTextView);
+            editButton = view.findViewById(R.id.editButton);
+            deleteButton = view.findViewById(R.id.deleteButton);
         }
 
         private void bindItem(@NonNull Item currentItem) {
             titleTextView.setText(currentItem.getTitle());
-            nameTextView.setText("By: " + currentItem.getFullName());
             descriptionTextView.setText(currentItem.getDescription());
             Glide.with(itemView.getContext()).load(currentItem.getImageUrl()).into(mediaImageView);
             editButton.setOnClickListener(v -> updateItemFromLocalListAndFirebase((ViewGroup) v.getParent(), getAdapterPosition(), currentItem));

@@ -3,11 +3,6 @@
 
     <!-- More Options Item -->
     <item
-        android:id="@+id/morePlan"
-        android:title="Upgrade to PRO"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/moreAbout"
         android:title="About"
         app:showAsAction="never" />

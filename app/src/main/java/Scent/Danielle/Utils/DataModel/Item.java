@@ -2,6 +2,7 @@ package Scent.Danielle.Utils.DataModel;
 
 public class Item {
     private String key;
+    private String userId;
     private String fullName;
     private String title;
     private String description;
@@ -12,8 +13,9 @@ public class Item {
         // Empty constructor required for Firebase
     }
 
-    public Item(String key, String fullName, String title, String description, String fileName, String imageUrl) {
+    public Item(String key, String userId, String fullName, String title, String description, String fileName, String imageUrl) {
         this.key = key;
+        this.userId = userId;
         this.fullName = fullName;
         this.title = title;
         this.description = description;
@@ -22,6 +24,8 @@ public class Item {
     }
 
     public String getKey() { return key; }
+
+    public String getUserId() { return userId; }
 
     public String getFullName() {
         return fullName;

@@ -112,22 +112,13 @@ public class NavigationActivity extends AppCompatActivity {
 
     private boolean handleMenuItemClick(MenuItem menuItem) {
         int itemId = menuItem.getItemId();
-        if (itemId == R.id.morePlan) {
-            handleMorePlanItemPress();
-            return true;
-        } else if (itemId == R.id.moreAbout) {
+        if (itemId == R.id.moreAbout) {
             handleMoreAboutItemPress();
             return true;
         }
         return false;
     }
 
-    private void handleMorePlanItemPress() {
-        Log.d(TAG, "Plan item clicked");
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.content_frame, new SubscriptionActivity())
-                .commit();
-    }
     private void handleMoreAboutItemPress() {
         Log.d(TAG, "About item clicked");
         getSupportFragmentManager().beginTransaction()

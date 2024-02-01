@@ -16,7 +16,6 @@ public class FirebaseInitialization {
     private static final String USER_REFERENCE = "users";
     private static final String CHATROOM_REFERENCE = "chatroom";
     private static final String ITEMS_REFERENCE = "items";
-    private static final String GALLERY_REFERENCE = "gallery";
     private static final String PHOTO_REFERENCE = "uploads";
 
 
@@ -71,9 +70,6 @@ public class FirebaseInitialization {
     // FirebaseDatabase
     public static DatabaseReference getItemsDatabaseReference() {
         return database.getReference(ITEMS_REFERENCE);
-    }
-    public static DatabaseReference getGalleryDatabaseReference() {
-        return database.getReference(GALLERY_REFERENCE).child(userId);
     }
 
 

@@ -1,7 +1,6 @@
 package Scent.Danielle;
 
 // Android core components
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 // Firebase components for authentication
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.AuthCredential;
@@ -31,14 +29,15 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
+// Custom imports from the project
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
 import Scent.Danielle.Utils.DataModel.User;
 
 public class AuthenticationActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     // Constants
-    public static final String TAG = AuthenticationActivity.class.getSimpleName();
-    public static final int RC_SIGN_IN = 9001;
+    private static final String TAG = AuthenticationActivity.class.getSimpleName();
+    private static final int RC_SIGN_IN = 9001;
 
     // Authentication
     private FirebaseAuth mAuth;
@@ -47,7 +46,7 @@ public class AuthenticationActivity extends AppCompatActivity implements GoogleA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_auth);
+        setContentView(R.layout.activity_authentication);
 
         // Initialize Firebase Authentication
         mAuth = FirebaseAuth.getInstance();
@@ -55,7 +54,7 @@ public class AuthenticationActivity extends AppCompatActivity implements GoogleA
 
         // Check if the user is already authenticated
         if (currentUser != null) {
-            startHomeActivity(); // User is authenticated, move to HomeActivity
+            startSwipeActivity(); // User is authenticated, move to SwipeActivity
         } else {
             initializeGoogleSignIn(); // User not authenticated, set up Google Sign-In
 
@@ -65,15 +64,15 @@ public class AuthenticationActivity extends AppCompatActivity implements GoogleA
         }
     }
 
-    // Navigate to HomeActivity
-    public void startHomeActivity() {
+    // Navigate to SwipeActivity
+    private void startSwipeActivity() {
         Intent intent = new Intent(this, NavigationActivity.class);
         startActivity(intent);
         finish(); // Close the current activity
     }
 
     // Initialize Google Sign-In options
-    public void initializeGoogleSignIn() {
+    private void initializeGoogleSignIn() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id)) // Request ID token for authentication
                 .requestEmail() // Request user's email
@@ -101,7 +100,7 @@ public class AuthenticationActivity extends AppCompatActivity implements GoogleA
         }
     }
 
-    public void handleGoogleSignInResult(Task<GoogleSignInAccount> completedTask) {
+    private void handleGoogleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             firebaseAuthWithGoogle(account);
@@ -110,7 +109,7 @@ public class AuthenticationActivity extends AppCompatActivity implements GoogleA
         }
     }
 
-    public void firebaseAuthWithGoogle(GoogleSignInAccount account) {
+    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
@@ -129,14 +128,12 @@ public class AuthenticationActivity extends AppCompatActivity implements GoogleA
         String userPhotoUrl = GoogleSignIn.getLastSignedInAccount(this).getPhotoUrl().toString();
 
         User user = new User(userId, userFullName, userPhotoUrl);
-        FirebaseInitialization.getUserDocumentReference().set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    Log.d(TAG, "User document set successfully");
-                } else {
-                    Log.e(TAG, "Error setting user document", task.getException());
-                }
+
+        FirebaseInitialization.getUserDocumentReference().set(user).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Log.d(TAG, "User document set successfully");
+            } else {
+                Log.e(TAG, "Error setting user document", task.getException());
             }
         });
     }
@@ -144,7 +141,7 @@ public class AuthenticationActivity extends AppCompatActivity implements GoogleA
     private void handleAuthenticationSuccess() {
         Log.d(TAG, "Authentication successful.");
         Toast.makeText(this, "Authentication Successful", Toast.LENGTH_SHORT).show();
-        startHomeActivity(); // Start HomeActivity after successful authentication
+        startSwipeActivity(); // Start SwipeActivity after successful authentication
     }
 
     private void handleAuthenticationFailure(Exception exception) {

@@ -1,10 +1,12 @@
 package Scent.Danielle;
 
+// androidx library imports
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+// Android framework imports
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -18,17 +20,22 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+// Third-party library imports
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
 
+// Java utility imports
 import java.util.Arrays;
+
+// Custom imports from the project
 import Scent.Danielle.Utils.DataModel.Chatroom;
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
 
 public class ConversationActivity extends AppCompatActivity {
+
     // TAG for logging
     public static final String TAG = ConversationActivity.class.getSimpleName();
 
@@ -36,7 +43,7 @@ public class ConversationActivity extends AppCompatActivity {
     private RecyclerView conversationRecyclerView;
 
     // EditText field for composing messages
-    private EditText composeMessageField ;
+    private EditText composeMessageField;
 
     // Chatroom object to hold conversation data
     private Chatroom chatroom;
@@ -48,15 +55,16 @@ public class ConversationActivity extends AppCompatActivity {
     private String recipientAvatar;
     private String recipientName;
 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
 
-        // Get user and recipient information from intent
-        currentUserUuid = FirebaseInitialization.getCurrentUserId();
-        recipientUuid = getIntent().getStringExtra("id");
-        recipientName = getIntent().getStringExtra("name");
-        recipientAvatar = getIntent().getStringExtra("avatar");
+        // Initialize views
+        initializeViews();
+
+        // Get user and recipient information from intent extras
+        handleIntentExtras();
 
         // Setup top app bar with recipient information
         handleSetupTopAppBar();
@@ -64,19 +72,28 @@ public class ConversationActivity extends AppCompatActivity {
         // Setup compose message field
         handleSetupComposeAndSendMessageField();
 
-        // Initialize views
-        conversationRecyclerView = findViewById(R.id.conversationRecyclerView);
-
-        // Generate chat room ID based on user IDs
-        chatRoomId = getChatroomId(currentUserUuid, recipientUuid);
-
-        // Retrieve existing chatroom data or create a new one
+        // Initialize and fetch chatroom data
         handleSetupChatroom();
 
-        // RecyclerView for displaying conversation messages
+        // Setup RecyclerView for displaying conversation messages
         handleSetupChatRecyclerView();
     }
 
+    // Method to initialize views
+    private void initializeViews() {
+        conversationRecyclerView = findViewById(R.id.conversationRecyclerView);
+        composeMessageField = findViewById(R.id.chat_message_input);
+    }
+
+    // Method to extract recipient information from intent extras
+    private void handleIntentExtras() {
+        currentUserUuid = FirebaseInitialization.getCurrentUserId();
+        recipientUuid = getIntent().getStringExtra("id");
+        recipientName = getIntent().getStringExtra("name");
+        recipientAvatar = getIntent().getStringExtra("avatar");
+    }
+
+    // Method to setup top app bar with recipient information
     private void handleSetupTopAppBar() {
         ImageButton backButton = findViewById(R.id.backButton);
         TextView recipientUsernameTextView = findViewById(R.id.recipientUsernameTextView);
@@ -89,8 +106,8 @@ public class ConversationActivity extends AppCompatActivity {
                 .into(recipientProfileImageView);
     }
 
+    // Method to setup compose message field
     private void handleSetupComposeAndSendMessageField() {
-        composeMessageField = findViewById(R.id.chat_message_input);
         ImageButton sendMessageButton = findViewById(R.id.sendMessageButton);
         sendMessageButton.setOnClickListener(v -> {
             String message = composeMessageField.getText().toString().trim();
@@ -107,17 +124,15 @@ public class ConversationActivity extends AppCompatActivity {
         });
     }
 
+    // Method to initialize and fetch chatroom data
     private void handleSetupChatroom() {
-        // Retrieve the chatroom data from FireStore
+        chatRoomId = getChatroomId(currentUserUuid, recipientUuid);
         FirebaseInitialization.getChatroomReference(chatRoomId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                // If chatroom data retrieval is successful
                 if (task.getResult() != null) {
-                    // Extract the chatroom object from the FireStore document
                     chatroom = task.getResult().toObject(Chatroom.class);
                 }
                 if (chatroom == null) {
-                    // If the chatroom doesn't exist, create a new one
                     handleCreateNewChatroom();
                 }
             } else {
@@ -126,41 +141,32 @@ public class ConversationActivity extends AppCompatActivity {
         });
     }
 
+    // Method to create a new chatroom if it doesn't exist
     private void handleCreateNewChatroom() {
-        // Initialize a new chatroom object
         chatroom = new Chatroom(chatRoomId, Arrays.asList(currentUserUuid, recipientUuid), Timestamp.now(), "");
-
-        // Save the new chatroom to FireStore
         FirebaseInitialization.getChatroomReference(chatRoomId).set(chatroom)
                 .addOnSuccessListener(aVoid -> Log.i(TAG, "New chatroom created successfully: " + chatRoomId))
                 .addOnFailureListener(e -> Log.e(TAG, "Error creating new chatroom", e));
     }
 
+    // Method to setup RecyclerView for displaying conversation messages
     private void handleSetupChatRecyclerView() {
-        // Prepare the query to fetch chat messages ordered by timestamp
         Query query = FirebaseInitialization.getChatroomMessageReference(chatRoomId)
                 .orderBy("timestamp", Query.Direction.DESCENDING);
 
-        // Configure options for the FireStoreRecyclerAdapter
         FirestoreRecyclerOptions<ConversationMessageModel> options = new FirestoreRecyclerOptions.Builder<ConversationMessageModel>()
                 .setQuery(query, ConversationMessageModel.class)
                 .build();
 
-        // Create the adapter for the RecyclerView
-        ConversationThreadRecyclerAdapter adapter = new ConversationThreadRecyclerAdapter(options, getApplicationContext());
+        ConversationThreadRecyclerAdapter adapter = new ConversationThreadRecyclerAdapter(options, this);
 
-        // Set layout manager to display items in reverse chronological order
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setReverseLayout(true);
         conversationRecyclerView.setLayoutManager(layoutManager);
 
-        // Attach the adapter to the RecyclerView
         conversationRecyclerView.setAdapter(adapter);
-
-        // Start listening for changes in the FireStore data
         adapter.startListening();
 
-        // Scroll to the latest message when a new message is added
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
@@ -170,48 +176,39 @@ public class ConversationActivity extends AppCompatActivity {
         });
     }
 
-
-    private void handleSendMessageToUser(String message){
-        // Update last message information in chatroom
+    // Method to send a message to the recipient
+    private void handleSendMessageToUser(final String message) {
         chatroom.setLastMessageTimestamp(Timestamp.now());
         chatroom.setLastMessageSenderId(FirebaseInitialization.getCurrentUserId());
         chatroom.setLastMessage(message);
 
-        // Save the updated chatroom data to FireStore
         FirebaseInitialization.getChatroomReference(chatRoomId).set(chatroom)
                 .addOnSuccessListener(aVoid -> {
-                    // Create a message object with the provided details
                     ConversationMessageModel chatMessageModel = new ConversationMessageModel(
                             message,
                             FirebaseInitialization.getCurrentUserId(),
                             Timestamp.now()
                     );
 
-                    // Add the message to FireStore
                     FirebaseInitialization.getChatroomMessageReference(chatRoomId).add(chatMessageModel)
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
-                                    // Clear the compose message field after sending the message
                                     composeMessageField.setText("");
                                     Log.i(TAG, "Message sent successfully");
                                 } else {
-                                    // Log an error message if message sending fails
                                     Log.e(TAG, "Error sending message", task.getException());
                                 }
                             });
                 })
-                .addOnFailureListener(e -> {
-                    // Log an error message if updating the chatroom data fails
-                    Log.e(TAG, "Error updating chatroom data", e);
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "Error updating chatroom data", e));
     }
 
-
+    // Method to generate a chatroom ID based on user IDs
     private String getChatroomId(final String currentUserUuid, final String recipientUuid) {
         return (currentUserUuid.hashCode() < recipientUuid.hashCode()) ? currentUserUuid + "_" + recipientUuid : recipientUuid + "_" + currentUserUuid;
     }
 
-
+    // Inner class to represent conversation message model
     private static class ConversationMessageModel {
         private String message;
         private String senderId;
@@ -221,7 +218,7 @@ public class ConversationActivity extends AppCompatActivity {
             // Required empty public constructor
         }
 
-        public ConversationMessageModel(String message, String senderId, Timestamp timestamp) {
+        public ConversationMessageModel(final String message, final String senderId, final Timestamp timestamp) {
             this.message = message;
             this.senderId = senderId;
             this.timestamp = timestamp;
@@ -240,8 +237,8 @@ public class ConversationActivity extends AppCompatActivity {
         }
     }
 
-
-    private static class ConversationThreadRecyclerAdapter extends FirestoreRecyclerAdapter<ConversationMessageModel, ConversationActivity.ConversationThreadViewHolder> {
+    // Inner class for RecyclerView adapter
+    private static class ConversationThreadRecyclerAdapter extends FirestoreRecyclerAdapter<ConversationMessageModel, ConversationThreadViewHolder> {
 
         private final Context context;
 
@@ -252,38 +249,38 @@ public class ConversationActivity extends AppCompatActivity {
 
         @NonNull
         @Override
-        public ConversationActivity.ConversationThreadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public ConversationThreadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(context).inflate(R.layout.temp_conversation, parent, false);
-            return new ConversationActivity.ConversationThreadViewHolder(view);
+            return new ConversationThreadViewHolder(view);
         }
 
         @Override
-        protected void onBindViewHolder(@NonNull ConversationActivity.ConversationThreadViewHolder holder, int position, @NonNull ConversationMessageModel model) {
+        protected void onBindViewHolder(@NonNull ConversationThreadViewHolder holder, int position, @NonNull ConversationMessageModel model) {
             holder.handleRenderConversationMessage(model);
         }
     }
 
-
+    // Inner class for RecyclerView view holder
     private static class ConversationThreadViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout leftMessageContainer;
-        LinearLayout rightMessageContainer;
-        TextView leftChatTextview;
-        TextView rightChatTextview;
+        private final LinearLayout leftMessageContainer;
+        private final LinearLayout rightMessageContainer;
+        private final TextView leftChatTextview;
+        private final TextView rightChatTextview;
 
-        public ConversationThreadViewHolder(@NonNull View itemView) {
-            super(itemView);
-            leftMessageContainer = itemView.findViewById(R.id.leftMessageContainer);
-            leftChatTextview = itemView.findViewById(R.id.left_chat_textview);
-            rightMessageContainer = itemView.findViewById(R.id.rightMessageContainer);
-            rightChatTextview = itemView.findViewById(R.id.right_chat_textview);
+        public ConversationThreadViewHolder(@NonNull View view) {
+            super(view);
+            leftMessageContainer = view.findViewById(R.id.leftMessageContainer);
+            leftChatTextview = view.findViewById(R.id.left_chat_textview);
+            rightMessageContainer = view.findViewById(R.id.rightMessageContainer);
+            rightChatTextview = view.findViewById(R.id.right_chat_textview);
         }
 
-        private void handleRenderConversationMessage( @NonNull ConversationMessageModel model) {
-            if(model.getSenderId().equals(FirebaseInitialization.getCurrentUserId())){
+        private void handleRenderConversationMessage(@NonNull ConversationMessageModel model) {
+            if (model.getSenderId().equals(FirebaseInitialization.getCurrentUserId())) {
                 leftMessageContainer.setVisibility(View.GONE);
                 rightMessageContainer.setVisibility(View.VISIBLE);
                 rightChatTextview.setText(model.getMessage());
-            }else{
+            } else {
                 rightMessageContainer.setVisibility(View.GONE);
                 leftMessageContainer.setVisibility(View.VISIBLE);
                 leftChatTextview.setText(model.getMessage());
