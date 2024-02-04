@@ -1,6 +1,5 @@
 package Scent.Danielle;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,7 +23,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -203,6 +201,7 @@ public class GalleryActivity extends Fragment {
         uploadTask.continueWithTask(task -> storageReference.getDownloadUrl())
                 .addOnCompleteListener(task -> {
                     try {
+                        // Generate a unique key for the new item
                         String key = FirebaseInitialization.getItemsDatabaseReference().push().getKey();
                         String fullName = GoogleSignIn.getLastSignedInAccount(requireContext()).getDisplayName();
                         String imageUrl = task.getResult().toString();
@@ -248,7 +247,6 @@ public class GalleryActivity extends Fragment {
 
         }
     }
-
 
     private class ItemGalleryAdapter extends RecyclerView.Adapter<GalleryActivity.ItemViewHolder> {
         private final List<Item> itemList;

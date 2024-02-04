@@ -1,5 +1,7 @@
 package Scent.Danielle.Utils.DataModel;
 
+import java.util.List;
+
 public class Item {
     private String key;
     private String userId;

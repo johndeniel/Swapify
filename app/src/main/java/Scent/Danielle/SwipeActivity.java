@@ -24,9 +24,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 // Firebase imports
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 // Java standard imports
@@ -42,11 +45,19 @@ public class SwipeActivity extends Fragment {
     private FeedItemListAdapter itemAdapter;
     private List<Item> itemList;
 
+    private final class NonScrollableLayoutManager extends LinearLayoutManager {
+        @Override
+        public boolean canScrollVertically() {
+            return false;
+        }
+        public NonScrollableLayoutManager() { super(requireContext()); }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.activity_swipe, container, false);
         RecyclerView itemRecyclerView = rootView.findViewById(R.id.itemRecyclerView);
-        itemRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        itemRecyclerView.setLayoutManager(new NonScrollableLayoutManager());
 
         itemList = new ArrayList<>();
         itemAdapter = new FeedItemListAdapter(itemList);
@@ -60,60 +71,91 @@ public class SwipeActivity extends Fragment {
 
     // Retrieve items from Firebase database and update the UI accordingly.
     private void handleRetrieveItemsFromFirebase() {
-
-        // It follows a sequential approach:
-        // 1. Retrieves all data from the database and stores it in a DataSnapshot.
-        // 2. Iterates through each element of the DataSnapshot.
-        // 3. Checks if the user ID associated with each item is equal to the current user's ID.
-        // 4. If the IDs do not match, the item is added to the list of fetched items.
-
-        // Overview:
-        // Fetching and processing a large dataset of 1 million records incurs substantial time overhead.
-        // Despite the exhaustive process, only 50,000 records meet the criteria, leading to the wastage of 950,000 records.
-
-        // Memory Considerations:
-        // Storing such a dataset can strain memory resources, risking exhaustion in resource-constrained environments.
-
-        // Algorithmic Efficiency:
-        // The linear time complexity results in longer processing times, aggravated by substantial unused fetched data, indicating suboptimal resource utilization.
-
         DatabaseReference itemsRef = FirebaseInitialization.getItemsDatabaseReference();
         String userId = FirebaseInitialization.getCurrentUserId();
-        itemsRef.addValueEventListener(new ValueEventListener() {
+
+        itemsRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if(task.isSuccessful()){
+                    try {
+                        DataSnapshot snapshot = task.getResult();
+                        List<Item> fetchedItems = new ArrayList<>();
+
+                        for (DataSnapshot childSnapshot : snapshot.getChildren()) {
+                            Item item = childSnapshot.getValue(Item.class);
+                            DatabaseReference ref = itemsRef.child(item.getKey()).child("swipe");
+                            if (item != null && !item.getUserId().equals(userId) && !isSwipedByCurrentUser(ref, userId)) {
+                                fetchedItems.add(item);
+                            }
+                        }
+
+                        if (!fetchedItems.isEmpty() && itemAdapter != null) {
+                            itemList.clear();
+                            itemList.addAll(fetchedItems);
+                            itemAdapter.notifyDataSetChanged();
+                            Log.d(TAG, "Items retrieved and UI updated successfully.");
+                        } else {
+                            Log.d(TAG, "No items to display or adapter is unavailable.");
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error processing data", e);
+                    }
+                }else{
+                    Log.e(TAG, "Failed to fetch items: ", task.getException());
+                }
+            }
+        });
+    }
+
+    private boolean isSwipedByCurrentUser(DatabaseReference itemSnapshot, String currentUserId) {
+        Query query = itemSnapshot.orderByChild("userId").equalTo(currentUserId);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                try {
-                    List<Item> fetchedItems = new ArrayList<>();
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        Item item = snapshot.getValue(Item.class);
-                        if (item != null && !item.getUserId().equals(userId)) {
-                            fetchedItems.add(item);
-                        }
-                    }
+                // Log the dataSnapshot
+                Log.d(TAG, "Snapshot: " + dataSnapshot);
 
-                    if (!fetchedItems.isEmpty() && itemAdapter != null) {
-                        itemList.clear();
-                        itemList.addAll(fetchedItems);
-                        itemAdapter.notifyDataSetChanged();
-                        Log.d(TAG, "Items retrieved and UI updated successfully.");
-                    } else {
-                        Log.d(TAG, "No items to display or adapter is unavailable.");
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "Error processing data", e);
+                if (dataSnapshot.exists()) {
+                   // data is existing
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.e(TAG, "Database error: " + databaseError.getMessage(), databaseError.toException());
+                Log.e(TAG, "Error querying swipe data: " + databaseError.getMessage());
             }
         });
+
+        return false;
+    }
+
+
+    private final static class Swipe {
+        private String userId;
+        private boolean like;
+
+        public Swipe() {}
+
+        public Swipe(String userId, boolean like) {
+            this.userId = userId;
+            this.like = like;
+        }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public boolean isLike() {
+            return like;
+        }
     }
 
     // Inner class for RecyclerView adapter for displaying feed items with swipe functionality.
-    private class FeedItemListAdapter extends RecyclerView.Adapter<SwipeActivity.FeedItemDisplayHolder> {
+    private final class FeedItemListAdapter extends RecyclerView.Adapter<SwipeActivity.FeedItemDisplayHolder> {
         private final List<Item> itemList;
+        private String key;
         private static final float SWIPE_THRESHOLD = 0.5f;
 
         public FeedItemListAdapter(List<Item> itemList) {
@@ -136,6 +178,7 @@ public class SwipeActivity extends Fragment {
         public void onBindViewHolder(@NonNull SwipeActivity.FeedItemDisplayHolder holder, int position) {
             Item currentItem = itemList.get(position);
             holder.bindItem(currentItem);
+            key = currentItem.getKey();
         }
 
         // Implement swipe left and swipe right
@@ -146,21 +189,26 @@ public class SwipeActivity extends Fragment {
             }
 
             @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            public void onSwiped(@NonNull RecyclerView.ViewHolder view, int direction) {
                 // Determine swipe direction
                 String swipeDirection;
+
                 if (direction == ItemTouchHelper.LEFT) {
+                    handleSwipeEvent(false);
                     swipeDirection = "Left";
+
                 } else if (direction == ItemTouchHelper.RIGHT) {
+                    handleSwipeEvent(true);
                     swipeDirection = "Right";
+
                 } else if (direction == ItemTouchHelper.UP) {
                     swipeDirection = "Up";
+
                 } else {
                     swipeDirection = "Down";
                 }
 
-                // Handle swipe left or right
-                int position = viewHolder.getAdapterPosition();
+                int position = view.getAdapterPosition();
                 itemList.remove(position);
                 notifyItemRemoved(position);
 
@@ -205,6 +253,17 @@ public class SwipeActivity extends Fragment {
         // Attaches swipe helper to the RecyclerView.
         public void attachSwipeHelperToRecyclerView(RecyclerView recyclerView) {
             new ItemTouchHelper(simpleCallback).attachToRecyclerView(recyclerView);
+        }
+
+        private void handleSwipeEvent(final boolean value) {
+            DatabaseReference swipeReference = FirebaseInitialization.getItemsDatabaseReference().child(key).child("swipe");
+            DatabaseReference swipeActionRef = swipeReference.push();
+            Swipe swipe = new Swipe(FirebaseInitialization.getCurrentUserId(), value);
+            swipeActionRef.setValue(swipe).addOnCompleteListener(task1 -> {
+                if(task1.isSuccessful()) {
+                    Log.d(TAG, "Swipe Successful");
+                }
+            });
         }
     }
 
