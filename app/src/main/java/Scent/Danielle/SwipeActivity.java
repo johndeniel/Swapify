@@ -1,6 +1,7 @@
 package Scent.Danielle;
 
 // Android core components
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.os.Bundle;
@@ -12,11 +13,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-// AndroidX components
+// AndroidX imports
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
-// AndroidX recyclerview imports
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,26 +24,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 // Firebase imports
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+
+// Custom imports
+import Scent.Danielle.Utils.DataModel.Item;
+import Scent.Danielle.Utils.DataModel.Swipe;
+import Scent.Danielle.Utils.Database.FirebaseInitialization;
 
 // Java standard imports
 import java.util.ArrayList;
 import java.util.List;
 
-// Custom imports from the project
-import Scent.Danielle.Utils.DataModel.Swipe;
-import Scent.Danielle.Utils.Database.FirebaseInitialization;
-import Scent.Danielle.Utils.DataModel.Item;
-
 public class SwipeActivity extends Fragment {
     private final String TAG = SwipeActivity.class.getSimpleName();
-    private FeedItemListAdapter itemAdapter;
+    private SwipeItemAdapter itemAdapter;
     private List<Item> itemList;
 
     private final class NonScrollableLayoutManager extends LinearLayoutManager {
@@ -52,87 +48,104 @@ public class SwipeActivity extends Fragment {
         public boolean canScrollVertically() {
             return false;
         }
-        public NonScrollableLayoutManager() { super(requireContext()); }
+
+        public NonScrollableLayoutManager() {
+            super(requireContext());
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.activity_swipe, container, false);
+
+        // Initialize RecyclerView
         RecyclerView itemRecyclerView = rootView.findViewById(R.id.itemRecyclerView);
         itemRecyclerView.setLayoutManager(new NonScrollableLayoutManager());
 
+        // Initialize item list and adapter
         itemList = new ArrayList<>();
-        itemAdapter = new FeedItemListAdapter(itemList);
+        itemAdapter = new SwipeItemAdapter(itemList);
         itemRecyclerView.setAdapter(itemAdapter);
-        handleRetrieveItemsFromFirebase();
+
+        // Retrieve and handle swipe items from Firebase
+        handleSwipeItemsFromFirebase();
 
         // Attach swipe functionality to the RecyclerView
         itemAdapter.attachSwipeHelperToRecyclerView(itemRecyclerView);
+
         return rootView;
     }
 
-    // Retrieve items from Firebase database and update the UI accordingly.
-    private void handleRetrieveItemsFromFirebase() {
-        DatabaseReference itemsRef = FirebaseInitialization.getItemsDatabaseReference();
-        String userId = FirebaseInitialization.getCurrentUserId();
-
-        itemsRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+    // Retrieves items from Firebase and handles swipe events.
+    private void handleSwipeItemsFromFirebase() {
+        FirebaseInitialization.getItemsDatabaseReference().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if(task.isSuccessful()){
-                    try {
-                        DataSnapshot snapshot = task.getResult();
-                        List<Item> fetchedItems = new ArrayList<>();
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Item> fetchedItems = new ArrayList<>();
 
-                        for (DataSnapshot childSnapshot : snapshot.getChildren()) {
-                            DataSnapshot swipeSnapshot = childSnapshot.child("swipe");
-                            Item item = childSnapshot.getValue(Item.class);
-                            if(!item.getUserId().equals(userId) ) {
-                                // Check if the swipe node exists
-                                if (!swipeSnapshot.exists()) {
-                                    fetchedItems.add(item);
-                                } else {
-                                    // Check if the current user's ID does not exist within the swipe node
-                                    boolean userIdExistsInSwipe = false;
-                                    for (DataSnapshot swipeChildSnapshot : swipeSnapshot.getChildren()) {
-                                        String swipeUserId = swipeChildSnapshot.child("userId").getValue(String.class);
-                                        if (swipeUserId != null && swipeUserId.equals(userId)) {
-                                            userIdExistsInSwipe = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!userIdExistsInSwipe) {
-                                        fetchedItems.add(item);
-                                    }
-                                }
-                            }
-                        }
+                for (DataSnapshot childSnapshot : snapshot.getChildren()) {
+                    Item item = childSnapshot.getValue(Item.class);
 
-                        if (!fetchedItems.isEmpty() && itemAdapter != null) {
-                            itemList.clear();
-                            itemList.addAll(fetchedItems);
-                            itemAdapter.notifyDataSetChanged();
-                            Log.d(TAG, "Items retrieved and UI updated successfully.");
-                        } else {
-                            Log.d(TAG, "No items to display or adapter is unavailable.");
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error processing data", e);
+                    // Skip current user's own items
+                    if (item.getUserId().equals(FirebaseInitialization.getCurrentUserId())) {
+                        continue;
                     }
-                }else{
-                    Log.e(TAG, "Failed to fetch items: ", task.getException());
+
+                    DataSnapshot swipeSnapshot = childSnapshot.child("swipe");
+
+                    // If the item is not swiped by the current user, add it to the list
+                    if (!isSwipedByCurrentUser(swipeSnapshot, FirebaseInitialization.getCurrentUserId())) {
+                        fetchedItems.add(item);
+                    }
                 }
+
+                handleUIUpdateWithItems(fetchedItems);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Error retrieving items from Firebase: " + error.getMessage());
             }
         });
     }
 
-    // Inner class for RecyclerView adapter for displaying feed items with swipe functionality.
-    private final class FeedItemListAdapter extends RecyclerView.Adapter<SwipeActivity.FeedItemDisplayHolder> {
+    // Checks if the item is swiped by the current user.
+    private boolean isSwipedByCurrentUser(DataSnapshot swipeSnapshot, String currentUserId) {
+        if (!swipeSnapshot.exists()) {
+            return false;
+        }
+
+        for (DataSnapshot swipeChildSnapshot : swipeSnapshot.getChildren()) {
+            String swipeUserId = swipeChildSnapshot.child("userId").getValue(String.class);
+            if (swipeUserId != null && swipeUserId.equals(currentUserId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Handles UI update with fetched items.
+    @SuppressLint("NotifyDataSetChanged")
+    private void handleUIUpdateWithItems(List<Item> fetchedItems) {
+        if (!fetchedItems.isEmpty() && itemAdapter != null) {
+            itemList.clear();
+            itemList.addAll(fetchedItems);
+            itemAdapter.notifyDataSetChanged();
+            Log.d(TAG, "Items retrieved and UI updated successfully.");
+        } else {
+            Log.d(TAG, "No items to display or adapter is unavailable.");
+        }
+    }
+
+    // RecyclerView adapter for displaying feed items with swipe functionality.
+    private final class SwipeItemAdapter extends RecyclerView.Adapter<SwipeActivity.FeedItemDisplayHolder> {
         private final List<Item> itemList;
         private String key;
         private static final float SWIPE_THRESHOLD = 0.5f;
 
-        public FeedItemListAdapter(List<Item> itemList) {
+        public SwipeItemAdapter(List<Item> itemList) {
             this.itemList = itemList;
         }
 
@@ -258,6 +271,7 @@ public class SwipeActivity extends Fragment {
         }
     }
 
+    // ViewHolder for displaying feed items.
     private class FeedItemDisplayHolder extends RecyclerView.ViewHolder {
         private final ImageView mediaImageView;
         private final TextView titleTextView;

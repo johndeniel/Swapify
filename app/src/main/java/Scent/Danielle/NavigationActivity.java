@@ -112,7 +112,7 @@ public class NavigationActivity extends AppCompatActivity {
 
     private boolean handleMenuItemClick(MenuItem menuItem) {
         int itemId = menuItem.getItemId();
-        if (itemId == R.id.moreAbout) {
+        if (itemId == R.id.about) {
             handleMoreAboutItemPress();
             return true;
         }

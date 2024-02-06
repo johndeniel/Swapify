@@ -3,8 +3,9 @@
 
     <!-- More Options Item -->
     <item
-        android:id="@+id/moreAbout"
+        android:id="@+id/about"
+        android:icon="@drawable/about"
         android:title="About"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 
 </menu>

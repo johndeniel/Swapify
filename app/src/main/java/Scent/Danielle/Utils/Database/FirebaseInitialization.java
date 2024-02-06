@@ -61,6 +61,7 @@ public class FirebaseInitialization {
     public static CollectionReference allChatroomCollectionReference(){
         return FirebaseFirestore.getInstance().collection(CHATROOM_REFERENCE);
     }
+
     public static DocumentReference getOtherUserFromChatroom(List<String> userIds){
         if(userIds.get(0).equals(userId)){
             return allUserCollectionReference().document(userIds.get(1));
@@ -68,8 +69,6 @@ public class FirebaseInitialization {
             return allUserCollectionReference().document(userIds.get(0));
         }
     }
-
-
 
 
     // FirebaseDatabase

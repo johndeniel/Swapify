@@ -3,9 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     android:orientation="vertical"
     tools:context=".SwipeRightActivity">
 
@@ -13,15 +13,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    <!-- MaterialToolbar in AppBar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/swipeRightTopAppBar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:titleCentered="true"
-        app:title="Chat"
-        app:navigationIcon="@drawable/back"
-        app:menu="@menu/chat_top_app_bar"/>
+        <!-- MaterialToolbar in AppBar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            app:titleCentered="true"
+            android:id="@+id/swipeRightTopAppBar"
+            android:layout_width="match_parent"
+            app:navigationIcon="@drawable/back"
+            app:menu="@menu/default_top_app_bar"
+            android:layout_height="?attr/actionBarSize"/>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- RecyclerView: Displays a list of items in a scrollable manner. -->
