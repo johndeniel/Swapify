@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Custom imports from the project
+import Scent.Danielle.Utils.DataModel.Swipe;
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
 import Scent.Danielle.Utils.DataModel.Item;
 
@@ -84,10 +85,26 @@ public class SwipeActivity extends Fragment {
                         List<Item> fetchedItems = new ArrayList<>();
 
                         for (DataSnapshot childSnapshot : snapshot.getChildren()) {
+                            DataSnapshot swipeSnapshot = childSnapshot.child("swipe");
                             Item item = childSnapshot.getValue(Item.class);
-                            DatabaseReference ref = itemsRef.child(item.getKey()).child("swipe");
-                            if (item != null && !item.getUserId().equals(userId) && !isSwipedByCurrentUser(ref, userId)) {
-                                fetchedItems.add(item);
+                            if(!item.getUserId().equals(userId) ) {
+                                // Check if the swipe node exists
+                                if (!swipeSnapshot.exists()) {
+                                    fetchedItems.add(item);
+                                } else {
+                                    // Check if the current user's ID does not exist within the swipe node
+                                    boolean userIdExistsInSwipe = false;
+                                    for (DataSnapshot swipeChildSnapshot : swipeSnapshot.getChildren()) {
+                                        String swipeUserId = swipeChildSnapshot.child("userId").getValue(String.class);
+                                        if (swipeUserId != null && swipeUserId.equals(userId)) {
+                                            userIdExistsInSwipe = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!userIdExistsInSwipe) {
+                                        fetchedItems.add(item);
+                                    }
+                                }
                             }
                         }
 
@@ -107,61 +124,6 @@ public class SwipeActivity extends Fragment {
                 }
             }
         });
-    }
-
-    private boolean isSwipedByCurrentUser(DatabaseReference itemSnapshot, String currentUserId) {
-        Query query = itemSnapshot.orderByChild("userId").equalTo(currentUserId);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // Log the dataSnapshot
-                Log.d(TAG, "Snapshot: " + dataSnapshot);
-
-                if (dataSnapshot.exists()) {
-                    // data is existing
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.e(TAG, "Error querying swipe data: " + databaseError.getMessage());
-            }
-        });
-
-        return false;
-    }
-
-
-    private final static class Swipe {
-        private String userId;
-        private String fullName;
-        private String photoUrl;
-        private boolean like;
-
-        public Swipe() {}
-
-        public Swipe(String userId, String fullName, String photoUrl, boolean like) {
-            this.userId = userId;
-            this.fullName = fullName;
-            this.photoUrl = photoUrl;
-            this.like = like;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public String getFullName() {
-            return fullName;
-        }
-
-        public String getPhotoUrl() {
-            return photoUrl;
-        }
-        public boolean isLike() {
-            return like;
-        }
     }
 
     // Inner class for RecyclerView adapter for displaying feed items with swipe functionality.
@@ -272,7 +234,7 @@ public class SwipeActivity extends Fragment {
         private void handleSwipeEvent(final boolean value) {
             DatabaseReference swipeReference = FirebaseInitialization.getItemsDatabaseReference().child(key).child("swipe");
             DatabaseReference swipeActionRef = swipeReference.push();
-            
+
             Swipe swipe = new Swipe(
                     FirebaseInitialization.getCurrentUserId(),
                     FirebaseInitialization.getCurrentUserDisplayName(),

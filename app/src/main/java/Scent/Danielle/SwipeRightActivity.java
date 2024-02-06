@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -24,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import Scent.Danielle.Utils.DataModel.Swipe;
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -37,15 +39,25 @@ public class SwipeRightActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_swipe_right);
+
+        handleTopAppBarView();
+
         RecyclerView swipeRightRecyclerView = findViewById(R.id.swipeRightRecyclerView);
         swipeRightRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         swipeRecyclerView = new SwipeRecyclerView(swipeList, this);
         swipeRightRecyclerView.setAdapter(swipeRecyclerView);
+
         fetchSwipesFromFirebase();
     }
 
-    private void fetchSwipesFromFirebase() {
+    private void handleTopAppBarView() {
+        String recipientUuid = getIntent().getStringExtra("title");
+        MaterialToolbar swipeRightTopAppBar = findViewById(R.id.swipeRightTopAppBar);
+        swipeRightTopAppBar.setOnClickListener(view -> onBackPressed());
+        swipeRightTopAppBar.setTitle(recipientUuid);
+    }
 
+    private void fetchSwipesFromFirebase() {
         String recipientUuid = getIntent().getStringExtra("key");
         DatabaseReference itemSnapshot = FirebaseInitialization.getItemsDatabaseReference().child(recipientUuid).child("swipe");
         Query query = itemSnapshot.orderByChild("like").equalTo(true);
@@ -59,7 +71,6 @@ public class SwipeRightActivity extends AppCompatActivity {
                         swipeList.add(item);
                     }
                 }
-
                 swipeRecyclerView.notifyDataSetChanged();
             }
 
@@ -68,38 +79,6 @@ public class SwipeRightActivity extends AppCompatActivity {
                 Log.e(TAG, "Error querying swipe data: " + databaseError.getMessage());
             }
         });
-    }
-
-    private final static class Swipe {
-        private String userId;
-        private String fullName;
-        private String photoUrl;
-        private boolean like;
-
-        public Swipe() {}
-
-        public Swipe(String userId, String fullName, String photoUrl, boolean like) {
-            this.userId = userId;
-            this.fullName = fullName;
-            this.photoUrl = photoUrl;
-            this.like = like;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public String getFullName() {
-            return fullName;
-        }
-
-        public String getPhotoUrl() {
-            return photoUrl;
-        }
-
-        public boolean isLike() {
-            return like;
-        }
     }
 
     private static class SwipeRecyclerView extends RecyclerView.Adapter<SwipeRightActivity.SwipeDisplayHolder>{

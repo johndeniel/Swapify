@@ -11,12 +11,11 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/topAppBar">
+        android:layout_height="wrap_content">
 
     <!-- MaterialToolbar in AppBar -->
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/chatTopAppBar"
+        android:id="@+id/swipeRightTopAppBar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:titleCentered="true"

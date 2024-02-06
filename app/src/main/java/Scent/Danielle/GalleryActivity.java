@@ -307,6 +307,7 @@ public class GalleryActivity extends Fragment {
         private void navigateToSwipeRight(@NonNull Item currentItem) {
             Intent intent = new Intent(requireContext(), SwipeRightActivity.class);
             intent.putExtra("key", currentItem.getKey());
+            intent.putExtra("title", currentItem.getTitle());
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             requireActivity().startActivity(intent);
         }
