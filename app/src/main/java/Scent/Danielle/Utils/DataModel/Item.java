@@ -10,14 +10,16 @@ public class Item {
     private String description;
     private String fileName;
     private String imageUrl;
+    private String avatar;
 
     public Item() {
         // Empty constructor required for Firebase
     }
 
-    public Item(String key, String userId, String fullName, String title, String description, String fileName, String imageUrl) {
+    public Item(String key, String userId, String avatar, String fullName, String title, String description, String fileName, String imageUrl) {
         this.key = key;
         this.userId = userId;
+        this.avatar = avatar;
         this.fullName = fullName;
         this.title = title;
         this.description = description;
@@ -28,6 +30,7 @@ public class Item {
     public String getKey() { return key; }
 
     public String getUserId() { return userId; }
+    public String getAvatar() {return  avatar; }
 
     public String getFullName() {
         return fullName;

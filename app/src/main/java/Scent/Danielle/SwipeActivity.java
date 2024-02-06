@@ -1,6 +1,7 @@
 package Scent.Danielle;
 
 // Android core components
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
@@ -118,7 +119,7 @@ public class SwipeActivity extends Fragment {
                 Log.d(TAG, "Snapshot: " + dataSnapshot);
 
                 if (dataSnapshot.exists()) {
-                   // data is existing
+                    // data is existing
                 }
             }
 
@@ -134,12 +135,16 @@ public class SwipeActivity extends Fragment {
 
     private final static class Swipe {
         private String userId;
+        private String fullName;
+        private String photoUrl;
         private boolean like;
 
         public Swipe() {}
 
-        public Swipe(String userId, boolean like) {
+        public Swipe(String userId, String fullName, String photoUrl, boolean like) {
             this.userId = userId;
+            this.fullName = fullName;
+            this.photoUrl = photoUrl;
             this.like = like;
         }
 
@@ -147,6 +152,13 @@ public class SwipeActivity extends Fragment {
             return userId;
         }
 
+        public String getFullName() {
+            return fullName;
+        }
+
+        public String getPhotoUrl() {
+            return photoUrl;
+        }
         public boolean isLike() {
             return like;
         }
@@ -202,8 +214,10 @@ public class SwipeActivity extends Fragment {
                     swipeDirection = "Right";
 
                 } else if (direction == ItemTouchHelper.UP) {
+                    // Assuming you want to swipe up the first item in the list
+                    Item item = itemList.get(0); // Get the first item
+                    swipeUp(item); // Pass the item to swipeUp method
                     swipeDirection = "Up";
-
                 } else {
                     swipeDirection = "Down";
                 }
@@ -258,12 +272,27 @@ public class SwipeActivity extends Fragment {
         private void handleSwipeEvent(final boolean value) {
             DatabaseReference swipeReference = FirebaseInitialization.getItemsDatabaseReference().child(key).child("swipe");
             DatabaseReference swipeActionRef = swipeReference.push();
-            Swipe swipe = new Swipe(FirebaseInitialization.getCurrentUserId(), value);
+            
+            Swipe swipe = new Swipe(
+                    FirebaseInitialization.getCurrentUserId(),
+                    FirebaseInitialization.getCurrentUserDisplayName(),
+                    FirebaseInitialization.getCurrentUserDisplayPhotoUrl(),
+                    value);
+
             swipeActionRef.setValue(swipe).addOnCompleteListener(task1 -> {
                 if(task1.isSuccessful()) {
-                    Log.d(TAG, "Swipe Successful");
+                    Log.d(TAG, "Swipe Successful ->" + FirebaseInitialization.getCurrentUserDisplayName());
                 }
             });
+        }
+
+        private void swipeUp(Item item) {
+            Intent intent = new Intent(requireContext(), ConversationActivity.class);
+            intent.putExtra("id", item.getUserId());
+            intent.putExtra("name", item.getFullName());
+            intent.putExtra("avatar", item.getAvatar());
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            requireActivity().startActivity(intent);
         }
     }
 

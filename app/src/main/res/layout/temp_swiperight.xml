@@ -1,0 +1,50 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:paddingLeft="24dp"
+    android:paddingRight="24dp"
+    android:orientation="horizontal">
+
+    <!-- Avatar Image -->
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/swipeAvatarImageView"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:scaleType="centerCrop"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/common_google_signin_btn_icon_light_normal"
+        android:background="@drawable/circle" />
+
+    <!-- Textual Information -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp">
+
+        <!-- Name Text -->
+        <TextView
+            android:id="@+id/swipeNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:text="John Doe"
+            android:layout_weight="1"/>
+
+        <!-- Chat Text -->
+        <TextView
+            android:id="@+id/chatTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:text="Chat"/>
+
+    </LinearLayout>
+
+</LinearLayout>

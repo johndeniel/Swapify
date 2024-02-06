@@ -34,6 +34,7 @@ import com.google.firebase.storage.UploadTask;
 import java.util.ArrayList;
 import java.util.List;
 
+import Scent.Danielle.Utils.DataModel.User;
 import Scent.Danielle.Utils.Database.FirebaseInitialization;
 import Scent.Danielle.Utils.DataModel.Item;
 
@@ -206,9 +207,9 @@ public class GalleryActivity extends Fragment {
                         String fullName = GoogleSignIn.getLastSignedInAccount(requireContext()).getDisplayName();
                         String imageUrl = task.getResult().toString();
                         String userId = FirebaseInitialization.getCurrentUserId();
-
+                        String avatar = FirebaseInitialization.getCurrentUserDisplayPhotoUrl();
                         // Create and store the upload data
-                        Item upload = new Item(key, userId, fullName, title, description, uniqueFileName, imageUrl);
+                        Item upload = new Item(key, userId, avatar, fullName, title, description, uniqueFileName, imageUrl);
                         FirebaseInitialization.getItemsDatabaseReference().child(key).setValue(upload)
                                 .addOnCompleteListener(databaseTask -> {
                                     if (databaseTask.isSuccessful()) {
@@ -286,6 +287,13 @@ public class GalleryActivity extends Fragment {
             descriptionTextView = view.findViewById(R.id.descriptionTextView);
             editButton = view.findViewById(R.id.editButton);
             deleteButton = view.findViewById(R.id.deleteButton);
+
+            // Set OnClickListener for mediaImageView
+            mediaImageView.setOnClickListener(v -> {
+                // Call the navigateToSwipeRight method with the currentItem
+                Item currentItem = itemList.get(getAdapterPosition());
+                navigateToSwipeRight(currentItem);
+            });
         }
 
         private void bindItem(@NonNull Item currentItem) {
@@ -294,6 +302,13 @@ public class GalleryActivity extends Fragment {
             Glide.with(itemView.getContext()).load(currentItem.getImageUrl()).into(mediaImageView);
             editButton.setOnClickListener(v -> updateItemFromLocalListAndFirebase((ViewGroup) v.getParent(), getAdapterPosition(), currentItem));
             deleteButton.setOnClickListener(v -> deleteItemFromLocalListAndFirebase(getAdapterPosition()));
+        }
+
+        private void navigateToSwipeRight(@NonNull Item currentItem) {
+            Intent intent = new Intent(requireContext(), SwipeRightActivity.class);
+            intent.putExtra("key", currentItem.getKey());
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            requireActivity().startActivity(intent);
         }
     }
 }

@@ -23,6 +23,8 @@ public class FirebaseInitialization {
     private static final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     private static final FirebaseUser currentUser = firebaseAuth.getCurrentUser();
     private static final String userId = currentUser.getUid();
+    private static final String currentUserDisplayName = currentUser.getDisplayName();
+    private static final String currentUserDisplayPhotoUrl = currentUser.getPhotoUrl().toString();
 
 
     // Firebase Database And Storage
@@ -38,6 +40,8 @@ public class FirebaseInitialization {
     public static String getCurrentUserId() {
         return userId;
     }
+    public static String getCurrentUserDisplayName() { return currentUserDisplayName; };
+    public static String getCurrentUserDisplayPhotoUrl() { return currentUserDisplayPhotoUrl; };
 
 
     // FirebaseFireStore
@@ -64,6 +68,7 @@ public class FirebaseInitialization {
             return allUserCollectionReference().document(userIds.get(0));
         }
     }
+
 
 
 
