@@ -40,9 +40,12 @@ import java.util.List;
 
 public class SwipeActivity extends Fragment {
     private final String TAG = SwipeActivity.class.getSimpleName();
+    private final String SWIPE = "swipe";
     private SwipeItemAdapter itemAdapter;
     private List<Item> itemList;
+    private TextView info;
 
+    // Custom LinearLayoutManager to make RecyclerView non-scrollable
     private final class NonScrollableLayoutManager extends LinearLayoutManager {
         @Override
         public boolean canScrollVertically() {
@@ -62,6 +65,10 @@ public class SwipeActivity extends Fragment {
         // Initialize RecyclerView
         RecyclerView itemRecyclerView = rootView.findViewById(R.id.itemRecyclerView);
         itemRecyclerView.setLayoutManager(new NonScrollableLayoutManager());
+
+        // Initialize TextView for information message
+        info = rootView.findViewById(R.id.info);
+        info.setVisibility(View.GONE);
 
         // Initialize item list and adapter
         itemList = new ArrayList<>();
@@ -84,6 +91,7 @@ public class SwipeActivity extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Item> fetchedItems = new ArrayList<>();
 
+                // Iterate through each item in the Firebase snapshot
                 for (DataSnapshot childSnapshot : snapshot.getChildren()) {
                     Item item = childSnapshot.getValue(Item.class);
 
@@ -92,19 +100,20 @@ public class SwipeActivity extends Fragment {
                         continue;
                     }
 
+                    // Check if the item is swiped by the current user
                     DataSnapshot swipeSnapshot = childSnapshot.child("swipe");
-
-                    // If the item is not swiped by the current user, add it to the list
                     if (!isSwipedByCurrentUser(swipeSnapshot, FirebaseInitialization.getCurrentUserId())) {
                         fetchedItems.add(item);
                     }
                 }
 
+                // Update UI with fetched items
                 handleUIUpdateWithItems(fetchedItems);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                // Log error if Firebase data retrieval fails
                 Log.e(TAG, "Error retrieving items from Firebase: " + error.getMessage());
             }
         });
@@ -116,6 +125,7 @@ public class SwipeActivity extends Fragment {
             return false;
         }
 
+        // Iterate through each swipe action
         for (DataSnapshot swipeChildSnapshot : swipeSnapshot.getChildren()) {
             String swipeUserId = swipeChildSnapshot.child("userId").getValue(String.class);
             if (swipeUserId != null && swipeUserId.equals(currentUserId)) {
@@ -131,84 +141,101 @@ public class SwipeActivity extends Fragment {
     private void handleUIUpdateWithItems(List<Item> fetchedItems) {
         if (!fetchedItems.isEmpty() && itemAdapter != null) {
             itemList.clear();
+            info.setVisibility(View.GONE);
             itemList.addAll(fetchedItems);
             itemAdapter.notifyDataSetChanged();
             Log.d(TAG, "Items retrieved and UI updated successfully.");
         } else {
+            info.setVisibility(View.VISIBLE);
             Log.d(TAG, "No items to display or adapter is unavailable.");
         }
     }
 
+    // Method to handle swipe event and record it in Firebase.
+    private void handleSwipeEvent(final String itemKey, final boolean isSwipedRight) {
+        // Construct the reference to the swipe action in the Firebase database
+        DatabaseReference swipeReference = FirebaseInitialization.getItemsDatabaseReference().child(itemKey).child("swipe");
+
+        // Create a new swipe action reference
+        DatabaseReference swipeActionRef = swipeReference.push();
+
+        // Create a Swipe object with relevant information
+        String currentUserId = FirebaseInitialization.getCurrentUserId();
+        String currentUserDisplayName = FirebaseInitialization.getCurrentUserDisplayName();
+        String currentUserDisplayPhotoUrl = FirebaseInitialization.getCurrentUserDisplayPhotoUrl();
+
+        Swipe swipe = new Swipe(currentUserId, currentUserDisplayName, currentUserDisplayPhotoUrl, isSwipedRight);
+
+        // Push the swipe action to the database and handle completion
+        swipeActionRef.setValue(swipe).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                // Log a successful swipe action
+                Log.d(TAG, "Swipe recorded successfully by: " + currentUserDisplayName);
+            } else {
+                // Log an error if the swipe action failed to be recorded
+                Log.e(TAG, "Failed to record swipe action: " + task.getException().getMessage());
+            }
+        });
+    }
+
+    // Method to initiate a conversation when swiping up on an item.
+    private void swipeUp(Item item) {
+        // Create an intent to start the ConversationActivity
+        Intent intent = new Intent(requireContext(), ConversationActivity.class);
+
+        // Pass necessary data to the ConversationActivity
+        intent.putExtra("id", item.getUserId());
+        intent.putExtra("name", item.getFullName());
+        intent.putExtra("avatar", item.getAvatar());
+
+        // Set the flags for the intent
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // Start the ConversationActivity
+        requireActivity().startActivity(intent);
+    }
+
     // RecyclerView adapter for displaying feed items with swipe functionality.
-    private final class SwipeItemAdapter extends RecyclerView.Adapter<SwipeActivity.FeedItemDisplayHolder> {
-        private final List<Item> itemList;
-        private String key;
+    private final class SwipeItemAdapter extends RecyclerView.Adapter<SwipeActivity.SwipeItemDisplayHolder> {
+        private final List<Item> swipeItemList;
         private static final float SWIPE_THRESHOLD = 0.5f;
 
-        public SwipeItemAdapter(List<Item> itemList) {
-            this.itemList = itemList;
-        }
+        public SwipeItemAdapter(List<Item> swipeItemList) { this.swipeItemList = swipeItemList; }
 
         @Override
         public int getItemCount() {
-            return itemList.isEmpty() ? 0 : 1; // Only one item is displayed at a time
+            return swipeItemList.isEmpty() ? 0 : 1; // Only one item is displayed at a time
         }
 
         @NonNull
         @Override
-        public SwipeActivity.FeedItemDisplayHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public SwipeActivity.SwipeItemDisplayHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_swipe, parent, false);
-            return new SwipeActivity.FeedItemDisplayHolder(view);
+            return new SwipeActivity.SwipeItemDisplayHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull SwipeActivity.FeedItemDisplayHolder holder, int position) {
-            Item currentItem = itemList.get(position);
+        public void onBindViewHolder(@NonNull SwipeActivity.SwipeItemDisplayHolder holder, int position) {
+            Item currentItem = swipeItemList.get(position);
             holder.bindItem(currentItem);
-            key = currentItem.getKey();
+        }
+
+        // Attaches swipe helper to the RecyclerView.
+        public void attachSwipeHelperToRecyclerView(RecyclerView recyclerView) {
+            new ItemTouchHelper(simpleCallback).attachToRecyclerView(recyclerView);
         }
 
         // Implement swipe left and swipe right
         private final ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT | ItemTouchHelper.UP | ItemTouchHelper.DOWN) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder view, int direction) {
-                // Determine swipe direction
-                String swipeDirection;
-
-                if (direction == ItemTouchHelper.LEFT) {
-                    handleSwipeEvent(false);
-                    swipeDirection = "Left";
-
-                } else if (direction == ItemTouchHelper.RIGHT) {
-                    handleSwipeEvent(true);
-                    swipeDirection = "Right";
-
-                } else if (direction == ItemTouchHelper.UP) {
-                    // Assuming you want to swipe up the first item in the list
-                    Item item = itemList.get(0); // Get the first item
-                    swipeUp(item); // Pass the item to swipeUp method
-                    swipeDirection = "Up";
-                } else {
-                    swipeDirection = "Down";
-                }
-
-                int position = view.getAdapterPosition();
-                itemList.remove(position);
-                notifyItemRemoved(position);
-
-                // Perform actions based on swipe direction
-                Toast.makeText(requireActivity(), "Swiped " + swipeDirection, Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Swiped " + swipeDirection);
-            }
 
             @Override
             public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
                 return SWIPE_THRESHOLD;
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
             }
 
             @Override
@@ -237,48 +264,48 @@ public class SwipeActivity extends Fragment {
 
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
-        };
 
-        // Attaches swipe helper to the RecyclerView.
-        public void attachSwipeHelperToRecyclerView(RecyclerView recyclerView) {
-            new ItemTouchHelper(simpleCallback).attachToRecyclerView(recyclerView);
-        }
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder view, int direction) {
+                // Determine swipe direction
+                String swipeDirection;
+                int position = view.getAdapterPosition();
+                Item currentItem = swipeItemList.get(position);
 
-        private void handleSwipeEvent(final boolean value) {
-            DatabaseReference swipeReference = FirebaseInitialization.getItemsDatabaseReference().child(key).child("swipe");
-            DatabaseReference swipeActionRef = swipeReference.push();
+                if (direction == ItemTouchHelper.LEFT) {
+                    handleSwipeEvent(currentItem.getKey(), false);
+                    swipeDirection = "Left";
 
-            Swipe swipe = new Swipe(
-                    FirebaseInitialization.getCurrentUserId(),
-                    FirebaseInitialization.getCurrentUserDisplayName(),
-                    FirebaseInitialization.getCurrentUserDisplayPhotoUrl(),
-                    value);
+                } else if (direction == ItemTouchHelper.RIGHT) {
+                    handleSwipeEvent(currentItem.getKey(), true);
+                    swipeDirection = "Right";
 
-            swipeActionRef.setValue(swipe).addOnCompleteListener(task1 -> {
-                if(task1.isSuccessful()) {
-                    Log.d(TAG, "Swipe Successful ->" + FirebaseInitialization.getCurrentUserDisplayName());
+                } else if (direction == ItemTouchHelper.UP) {
+                    swipeUp(currentItem);
+                    swipeDirection = "Up";
+
+                } else {
+                    swipeDirection = "Down";
                 }
-            });
-        }
 
-        private void swipeUp(Item item) {
-            Intent intent = new Intent(requireContext(), ConversationActivity.class);
-            intent.putExtra("id", item.getUserId());
-            intent.putExtra("name", item.getFullName());
-            intent.putExtra("avatar", item.getAvatar());
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            requireActivity().startActivity(intent);
-        }
+                swipeItemList.remove(position);
+                notifyItemRemoved(position);
+
+                // Perform actions based on swipe direction
+                Toast.makeText(requireActivity(), "Swiped " + swipeDirection, Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Swiped " + swipeDirection);
+            }
+        };
     }
 
     // ViewHolder for displaying feed items.
-    private class FeedItemDisplayHolder extends RecyclerView.ViewHolder {
+    private class SwipeItemDisplayHolder extends RecyclerView.ViewHolder {
         private final ImageView mediaImageView;
         private final TextView titleTextView;
         private final TextView nameTextView;
         private final TextView descriptionTextView;
 
-        private FeedItemDisplayHolder(@NonNull View view) {
+        private SwipeItemDisplayHolder(@NonNull View view) {
             super(view);
             mediaImageView = view.findViewById(R.id.mediaImageView);
             titleTextView = view.findViewById(R.id.titleTextView);
@@ -287,6 +314,7 @@ public class SwipeActivity extends Fragment {
             Log.d(TAG, "ViewHolder created");
         }
 
+        @SuppressLint("SetTextI18n")
         private void bindItem(@NonNull Item item) {
             titleTextView.setText(item.getTitle());
             nameTextView.setText("By: " + item.getFullName());
