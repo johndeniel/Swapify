@@ -43,7 +43,6 @@ public class SwipeActivity extends Fragment {
     private final String SWIPE = "swipe";
     private SwipeItemAdapter itemAdapter;
     private List<Item> itemList;
-    private TextView info;
 
     // Custom LinearLayoutManager to make RecyclerView non-scrollable
     private final class NonScrollableLayoutManager extends LinearLayoutManager {
@@ -65,10 +64,6 @@ public class SwipeActivity extends Fragment {
         // Initialize RecyclerView
         RecyclerView itemRecyclerView = rootView.findViewById(R.id.itemRecyclerView);
         itemRecyclerView.setLayoutManager(new NonScrollableLayoutManager());
-
-        // Initialize TextView for information message
-        info = rootView.findViewById(R.id.info);
-        info.setVisibility(View.GONE);
 
         // Initialize item list and adapter
         itemList = new ArrayList<>();
@@ -141,12 +136,10 @@ public class SwipeActivity extends Fragment {
     private void handleUIUpdateWithItems(List<Item> fetchedItems) {
         if (!fetchedItems.isEmpty() && itemAdapter != null) {
             itemList.clear();
-            info.setVisibility(View.GONE);
             itemList.addAll(fetchedItems);
             itemAdapter.notifyDataSetChanged();
             Log.d(TAG, "Items retrieved and UI updated successfully.");
         } else {
-            info.setVisibility(View.VISIBLE);
             Log.d(TAG, "No items to display or adapter is unavailable.");
         }
     }

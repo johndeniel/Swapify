@@ -124,6 +124,7 @@ public class NavigationActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new AboutActivity())
                 .commit();
+        topAppBar.setTitle("About");
     }
 
     private boolean handleNavigationItemClick(MenuItem menuItem) {
@@ -153,6 +154,7 @@ public class NavigationActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new SwipeActivity())
                 .commit();
+        topAppBar.setTitle("Swapify");
         drawerLayout.closeDrawer(GravityCompat.START);
     }
 
@@ -161,6 +163,7 @@ public class NavigationActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new GalleryActivity())
                 .commit();
+        topAppBar.setTitle("Gallery");
         drawerLayout.closeDrawer(GravityCompat.START);
     }
 
@@ -176,6 +179,7 @@ public class NavigationActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, new AboutActivity())
                 .commit();
+        topAppBar.setTitle("About");
         drawerLayout.closeDrawer(GravityCompat.START);
     }
 

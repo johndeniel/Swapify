@@ -13,14 +13,6 @@
         android:layout_height="match_parent"
         android:layout_centerInParent="true" />
 
-    <TextView
-        android:id="@+id/info"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:layout_marginTop="-100dp"
-        android:text="No Data"/>
-
     <!-- Swipe Controls -->
     <LinearLayout
         android:layout_width="match_parent"

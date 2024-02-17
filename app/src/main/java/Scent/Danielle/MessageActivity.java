@@ -123,7 +123,7 @@ public class MessageActivity extends AppCompatActivity {
         @NonNull
         @Override
         public MessageActivity.UserModelViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(context).inflate(R.layout.item_chat, parent, false);
+            View view = LayoutInflater.from(context).inflate(R.layout.item_chat_search, parent, false);
             return new MessageActivity.UserModelViewHolder(view, context);
         }
 
@@ -137,7 +137,6 @@ public class MessageActivity extends AppCompatActivity {
     private static class UserModelViewHolder extends RecyclerView.ViewHolder{
         private final CircleImageView avatarImageView;
         private final TextView nameTextView;
-        private final TextView messageTextView;
         private final Context context;
 
         public UserModelViewHolder(@NonNull View itemView, @NonNull Context context) {
@@ -145,7 +144,6 @@ public class MessageActivity extends AppCompatActivity {
             this.context = context;
             avatarImageView = itemView.findViewById(R.id.avatarImageView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
-            messageTextView = itemView.findViewById(R.id.messageTextView);
         }
 
         private void bindItem(@NonNull User model) {
@@ -154,7 +152,6 @@ public class MessageActivity extends AppCompatActivity {
                     .into(avatarImageView);
 
             nameTextView.setText(model.getFullName());
-            messageTextView.setText("empty");
 
             itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(context, ConversationActivity.class);
