@@ -3,6 +3,7 @@ package barter.swapify.core.dagger.modules;
 import android.content.Context;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import javax.inject.Singleton;
 
@@ -32,7 +33,7 @@ public abstract class AuthModule {
     @Provides
     @Singleton
     static AuthRemoteDataSource provideAuthRemoteDataSource() {
-        return new AuthRemoteDataSourceImpl(FirebaseAuth.getInstance());
+        return new AuthRemoteDataSourceImpl(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance());
     }
 
     @Provides

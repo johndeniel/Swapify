@@ -41,6 +41,10 @@ dependencies {
     // Firebase libraries
     implementation(libs.transport.runtime)
     implementation(libs.firebase.auth)
+    implementation ("com.google.firebase:firebase-database:20.3.1")
+    implementation ("com.firebaseui:firebase-ui-firestore:8.0.2")
+    implementation ("com.google.firebase:firebase-storage:20.3.0")
+    implementation ("com.google.firebase:firebase-firestore:24.11.0")
 
     // Testing libraries
     testImplementation(libs.junit)
