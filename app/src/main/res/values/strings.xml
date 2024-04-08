@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">Swapify</string>
-    <string name="welcome_screen">Welcome to Swapify</string>
+
+    <string name="welcome_screen_title">Welcome to Swapify</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="login_with_google">Login With Google</string>
+    <string name="forgot_password">Forgot your password?</string>
+    <string name="sign_up">Don\'t have an account? Sign up!</string>
+
+    <string name="bottom_navigation_label_1">home</string>
+    <string name="bottom_navigation_label_2">Swipe</string>
+    <string name="bottom_navigation_label_3">Chat</string>
+    <string name="bottom_navigation_label_4">Me</string>
 </resources>
