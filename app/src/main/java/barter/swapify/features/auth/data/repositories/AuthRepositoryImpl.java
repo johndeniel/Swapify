@@ -8,8 +8,8 @@ import barter.swapify.core.errors.Failure;
 import barter.swapify.core.network.ConnectionChecker;
 import barter.swapify.core.typedef.Either;
 import barter.swapify.features.auth.data.datasource.AuthRemoteDataSource;
-import barter.swapify.features.auth.data.model.UserModel;
-import barter.swapify.features.auth.domain.entity.UserEntity;
+import barter.swapify.features.auth.data.model.AuthModel;
+import barter.swapify.features.auth.domain.entity.AuthEntity;
 import barter.swapify.features.auth.domain.repository.AuthRepository;
 
 public class AuthRepositoryImpl implements AuthRepository {
@@ -23,11 +23,11 @@ public class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public CompletableFuture<Either<Failure, UserEntity>> getUser(GoogleSignInAccount account) {
+    public CompletableFuture<Either<Failure, AuthEntity>> authentication(GoogleSignInAccount account) {
         return connectionChecker.isConnected()
                 .thenCompose(isConnected -> {
                     if (isConnected) {
-                        return authRemoteDataSource.getUser(account).thenApply(either -> either.map(UserModel::toUserEntity));
+                        return authRemoteDataSource.authentication(account).thenApply(either -> either.map(AuthModel::toAuthEntity));
                     } else {
                         return CompletableFuture.completedFuture(Either.left(new Failure(Constants.noConnectionErrorMessage)));
                     }

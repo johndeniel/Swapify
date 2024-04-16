@@ -1,29 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".features.swipe.presentation.pages.SwipePage">
+    android:layout_height="match_parent">
 
-    <com.facebook.shimmer.ShimmerFrameLayout
-        android:id="@+id/shimmer_view_container"
+    <!-- RecyclerView: Displays a list of items in a scrollable manner. -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/swipe_recycler_view"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true" />
+
+    <ProgressBar
+        android:id="@+id/swipe_loading_indicator"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:shimmer_auto_start="true"
-        app:shimmer_base_alpha="0.5"
-        app:shimmer_duration="1000"
-        android:layout_gravity="center">
-
-        <TextView
-            android:id="@+id/shimmer_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Loading..."
-            android:textSize="24sp"
-            android:textColor="@android:color/black"/>
-
-    </com.facebook.shimmer.ShimmerFrameLayout>
-</LinearLayout>
+        android:indeterminate="true"
+        android:layout_centerInParent="true"
+        style="@android:style/Widget.Material.Light.ProgressBar.Inverse" />
+</RelativeLayout>

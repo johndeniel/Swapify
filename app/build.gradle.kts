@@ -41,31 +41,34 @@ dependencies {
     // Firebase libraries
     implementation(libs.transport.runtime)
     implementation(libs.firebase.auth)
-    implementation ("com.google.firebase:firebase-database:20.3.1")
-    implementation ("com.firebaseui:firebase-ui-firestore:8.0.2")
-    implementation ("com.google.firebase:firebase-storage:20.3.0")
-    implementation ("com.google.firebase:firebase-firestore:24.11.0")
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.ui.firestore)
+    implementation(libs.firebase.storage)
+
+    // Google Play services for authentication
+    implementation (libs.play.services.auth)
+
+    // RxJava for reactive programming
+    implementation(libs.rxandroid)
+
+    // Glide library for efficient image loading and caching.
+    implementation (libs.glide)
+
+    // Shimmer library for shimmer effect
+    implementation (libs.shimmer)
+
+    // Dagger2 core
+    implementation(libs.dagger)
+    annotationProcessor(libs.dagger.compiler)
+
+    // Dagger Android
+    implementation(libs.dagger.android)
+    implementation(libs.dagger.android.support)
+    annotationProcessor(libs.dagger.android.processor)
 
     // Testing libraries
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
-    // Google Play services for authentication
-    implementation ("com.google.android.gms:play-services-auth:21.0.0")
-
-    // RxJava for reactive programming
-    implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
-
-    // Dagger2 core
-    implementation("com.google.dagger:dagger:2.51.1")
-    annotationProcessor("com.google.dagger:dagger-compiler:2.51.1")
-
-    // Dagger Android
-    implementation("com.google.dagger:dagger-android:2.51.1")
-    implementation("com.google.dagger:dagger-android-support:2.51.1")
-    annotationProcessor("com.google.dagger:dagger-android-processor:2.51.1")
-
-    // Facebook Shimmer library for shimmer effect
-    implementation ("com.facebook.shimmer:shimmer:0.5.0")
 }

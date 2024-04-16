@@ -1,6 +1,7 @@
 package barter.swapify.features.auth.data.datasource;
 
 import static barter.swapify.core.constants.Constants.USER_REFERENCE;
+import static barter.swapify.features.auth.data.model.AuthModel.toAuthModel;
 
 import android.util.Log;
 
@@ -19,7 +20,7 @@ import javax.inject.Inject;
 import barter.swapify.core.errors.Failure;
 import barter.swapify.core.typedef.Either;
 import barter.swapify.core.typedef.User;
-import barter.swapify.features.auth.data.model.UserModel;
+import barter.swapify.features.auth.data.model.AuthModel;
 
 public class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     private static final String TAG = AuthRemoteDataSourceImpl.class.getSimpleName();
@@ -33,15 +34,15 @@ public class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
 
     @Override
-    public CompletableFuture<Either<Failure, UserModel>> getUser(GoogleSignInAccount account) {
-        CompletableFuture<Either<Failure, UserModel>> future = new CompletableFuture<>();
+    public CompletableFuture<Either<Failure, AuthModel>> authentication(GoogleSignInAccount account) {
+        CompletableFuture<Either<Failure, AuthModel>> future = new CompletableFuture<>();
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 FirebaseUser firebaseUser = mAuth.getCurrentUser();
                 if (firebaseUser != null) {
                     saveUserInfo(firebaseUser);
-                    future.complete(Either.right(map(firebaseUser)));
+                    future.complete(Either.right(toAuthModel(firebaseUser)));
                     Log.d(TAG, "User signed in successfully. User ID: " + firebaseUser.getUid());
                 } else {
                     future.complete(Either.left(new Failure("FirebaseUser is null")));
@@ -57,15 +58,15 @@ public class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return future;
     }
 
-    private UserModel map(FirebaseUser firebaseUser) {
-        return new UserModel(firebaseUser.getEmail(), firebaseUser.getDisplayName());
-    }
-
     private void saveUserInfo(FirebaseUser firebaseUser) {
         try {
             String userId = firebaseUser.getUid();
             String userFullName = firebaseUser.getDisplayName();
             String userPhotoUrl = String.valueOf(firebaseUser.getPhotoUrl());
+
+            Log.d(TAG, "User document set successfully. User ID: " + userId);
+            Log.d(TAG, "User Full Name: " + userFullName);
+            Log.d(TAG, "User Photo URL: " + userPhotoUrl);
 
             User user = new User(userId, userFullName, userPhotoUrl);
 

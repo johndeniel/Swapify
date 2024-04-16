@@ -2,6 +2,7 @@ package barter.swapify.features.auth.presentation.pages;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -16,9 +17,9 @@ import barter.swapify.core.credential.presentation.notifiers.CredentialNotifiers
 import barter.swapify.core.errors.Failure;
 import barter.swapify.core.route.Navigator;
 import barter.swapify.core.widgets.snackbar.SnackBarHelper;
-import barter.swapify.features.auth.domain.entity.UserEntity;
+import barter.swapify.features.auth.domain.entity.AuthEntity;
 import barter.swapify.features.auth.domain.repository.AuthRepository;
-import barter.swapify.features.auth.domain.usecases.GetUserUseCases;
+import barter.swapify.features.auth.domain.usecases.AuthUseCases;
 import barter.swapify.features.auth.presentation.notifiers.AuthNotifier;
 import barter.swapify.features.auth.presentation.widgets.GoogleSignInPopup;
 import dagger.android.support.DaggerAppCompatActivity;
@@ -27,10 +28,9 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class LoginPage extends DaggerAppCompatActivity {
-    @Inject
-    public AuthRepository provideAuthRepository;
-    @Inject
-    public CompositeDisposable provideCompositeDisposable;
+    private static final String TAG = LoginPage.class.getSimpleName();
+    @Inject public AuthRepository provideAuthRepository;
+    @Inject public CompositeDisposable provideCompositeDisposable;
     private ProgressBar loadingIndicator;
     private GoogleSignInPopup googleSignInPopup;
     private CredentialNotifiers credentialNotifiers;
@@ -40,11 +40,7 @@ public class LoginPage extends DaggerAppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.auth_presentation_pages_login);
 
-        View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        decorView.setSystemUiVisibility(uiOptions);
-
+        hideNavigation();
 
         credentialNotifiers = new CredentialNotifiers(this);
         loadingIndicator = findViewById(R.id.loadingIndicator);
@@ -59,6 +55,13 @@ public class LoginPage extends DaggerAppCompatActivity {
         hideLoading();
     }
 
+    private void hideNavigation() {
+        View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        decorView.setSystemUiVisibility(uiOptions);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -66,15 +69,19 @@ public class LoginPage extends DaggerAppCompatActivity {
 
         showLoading();
 
-        AuthNotifier authNotifier = new AuthNotifier(account, new GetUserUseCases(provideAuthRepository));
+        AuthNotifier authNotifier = new AuthNotifier(account, new AuthUseCases(provideAuthRepository));
         provideCompositeDisposable.add(authNotifier.getUser()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     hideLoading();
                     if (result.isRight()) {
-                        UserEntity userEntity = result.getRight();
-                        credentialNotifiers.saveCredential(mapFrom(userEntity));
+                        AuthEntity userEntity = result.getRight();
+                        Log.d(TAG, "Uid: " + userEntity.getUid());
+                        Log.d(TAG, "Email: " + userEntity.getEmail());
+                        Log.d(TAG, "Display Name: " + userEntity.getDisplayName());
+                        Log.d(TAG, "Photo Url: " + userEntity.getPhotoUrl());
+                        credentialNotifiers.saveCredential(toCredentialEntity(userEntity));
                         Intent intent = new Intent(this, Navigator.class);
                         startActivity(intent);
                         finish();
@@ -86,10 +93,12 @@ public class LoginPage extends DaggerAppCompatActivity {
                 }));
     }
 
-    private CredentialEntity mapFrom(UserEntity userEntity) {
+    private CredentialEntity toCredentialEntity(AuthEntity userEntity) {
         return new CredentialEntity(
+                userEntity.getUid(),
                 userEntity.getEmail(),
-                userEntity.getDisplayName()
+                userEntity.getDisplayName(),
+                userEntity.getPhotoUrl()
         );
     }
 

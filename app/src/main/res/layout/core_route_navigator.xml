@@ -22,5 +22,6 @@
         android:layout_height="wrap_content"
         app:menu="@menu/bottom_navigation_menu"
         app:labelVisibilityMode="labeled"
+        android:background="?android:attr/windowBackground"
         app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"/>
 </LinearLayout>
