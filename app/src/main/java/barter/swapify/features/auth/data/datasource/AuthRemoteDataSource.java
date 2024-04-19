@@ -8,4 +8,5 @@ import barter.swapify.features.auth.data.model.AuthModel;
 
 public interface AuthRemoteDataSource {
     CompletableFuture<Either<Failure, AuthModel>> authentication(GoogleSignInAccount account);
+    CompletableFuture<Either<Failure, Boolean>> logout();
 }

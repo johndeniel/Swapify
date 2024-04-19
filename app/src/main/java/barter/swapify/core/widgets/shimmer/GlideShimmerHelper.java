@@ -1,4 +1,4 @@
-package barter.swapify.features.swipe.presentation.widgets;
+package barter.swapify.core.widgets.shimmer;
 
 import android.graphics.drawable.Drawable;
 
@@ -11,10 +11,10 @@ import com.bumptech.glide.request.target.Target;
 import com.facebook.shimmer.Shimmer;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
-public class GlideShimmer implements RequestListener<Drawable> {
+public class GlideShimmerHelper implements RequestListener<Drawable> {
     private final ShimmerFrameLayout shimmerFrameLayout;
 
-    public GlideShimmer(ShimmerFrameLayout shimmerFrameLayout) {
+    public GlideShimmerHelper(ShimmerFrameLayout shimmerFrameLayout) {
         this.shimmerFrameLayout = shimmerFrameLayout;
         setShimmerEffect();
     }

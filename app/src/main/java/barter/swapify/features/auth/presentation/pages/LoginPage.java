@@ -20,7 +20,8 @@ import barter.swapify.core.widgets.snackbar.SnackBarHelper;
 import barter.swapify.features.auth.domain.entity.AuthEntity;
 import barter.swapify.features.auth.domain.repository.AuthRepository;
 import barter.swapify.features.auth.domain.usecases.AuthUseCases;
-import barter.swapify.features.auth.presentation.notifiers.AuthNotifier;
+import barter.swapify.features.auth.domain.usecases.LogoutUseCases;
+import barter.swapify.features.auth.presentation.notifiers.LoginNotifier;
 import barter.swapify.features.auth.presentation.widgets.GoogleSignInPopup;
 import dagger.android.support.DaggerAppCompatActivity;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -30,7 +31,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class LoginPage extends DaggerAppCompatActivity {
     private static final String TAG = LoginPage.class.getSimpleName();
     @Inject public AuthRepository provideAuthRepository;
-    @Inject public CompositeDisposable provideCompositeDisposable;
+    private CompositeDisposable compositeDisposable;
     private ProgressBar loadingIndicator;
     private GoogleSignInPopup googleSignInPopup;
     private CredentialNotifiers credentialNotifiers;
@@ -38,10 +39,9 @@ public class LoginPage extends DaggerAppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.auth_presentation_pages_login);
-
+        setContentView(R.layout.auth_presentation_login_page);
         hideNavigation();
-
+        compositeDisposable = new CompositeDisposable();
         credentialNotifiers = new CredentialNotifiers(this);
         loadingIndicator = findViewById(R.id.loadingIndicator);
         googleSignInPopup = new GoogleSignInPopup(this);
@@ -69,8 +69,11 @@ public class LoginPage extends DaggerAppCompatActivity {
 
         showLoading();
 
-        AuthNotifier authNotifier = new AuthNotifier(account, new AuthUseCases(provideAuthRepository));
-        provideCompositeDisposable.add(authNotifier.getUser()
+        AuthUseCases authUseCases = new AuthUseCases(provideAuthRepository);
+        LogoutUseCases logoutUseCases = new LogoutUseCases(provideAuthRepository);
+
+        LoginNotifier authNotifier = new LoginNotifier(account, authUseCases);
+        compositeDisposable.add(authNotifier.getUser()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {

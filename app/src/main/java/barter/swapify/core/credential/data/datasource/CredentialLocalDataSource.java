@@ -9,4 +9,6 @@ import barter.swapify.core.typedef.Either;
 public interface CredentialLocalDataSource {
     CompletableFuture<Either<Failure, CredentialModel>> getCredential();
     CompletableFuture<Either<Failure, Void>> saveCredential(CredentialModel credentialModel);
+
+    CompletableFuture<Either<Failure, Boolean>> logout();
 }

@@ -21,6 +21,7 @@ import com.facebook.shimmer.ShimmerFrameLayout;
 import java.util.List;
 
 import barter.swapify.R;
+import barter.swapify.core.widgets.shimmer.GlideShimmerHelper;
 import barter.swapify.features.swipe.domain.entity.SwipeEntity;
 
 public class SwipeAdapter extends RecyclerView.Adapter<SwipeAdapter.SwipeHolder> {
@@ -150,8 +151,9 @@ public class SwipeAdapter extends RecyclerView.Adapter<SwipeAdapter.SwipeHolder>
             Glide.with(itemView.getContext())
                     .load(item.getImageUrl())
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .placeholder(R.drawable.placeholder)
-                    .listener(new GlideShimmer(shimmerFrameLayout))
+                    .placeholder(R.drawable.rectangle)
+                    .centerCrop()
+                    .listener(new GlideShimmerHelper(shimmerFrameLayout))
                     .into(mediaImageView);
         }
     }

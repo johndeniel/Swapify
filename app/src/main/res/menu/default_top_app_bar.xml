@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- More Options Item -->
+    <item
+        android:id="@+id/share_app_bar"
+        android:icon="@drawable/share"
+        android:title="About"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/upload_app_bar"
+        android:icon="@drawable/box"
+        android:title="About"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/setting_app_bar"
+        android:icon="@drawable/menu_burger"
+        android:title="About"
+        app:showAsAction="ifRoom" />
+
+</menu>

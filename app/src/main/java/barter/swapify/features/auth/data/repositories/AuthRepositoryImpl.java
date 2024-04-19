@@ -33,4 +33,16 @@ public class AuthRepositoryImpl implements AuthRepository {
                     }
                 });
     }
+
+    @Override
+    public CompletableFuture<Either<Failure, Boolean>> logout() {
+        return connectionChecker.isConnected()
+                .thenCompose(isConnected -> {
+                    if (isConnected) {
+                        return authRemoteDataSource.logout().thenApply(either -> either.map(aBoolean -> aBoolean));
+                    } else {
+                        return CompletableFuture.completedFuture(Either.left(new Failure(Constants.noConnectionErrorMessage)));
+                    }
+                });
+    }
 }

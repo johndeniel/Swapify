@@ -13,6 +13,7 @@ import barter.swapify.features.auth.data.datasource.AuthRemoteDataSourceImpl;
 import barter.swapify.features.auth.data.repositories.AuthRepositoryImpl;
 import barter.swapify.features.auth.domain.repository.AuthRepository;
 import barter.swapify.features.auth.presentation.pages.LoginPage;
+import barter.swapify.features.auth.presentation.pages.LogoutPage;
 import dagger.Module;
 import dagger.Provides;
 import dagger.android.ContributesAndroidInjector;
@@ -24,16 +25,19 @@ public abstract class AuthModule {
     @ContributesAndroidInjector
     abstract LoginPage contributeLoginPage();
 
+    @ContributesAndroidInjector
+    abstract LogoutPage contributeLogoutPage();
+
     @Provides
     @Singleton
     static AuthRepository provideAuthRepository(Context context) {
-        return new AuthRepositoryImpl(new ConnectionCheckerImpl(context), provideAuthRemoteDataSource());
+        return new AuthRepositoryImpl(new ConnectionCheckerImpl(context), provideAuthRemoteDataSource(context));
     }
 
     @Provides
     @Singleton
-    static AuthRemoteDataSource provideAuthRemoteDataSource() {
-        return new AuthRemoteDataSourceImpl(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance());
+    static AuthRemoteDataSource provideAuthRemoteDataSource(Context context) {
+        return new AuthRemoteDataSourceImpl(context, FirebaseAuth.getInstance(), FirebaseFirestore.getInstance());
     }
 
     @Provides

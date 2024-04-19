@@ -29,6 +29,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -58,8 +61,14 @@ dependencies {
     // Shimmer library for shimmer effect
     implementation (libs.shimmer)
 
+    // Displaying Circular Images for Avatar
+    implementation (libs.circleimageview)
+
     // Dagger2 core
     implementation(libs.dagger)
+    implementation(libs.annotation)
+    implementation(libs.lifecycle.livedata.ktx)
+    implementation(libs.lifecycle.viewmodel.ktx)
     annotationProcessor(libs.dagger.compiler)
 
     // Dagger Android

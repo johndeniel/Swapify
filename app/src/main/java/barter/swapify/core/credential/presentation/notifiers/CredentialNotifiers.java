@@ -8,6 +8,7 @@ import barter.swapify.core.credential.data.datasource.dao.CredentialDaoImpl;
 import barter.swapify.core.credential.data.repositories.CredentialRepositoryImpl;
 import barter.swapify.core.credential.domain.entity.CredentialEntity;
 import barter.swapify.core.credential.domain.repository.CredentialRepository;
+import barter.swapify.core.credential.domain.usecases.ClearCredentialUseCases;
 import barter.swapify.core.credential.domain.usecases.GetCredentialUseCases;
 import barter.swapify.core.credential.domain.usecases.SaveCredentialUseCases;
 import barter.swapify.core.errors.Failure;
@@ -19,6 +20,7 @@ public class CredentialNotifiers {
 
     private final GetCredentialUseCases getCredentialUseCases;
     private final SaveCredentialUseCases saveCredentialUseCases;
+    private final ClearCredentialUseCases clearCredentialUseCases;
 
     public CredentialNotifiers(Context context) {
         CredentialDao credentialDao = new CredentialDaoImpl(context);
@@ -27,6 +29,7 @@ public class CredentialNotifiers {
 
         getCredentialUseCases = new GetCredentialUseCases(credentialRepository);
         saveCredentialUseCases = new SaveCredentialUseCases(credentialRepository);
+        clearCredentialUseCases = new ClearCredentialUseCases(credentialRepository);
     }
 
     public Single<Either<Failure, CredentialEntity>> getCredential() {
@@ -43,5 +46,17 @@ public class CredentialNotifiers {
 
     public void saveCredential(CredentialEntity credentialEntity) {
         saveCredentialUseCases.invoke(credentialEntity);
+    }
+
+    public Single<Either<Failure, Boolean>> logout() {
+        return Single.create(emitter -> clearCredentialUseCases.invoke(new NoParams())
+                .thenApplyAsync(result -> {
+                    emitter.onSuccess(result);
+                    return null;
+                })
+                .exceptionally(throwable -> {
+                    emitter.onError(throwable);
+                    return null;
+                }));
     }
 }

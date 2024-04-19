@@ -38,4 +38,16 @@ public class CredentialLocalDataSourceImpl implements CredentialLocalDataSource{
         }
         return future;
     }
+
+    @Override
+    public CompletableFuture<Either<Failure, Boolean>> logout() {
+        CompletableFuture<Either<Failure, Boolean>> future = new CompletableFuture<>();
+        try {
+            credentialDao.logOut();
+            future.complete(Either.right(true));
+        } catch (Exception e) {
+            future.complete(Either.left(new Failure(e.getMessage())));
+        }
+        return future;
+    }
 }

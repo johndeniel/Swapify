@@ -35,5 +35,4 @@ public abstract class SwipeModule {
     static SwipeRemoteDataSource provideSwipeRemoteDataSource() {
         return new SwipeRemoteDataSourceImpl(FirebaseDatabase.getInstance().getReference(ITEMS_REFERENCE));
     }
-
 }

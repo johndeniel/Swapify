@@ -9,4 +9,5 @@ import barter.swapify.core.usecase.NoParams;
 public interface CredentialRepository {
     CompletableFuture<Either<Failure, CredentialEntity>> getCredential();
     CompletableFuture<Either<Failure, Void>> saveCredential(CredentialEntity credentialEntity);
+    CompletableFuture<Either<Failure, Boolean>> logout();
 }

@@ -8,8 +8,21 @@
     <string name="forgot_password">Forgot your password?</string>
     <string name="sign_up">Don\'t have an account? Sign up!</string>
 
-    <string name="bottom_navigation_label_1">home</string>
+    <string name="bottom_navigation_label_1">Explore</string>
     <string name="bottom_navigation_label_2">Swipe</string>
     <string name="bottom_navigation_label_3">Chat</string>
     <string name="bottom_navigation_label_4">Me</string>
+
+    <string name="followers_count">5M</string>
+    <string name="followers">Followers</string>
+    <string name="following_count">200</string>
+    <string name="following">Following</string>
+
+    <string name="get_fully_verified">Get Fully Verified</string>
+    <string name="try_now">Try Now</string>
+    <string name="welcome_to_explore">Welcome to Explore</string>
+
+    <string name="first_card">First Card</string>
+    <string name="second_card">Second Card</string>
+    <string name="designer_brands">Designers Brand</string>
 </resources>

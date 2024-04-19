@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:name=".core.dagger.BaseApplication"
         android:allowBackup="true"
@@ -14,31 +16,49 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Swapify"
         tools:targetApi="31">
-
+        <activity
+            android:name=".features.auth.presentation.pages.LogoutPage"
+            android:exported="false" />
+        <activity
+            android:name=".features.settings.presentation.pages.SettingsPage"
+            android:exported="false" />
+        <activity
+            android:name=".features.organization.presentation.pages.OrganizationPage"
+            android:exported="false" />
+        <activity
+            android:name=".features.heart.presentation.pages.HeartPage"
+            android:exported="false" />
+        <activity
+            android:name=".features.gallery.presentation.pages.GalleryPage"
+            android:exported="false" />
+        <activity
+            android:name=".features.chat.presentation.pages.ContactPage"
+            android:exported="false" />
+        <activity
+            android:name=".features.profile.presentation.pages.ProfilePage"
+            android:exported="false" />
         <activity
             android:name=".MainEntryPoint"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".features.auth.presentation.pages.LoginPage"
             android:exported="false"
-            android:screenOrientation="portrait"/>
-
+            android:screenOrientation="portrait" />
         <activity
             android:name=".core.route.Navigator"
             android:exported="false"
-            android:screenOrientation="portrait"/>
-
+            android:screenOrientation="portrait" />
         <activity
             android:name=".features.swipe.presentation.pages.SwipePage"
             android:exported="false"
-            android:screenOrientation="portrait"/>
-
+            android:screenOrientation="portrait" />
     </application>
+
 </manifest>

@@ -18,4 +18,5 @@ public class Constants {
 
 
    public static final String noConnectionErrorMessage = "wifi disconnected!";
+   public static final String errorLoggingOutMessage = "Error logging out";
 }

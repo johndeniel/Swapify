@@ -29,4 +29,9 @@ public class CredentialRepositoryImpl implements CredentialRepository {
         return credentialLocalDataSource.saveCredential(mapToModel(credentialEntity))
                 .thenApply(either -> either.map(__ -> null));
     }
+
+    @Override
+    public CompletableFuture<Either<Failure, Boolean>> logout() {
+        return credentialLocalDataSource.logout().thenApply(aBoolean -> aBoolean);
+    }
 }

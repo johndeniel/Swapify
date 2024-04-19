@@ -1,0 +1,1054 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Toolbar -->
+    <!-- AppBarLayout containing MaterialToolbar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- MaterialToolbar in AppBar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/settings_top_app_bar"
+            android:layout_width="match_parent"
+            app:titleTextAppearance="?attr/textAppearanceTitleLarge"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Setting and activity"
+            app:navigationIcon="@drawable/back" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Your existing layout content goes here -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/default_spacing_margin_l"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- First item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/save"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Saved"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Second item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/archive"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Archive"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/organization"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Your activity"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/notification"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Notification"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+
+            </LinearLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerInsetStart="16dp"
+                app:dividerInsetEnd="16dp"/>
+
+            <!-- Your existing layout content goes here -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/default_spacing_margin_l"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- First item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/lock"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Account privacy"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Second item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/blocked"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Blocked"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/hide"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Hide Story"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/heart"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Like you've made"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+
+            </LinearLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerInsetStart="16dp"
+                app:dividerInsetEnd="16dp"/>
+
+            <!-- Your existing layout content goes here -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/default_spacing_margin_l"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- First item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/device"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Device permissions"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Second item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/download"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Archiving and downloading"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/accessibility"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Accessibility"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/language"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Language"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/signal"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Data usage and media quality"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/screen"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Website permissions"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+
+            </LinearLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerInsetStart="16dp"
+                app:dividerInsetEnd="16dp"/>
+
+            <!-- Your existing layout content goes here -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/default_spacing_margin_l"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- First item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/invite"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Invite friends"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Second item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/feedback"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Leave feedback"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/memo"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Community guidelines"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/lock"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Safety guidelines"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+                <!-- Add more items as needed -->
+
+            </LinearLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerInsetStart="16dp"
+                app:dividerInsetEnd="16dp"/>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerInsetStart="16dp"
+                app:dividerInsetEnd="16dp"/>
+
+            <!-- Your existing layout content goes here -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/default_spacing_margin_l"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- First item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/me"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="About your account"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Second item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/notebook"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Privacy Policy"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/pad"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Terms of use"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/github"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="Open source libraries"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Add more items as needed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content">
+
+                    <!-- ImageView -->
+                    <ImageView
+                        android:src="@drawable/refresh"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- TextView -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:text="App updates"
+                        android:layout_height="wrap_content"/>
+
+                    <!-- Right-aligned ImageView -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:src="@drawable/angle_right"
+                            android:layout_width="18dp"
+                            android:layout_marginStart="@dimen/default_spacing_margin_m"
+                            android:layout_height="18dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+                <!-- Add more items as needed -->
+
+            </LinearLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerInsetStart="16dp"
+                app:dividerInsetEnd="16dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/default_spacing_margin_m"
+            android:padding="@dimen/default_spacing_padding_s"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Delete Account"
+                    android:textColor="#F44336"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+                <Button
+                    android:id="@+id/logout_setting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Logout"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
