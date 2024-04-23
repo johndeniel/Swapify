@@ -1,5 +1,6 @@
 package barter.swapify.core.route;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import barter.swapify.R;
 import barter.swapify.features.chat.presentation.pages.ContactPage;
 import barter.swapify.features.explore.presentation.pages.ExplorePage;
+import barter.swapify.features.post.presentation.pages.NewPostPage;
 import barter.swapify.features.profile.presentation.pages.ProfilePage;
 import barter.swapify.features.swipe.presentation.pages.SwipePage;
 
@@ -56,6 +58,10 @@ public class Navigator extends AppCompatActivity {
             return true;
         } else if (itemId == R.id.swipe_navigation) {
             replaceFragment(new SwipePage());
+            return true;
+        } else if (itemId == R.id.post_navigation) {
+            Intent intent = new Intent(this, NewPostPage.class);
+            startActivity(intent);
             return true;
         } else if (itemId == R.id.chat_navigation) {
             replaceFragment(new ContactPage());

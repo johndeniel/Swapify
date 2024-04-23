@@ -5,12 +5,16 @@
         android:enabled="true"
         android:icon="@drawable/explore"
         android:title="@string/bottom_navigation_label_1"/>
-
     <item
         android:id="@+id/swipe_navigation"
         android:enabled="true"
         android:icon="@drawable/logo"
         android:title="@string/bottom_navigation_label_2"/>
+    <item
+        android:id="@+id/post_navigation"
+        android:enabled="true"
+        android:icon="@drawable/box"
+        android:title="Post"/>
     <item
         android:id="@+id/chat_navigation"
         android:enabled="true"

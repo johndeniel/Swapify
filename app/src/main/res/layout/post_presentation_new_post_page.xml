@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+    <LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context=".features.post.presentation.pages.NewPostPage">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- MaterialToolbar in AppBar -->
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/new_post_tool_bar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:title="New post"
+                app:navigationIcon="@drawable/cross"/>
+        </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+
+        android:id="@+id/main_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/default_spacing_margin_m"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:scaleType="centerCrop"
+                android:id="@+id/post_image_viewer"
+                android:src="@drawable/image"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_spacing_margin_xl"
+                android:text="Write a title"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_spacing_margin_m"
+                android:text="Write a description"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/default_spacing_margin_m"
+                android:layout_height="wrap_content">
+
+                <!-- ImageView -->
+                <ImageView
+                    android:src="@drawable/location"
+                    android:layout_width="wrap_content"
+                    android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content"/>
+
+                <!-- TextView -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:text="Add location"
+                    android:layout_height="wrap_content"/>
+
+                <!-- Right-aligned ImageView -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="end"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:src="@drawable/angle_right"
+                        android:layout_width="18dp"
+                        android:layout_marginStart="@dimen/default_spacing_margin_m"
+                        android:layout_height="18dp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/default_spacing_margin_m"
+                android:layout_height="wrap_content">
+
+                <!-- ImageView -->
+                <ImageView
+                    android:src="@drawable/organization"
+                    android:layout_width="wrap_content"
+                    android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content"/>
+
+                <!-- TextView -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:text="Tag"
+                    android:layout_height="wrap_content"/>
+
+                <!-- Right-aligned ImageView -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="end"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:src="@drawable/angle_right"
+                        android:layout_width="18dp"
+                        android:layout_marginStart="@dimen/default_spacing_margin_m"
+                        android:layout_height="18dp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/default_spacing_margin_m"
+                android:layout_height="wrap_content">
+
+                <!-- ImageView -->
+                <ImageView
+                    android:src="@drawable/music"
+                    android:layout_width="wrap_content"
+                    android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content"/>
+
+                <!-- TextView -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:text="Music"
+                    android:layout_height="wrap_content"/>
+
+                <!-- Right-aligned ImageView -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="end"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:src="@drawable/angle_right"
+                        android:layout_width="18dp"
+                        android:layout_marginStart="@dimen/default_spacing_margin_m"
+                        android:layout_height="18dp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <com.google.android.material.chip.ChipGroup
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_marginTop="@dimen/default_spacing_margin_m"
+                android:id="@+id/chip_group_filter">
+
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.MaterialComponents.Chip.Entry"
+                    android:layout_width="wrap_content"
+                    android:text="Leave the Door Open"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chip2"
+                    />
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.MaterialComponents.Chip.Entry"
+                    android:layout_width="wrap_content"
+                    android:text="Young Wild and Free"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chip3"
+                    />
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.MaterialComponents.Chip.Entry"
+                    android:layout_width="wrap_content"
+                    android:text="That’s What I Like"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chip4"
+                    />
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.MaterialComponents.Chip.Entry"
+                    android:layout_width="wrap_content"
+                    android:text="Finesse"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chip6"
+                    />
+                <com.google.android.material.chip.Chip
+                    style="@style/Widget.MaterialComponents.Chip.Entry"
+                    android:layout_width="wrap_content"
+                    android:text="Grenade"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chip5"
+                    />
+        </com.google.android.material.chip.ChipGroup>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/default_spacing_margin_m"
+                android:layout_height="wrap_content">
+
+                <!-- ImageView -->
+                <ImageView
+                    android:src="@drawable/me"
+                    android:layout_width="wrap_content"
+                    android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content"/>
+
+                <!-- TextView -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:text="Audience"
+                    android:layout_height="wrap_content"/>
+
+                <!-- Right-aligned ImageView -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="end"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:src="@drawable/angle_right"
+                        android:layout_width="18dp"
+                        android:layout_marginStart="@dimen/default_spacing_margin_m"
+                        android:layout_height="18dp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/default_spacing_margin_m"
+                android:layout_height="wrap_content">
+
+                <!-- ImageView -->
+                <ImageView
+                    android:src="@drawable/facebook"
+                    android:layout_width="wrap_content"
+                    android:layout_marginEnd="@dimen/default_spacing_margin_m"
+                    android:layout_height="wrap_content"/>
+
+                <!-- TextView -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:text="Share to Facebook"
+                    android:layout_height="wrap_content"/>
+
+                <!-- Right-aligned ImageView -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="end"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:src="@drawable/angle_right"
+                        android:layout_width="18dp"
+                        android:layout_marginStart="@dimen/default_spacing_margin_m"
+                        android:layout_height="18dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/default_spacing_margin_m"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Share"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+</ScrollView>
+</LinearLayout>

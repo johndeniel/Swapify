@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".core.dagger.BaseApplication"
@@ -17,19 +19,22 @@
         android:theme="@style/Theme.Swapify"
         tools:targetApi="31">
         <activity
+            android:name=".features.post.presentation.pages.NewPostPage"
+            android:exported="false" />
+        <activity
             android:name=".features.auth.presentation.pages.LogoutPage"
             android:exported="false" />
         <activity
             android:name=".features.settings.presentation.pages.SettingsPage"
             android:exported="false" />
         <activity
-            android:name=".features.organization.presentation.pages.OrganizationPage"
+            android:name=".features.post.presentation.pages.TagPostPage"
             android:exported="false" />
         <activity
-            android:name=".features.heart.presentation.pages.HeartPage"
+            android:name=".features.post.presentation.pages.HeartPostPage"
             android:exported="false" />
         <activity
-            android:name=".features.gallery.presentation.pages.GalleryPage"
+            android:name=".features.post.presentation.pages.ViewPostPage"
             android:exported="false" />
         <activity
             android:name=".features.chat.presentation.pages.ContactPage"

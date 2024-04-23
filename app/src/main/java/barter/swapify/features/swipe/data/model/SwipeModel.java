@@ -14,7 +14,7 @@ public class SwipeModel extends SwipeEntity {
     }
 
     public static List<SwipeEntity> toSwipeEntity(List<SwipeModel> items) {
-        List<SwipeEntity> swipeEntities = new ArrayList<>();
+        List<SwipeEntity> swipeEntity = new ArrayList<>();
         for (SwipeModel item : items) {
             SwipeEntity entity = new SwipeEntity(
                     item.getKey(),
@@ -26,9 +26,9 @@ public class SwipeModel extends SwipeEntity {
                     item.getFileName(),
                     item.getImageUrl()
             );
-            swipeEntities.add(entity);
+            swipeEntity.add(entity);
         }
 
-        return swipeEntities;
+        return swipeEntity;
     }
 }

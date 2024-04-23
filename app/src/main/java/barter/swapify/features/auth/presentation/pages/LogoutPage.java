@@ -13,7 +13,6 @@ import barter.swapify.core.credential.presentation.notifiers.CredentialNotifiers
 import barter.swapify.core.errors.Failure;
 
 import barter.swapify.core.typedef.Either;
-import barter.swapify.core.widgets.snackbar.SnackBarHelper;
 import barter.swapify.features.auth.domain.repository.AuthRepository;
 import barter.swapify.features.auth.domain.usecases.LogoutUseCases;
 import barter.swapify.features.auth.presentation.notifiers.LogoutNotifier;
@@ -32,7 +31,7 @@ public class LogoutPage extends DaggerAppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_logout_page);
+        setContentView(R.layout.auth_presentation_logout_page);
         hideNavigationBar();
 
         disposable = new CompositeDisposable();

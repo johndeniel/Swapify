@@ -20,7 +20,6 @@ import barter.swapify.core.widgets.snackbar.SnackBarHelper;
 import barter.swapify.features.auth.domain.entity.AuthEntity;
 import barter.swapify.features.auth.domain.repository.AuthRepository;
 import barter.swapify.features.auth.domain.usecases.AuthUseCases;
-import barter.swapify.features.auth.domain.usecases.LogoutUseCases;
 import barter.swapify.features.auth.presentation.notifiers.LoginNotifier;
 import barter.swapify.features.auth.presentation.widgets.GoogleSignInPopup;
 import dagger.android.support.DaggerAppCompatActivity;
@@ -67,33 +66,33 @@ public class LoginPage extends DaggerAppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         GoogleSignInAccount account = googleSignInPopup.handleSignInResult(requestCode, data);
 
-        showLoading();
+        if (account != null) {
+            showLoading();
 
-        AuthUseCases authUseCases = new AuthUseCases(provideAuthRepository);
-        LogoutUseCases logoutUseCases = new LogoutUseCases(provideAuthRepository);
-
-        LoginNotifier authNotifier = new LoginNotifier(account, authUseCases);
-        compositeDisposable.add(authNotifier.getUser()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> {
-                    hideLoading();
-                    if (result.isRight()) {
-                        AuthEntity userEntity = result.getRight();
-                        Log.d(TAG, "Uid: " + userEntity.getUid());
-                        Log.d(TAG, "Email: " + userEntity.getEmail());
-                        Log.d(TAG, "Display Name: " + userEntity.getDisplayName());
-                        Log.d(TAG, "Photo Url: " + userEntity.getPhotoUrl());
-                        credentialNotifiers.saveCredential(toCredentialEntity(userEntity));
-                        Intent intent = new Intent(this, Navigator.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                    if (result.isLeft()) {
-                        Failure failure = result.getLeft();
-                        showSnackBar(failure.getErrorMessage());
-                    }
-                }));
+            AuthUseCases authUseCases = new AuthUseCases(provideAuthRepository);
+            LoginNotifier authNotifier = new LoginNotifier(account, authUseCases);
+            compositeDisposable.add(authNotifier.getUser()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(result -> {
+                        hideLoading();
+                        if (result.isRight()) {
+                            AuthEntity userEntity = result.getRight();
+                            Log.d(TAG, "Uid: " + userEntity.getUid());
+                            Log.d(TAG, "Email: " + userEntity.getEmail());
+                            Log.d(TAG, "Display Name: " + userEntity.getDisplayName());
+                            Log.d(TAG, "Photo Url: " + userEntity.getPhotoUrl());
+                            credentialNotifiers.saveCredential(toCredentialEntity(userEntity));
+                            Intent intent = new Intent(this, Navigator.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                        if (result.isLeft()) {
+                            Failure failure = result.getLeft();
+                            showSnackBar(failure.getErrorMessage());
+                        }
+                    }));
+        }
     }
 
     private CredentialEntity toCredentialEntity(AuthEntity userEntity) {

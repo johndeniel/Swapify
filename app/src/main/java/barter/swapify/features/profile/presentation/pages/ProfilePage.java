@@ -14,18 +14,18 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.tabs.TabLayout;
 
 import barter.swapify.R;
 import barter.swapify.core.credential.domain.entity.CredentialEntity;
 import barter.swapify.core.credential.presentation.notifiers.CredentialNotifiers;
 import barter.swapify.core.errors.Failure;
-import barter.swapify.core.route.Navigator;
 import barter.swapify.core.typedef.Either;
-import barter.swapify.features.gallery.presentation.pages.GalleryPage;
-import barter.swapify.features.heart.presentation.pages.HeartPage;
-import barter.swapify.features.organization.presentation.pages.OrganizationPage;
+import barter.swapify.core.widgets.shimmer.GlideShimmerHelper;
+import barter.swapify.features.post.presentation.pages.ViewPostPage;
+import barter.swapify.features.post.presentation.pages.HeartPostPage;
+import barter.swapify.features.post.presentation.pages.TagPostPage;
 import barter.swapify.features.settings.presentation.pages.SettingsPage;
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -35,10 +35,9 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class ProfilePage extends Fragment {
     private static final String TAG = ProfilePage.class.getSimpleName();
     private TextView fullName;
-    private CircleImageView avatarImageView;
-
+    private CircleImageView avatar;
     private Toolbar topAppBar;
-
+    private ShimmerFrameLayout shimmer;
     private CompositeDisposable disposable;
 
     @Override
@@ -51,7 +50,8 @@ public class ProfilePage extends Fragment {
         TabLayout tabLayout = rootView.findViewById(R.id.tabLayout);
         disposable = new CompositeDisposable();
         fullName = rootView.findViewById(R.id.full_name);
-        avatarImageView = rootView.findViewById(R.id.avatarImageView);
+        shimmer = rootView.findViewById(R.id.shimmeravatarImageView);
+        avatar = rootView.findViewById(R.id.avatarImageView);
 
         // Set up TabLayout listener
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -59,11 +59,11 @@ public class ProfilePage extends Fragment {
             public void onTabSelected(TabLayout.Tab tab) {
                 // Load corresponding fragment when a tab is selected
                 if (tab.getPosition() == 0) {
-                    replaceFragment(new GalleryPage());
+                    replaceFragment(new ViewPostPage());
                 } else if (tab.getPosition() == 1) {
-                    replaceFragment(new HeartPage());
+                    replaceFragment(new HeartPostPage());
                 } else if (tab.getPosition() == 2) {
-                    replaceFragment(new OrganizationPage());
+                    replaceFragment(new TagPostPage());
                 }
             }
 
@@ -79,7 +79,7 @@ public class ProfilePage extends Fragment {
         });
 
         // Load the default fragment
-        replaceFragment(new GalleryPage());
+        replaceFragment(new ViewPostPage());
         fetchCredential();
         return rootView;
     }
@@ -129,9 +129,10 @@ public class ProfilePage extends Fragment {
     private void setupProfileInfo(CredentialEntity credentialEntity) {
         Glide.with(requireContext())
                 .load(credentialEntity.getPhotoUrl())
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .placeholder(R.drawable.rectangle)
-                .into(avatarImageView);
+                .centerCrop()
+                .listener(new GlideShimmerHelper(shimmer))
+                .into(avatar);
         topAppBar.setTitle(convertToUsername(credentialEntity.getEmail()));
         fullName.setText(credentialEntity.getDisplayName());
 
@@ -152,5 +153,4 @@ public class ProfilePage extends Fragment {
 
         return "@"+username;
     }
-
 }
