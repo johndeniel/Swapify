@@ -1,5 +1,9 @@
 package barter.swapify.features.post.data.datasource;
 
+import static barter.swapify.core.constants.Constants.ITEMS_REFERENCE;
+import static barter.swapify.core.constants.Constants.PHOTO_REFERENCE;
+
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -7,8 +11,12 @@ import androidx.annotation.NonNull;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +28,7 @@ import javax.inject.Inject;
 import barter.swapify.core.errors.Failure;
 import barter.swapify.core.typedef.Either;
 import barter.swapify.features.post.data.model.PostModel;
+import barter.swapify.features.post.domain.entity.PostEntity;
 
 public class PostRemoteDataSourceImpl implements PostRemoteDataSource {
     private static final String TAG = PostRemoteDataSourceImpl.class.getSimpleName();
@@ -74,6 +83,46 @@ public class PostRemoteDataSourceImpl implements PostRemoteDataSource {
 
 
         future.complete(Either.right(dummyPosts));
+        return future;
+    }
+
+    @Override
+    public CompletableFuture<Either<Failure, Boolean>> post(PostEntity post) {
+        CompletableFuture<Either<Failure, Boolean>> future = new CompletableFuture<>();
+
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference().child(PHOTO_REFERENCE).child(post.getUserId()).child(post.getFileName());
+
+        UploadTask uploadTask = storageReference.putFile(Uri.parse(post.getImageUrl()));
+
+        uploadTask.continueWithTask(task -> storageReference.getDownloadUrl())
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        try {
+
+                            DatabaseReference database = FirebaseDatabase.getInstance().getReference(ITEMS_REFERENCE);
+                            String key = database.push().getKey();
+                            String imageUrl = task.getResult().toString();
+
+                            PostModel upload = new PostModel(key, post.getUserId(), post.getAvatar(), post.getFullName(), post.getTitle(), post.getDescription(), post.getFileName(), imageUrl);
+
+                            database.child(key).setValue(upload)
+                                    .addOnCompleteListener(databaseTask -> {
+                                        if (databaseTask.isSuccessful()) {
+                                            future.complete(Either.right(true));
+                                        } else {
+                                            future.complete(Either.left(new Failure("Database upload failed")));
+                                        }
+                                    });
+                        } catch (Exception e) {
+                            Log.e(TAG, "Upload failed: " + e.getMessage());
+                        }
+
+                    } else {
+                        future.complete(Either.left(new Failure("Download URL retrieval failed")));
+                    }
+
+                }).addOnFailureListener(e -> future.complete(Either.left(new Failure("Upload failed: " + e.getMessage()))));
+
         return future;
     }
 

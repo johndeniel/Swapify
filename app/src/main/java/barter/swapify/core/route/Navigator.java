@@ -13,7 +13,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import barter.swapify.R;
-import barter.swapify.features.chat.presentation.pages.ContactPage;
+import barter.swapify.features.messenger.presentation.pages.MessengerPage;
 import barter.swapify.features.explore.presentation.pages.ExplorePage;
 import barter.swapify.features.post.presentation.pages.NewPostPage;
 import barter.swapify.features.profile.presentation.pages.ProfilePage;
@@ -64,7 +64,7 @@ public class Navigator extends AppCompatActivity {
             startActivity(intent);
             return true;
         } else if (itemId == R.id.chat_navigation) {
-            replaceFragment(new ContactPage());
+            replaceFragment(new MessengerPage());
             return true;
         } else if (itemId == R.id.me_navigation) {
             replaceFragment(new ProfilePage());

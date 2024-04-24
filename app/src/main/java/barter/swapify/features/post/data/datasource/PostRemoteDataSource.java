@@ -11,5 +11,6 @@ import barter.swapify.features.post.domain.entity.PostEntity;
 public interface PostRemoteDataSource {
     CompletableFuture<Either<Failure, List<PostModel>>> fetch(String uid);
     CompletableFuture<Either<Failure, List<PostModel>>> heart();
+    CompletableFuture<Either<Failure, Boolean>> post(PostEntity post);
     CompletableFuture<Either<Failure, List<PostModel>>> tag();
 }

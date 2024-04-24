@@ -7,7 +7,9 @@ import javax.inject.Singleton;
 
 import barter.swapify.core.dagger.modules.AuthModule;
 import barter.swapify.core.dagger.modules.ExploreModule;
+import barter.swapify.core.dagger.modules.MessengerModule;
 import barter.swapify.core.dagger.modules.PostModule;
+import barter.swapify.core.dagger.modules.StoryModule;
 import barter.swapify.core.dagger.modules.SwipeModule;
 import dagger.BindsInstance;
 import dagger.Component;
@@ -21,7 +23,9 @@ import dagger.android.support.AndroidSupportInjectionModule;
                 AuthModule.class,
                 SwipeModule.class,
                 PostModule.class,
-                ExploreModule.class
+                ExploreModule.class,
+                StoryModule.class,
+                MessengerModule.class
         }
 )
 public interface AppComponent extends AndroidInjector<BaseApplication> {

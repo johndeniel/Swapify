@@ -14,6 +14,7 @@ import barter.swapify.features.post.data.datasource.PostRemoteDataSourceImpl;
 import barter.swapify.features.post.data.repositories.PostRepositoryImpl;
 import barter.swapify.features.post.domain.repository.PostRepository;
 import barter.swapify.features.post.presentation.pages.HeartPostPage;
+import barter.swapify.features.post.presentation.pages.NewPostPage;
 import barter.swapify.features.post.presentation.pages.TagPostPage;
 import barter.swapify.features.post.presentation.pages.ViewPostPage;
 import dagger.Module;
@@ -22,6 +23,9 @@ import dagger.android.ContributesAndroidInjector;
 
 @Module
 public abstract class PostModule {
+
+    @ContributesAndroidInjector
+    abstract NewPostPage contributeNewPostPage();
 
     @ContributesAndroidInjector
     abstract ViewPostPage contributeViewPostPage();

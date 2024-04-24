@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.annotation)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.foundation.android)
     annotationProcessor(libs.dagger.compiler)
 
     // Dagger Android

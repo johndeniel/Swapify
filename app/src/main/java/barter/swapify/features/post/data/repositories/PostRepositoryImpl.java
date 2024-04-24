@@ -46,6 +46,18 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public CompletableFuture<Either<Failure, Boolean>> post(PostEntity post) {
+        return connectionChecker.isConnected()
+                .thenCompose(isConnected -> {
+                    if (isConnected) {
+                        return postRemoteDataSource.post(post).thenApply(either -> either.map(aBoolean -> aBoolean));
+                    } else {
+                        return CompletableFuture.completedFuture(Either.left(new Failure(Constants.noConnectionErrorMessage)));
+                    }
+                });
+    }
+
+    @Override
     public CompletableFuture<Either<Failure, List<PostEntity>>> tag() {
         return connectionChecker.isConnected()
                 .thenCompose(isConnected -> {
