@@ -21,13 +21,13 @@ import barter.swapify.core.typedef.User;
 import barter.swapify.features.messenger.domain.entity.Chatroom;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class RecentChatRecyclerAdapter extends FirestoreRecyclerAdapter<Chatroom, RecentChatRecyclerAdapter.ChatroomModelViewHolder> {
-    private static final String TAG = RecentChatRecyclerAdapter.class.getSimpleName();
+public class ChatHeadAdapter extends FirestoreRecyclerAdapter<Chatroom, ChatHeadAdapter.ChatroomModelViewHolder> {
+    private static final String TAG = ChatHeadAdapter.class.getSimpleName();
 
     private final Context context;
     private final String uid;
 
-    public RecentChatRecyclerAdapter(@NonNull FirestoreRecyclerOptions<Chatroom> options, @NonNull Context context, String uid) {
+    public ChatHeadAdapter(@NonNull FirestoreRecyclerOptions<Chatroom> options, @NonNull Context context, String uid) {
         super(options);
         this.context = context;
         this.uid = uid;
@@ -76,7 +76,6 @@ public class RecentChatRecyclerAdapter extends FirestoreRecyclerAdapter<Chatroom
             Glide.with(itemView.getContext())
                     .load(otherUserModel.getAvatar())
                     .into(avatarImageView);
-            // Set other views and listeners as needed
         }
     }
 
