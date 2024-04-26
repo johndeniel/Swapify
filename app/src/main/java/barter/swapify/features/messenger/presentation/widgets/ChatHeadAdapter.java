@@ -1,9 +1,9 @@
 package barter.swapify.features.messenger.presentation.widgets;
-import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,63 +21,74 @@ import barter.swapify.core.typedef.User;
 import barter.swapify.features.messenger.domain.entity.Chatroom;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ChatHeadAdapter extends FirestoreRecyclerAdapter<Chatroom, ChatHeadAdapter.ChatroomModelViewHolder> {
+public class ChatHeadAdapter extends FirestoreRecyclerAdapter<Chatroom, ChatHeadAdapter.ViewHolder> {
     private static final String TAG = ChatHeadAdapter.class.getSimpleName();
 
-    private final Context context;
     private final String uid;
 
-    public ChatHeadAdapter(@NonNull FirestoreRecyclerOptions<Chatroom> options, @NonNull Context context, String uid) {
+    public ChatHeadAdapter(@NonNull FirestoreRecyclerOptions<Chatroom> options, String uid) {
         super(options);
-        this.context = context;
         this.uid = uid;
     }
 
     @NonNull
     @Override
-    public ChatroomModelViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chat, parent, false);
-        return new ChatroomModelViewHolder(view);
+        return new ViewHolder(view);
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull ChatroomModelViewHolder holder, int position, @NonNull Chatroom model) {
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull Chatroom model) {
         holder.bindItem(uid, model);
     }
 
-    static class ChatroomModelViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
         private final CircleImageView avatarImageView;
+        private final TextView nameTextView;
+        private final TextView messageTextView;
 
-        ChatroomModelViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
             avatarImageView = itemView.findViewById(R.id.avatarImageView);
+            nameTextView = itemView.findViewById(R.id.nameTextView);
+            messageTextView = itemView.findViewById(R.id.messageTextView);
         }
 
         void bindItem(String uid, @NonNull Chatroom model) {
             getOtherUserFromChatroom(uid, model.getUserIds())
-                    .get()
-                    .addOnCompleteListener(task -> {
+                    .get().addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            User otherUserModel = task.getResult().toObject(User.class);
-                            if (otherUserModel != null) {
-                                setupViews(otherUserModel);
-                            } else {
-                                // Handle null user model
-                                Log.e(TAG, "User model is null");
+                            try {
+                                User otherUserModel = task.getResult().toObject(User.class);
+                                setupViews(otherUserModel, model, uid);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error processing user data", e);
                             }
                         } else {
-                            // Handle Firestore task exception
                             Log.e(TAG, "Error getting other user data: " + task.getException());
                         }
                     });
         }
 
-        private void setupViews(@NonNull User otherUserModel) {
+        private void setupViews(@NonNull User otherUserModel, @NonNull Chatroom model, String uid) {
             Glide.with(itemView.getContext())
                     .load(otherUserModel.getAvatar())
                     .into(avatarImageView);
+
+            nameTextView.setText(otherUserModel.getFullName());
+
+            // Set message text appropriately
+            String messageText = buildMessageText(model, uid);
+            messageTextView.setText(messageText);
         }
     }
+
+    private String buildMessageText(@NonNull Chatroom model, String uid) {
+        boolean lastMessageSentByMe = model.getLastMessageSenderId().equals(uid);
+        return lastMessageSentByMe ? "You: " + model.getLastMessage() : model.getLastMessage();
+    }
+
 
     private static DocumentReference getOtherUserFromChatroom(String uid, List<String> userIds) {
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();

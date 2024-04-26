@@ -4,8 +4,15 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:padding="4dp"
     android:gravity="center">
+
+    <LinearLayout
+        android:layout_width="120dp"
+        android:layout_height="170dp"
+       android:background="@color/white"
+        android:orientation="vertical">
+
 
     <com.facebook.shimmer.ShimmerFrameLayout
         android:id="@+id/StoryShimmerFrameLayout"
@@ -14,23 +21,27 @@
 
         <!-- Avatar ImageView -->
         <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_marginTop="@dimen/default_spacing_margin_m"
             android:id="@+id/avatarImageView"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:src="@drawable/logo"
-            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="@dimen/default_spacing_margin_xs"
             android:scaleType="centerCrop" />
     </com.facebook.shimmer.ShimmerFrameLayout>
 
     <!-- TextView for displaying a title with medium text appearance. -->
     <TextView
-
-        android:layout_marginTop="@dimen/default_spacing_margin_xs"
+        android:layout_marginTop="85dp"
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Title"
         android:maxLines="1"
+        android:layout_marginStart="@dimen/default_spacing_margin_xs"
         android:ellipsize="end"
         android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+    </LinearLayout>
+
 </LinearLayout>
