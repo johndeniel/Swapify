@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Container for left message -->
+    <LinearLayout
+        android:id="@+id/leftMessageContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:layout_marginEnd="80dp"
+        android:backgroundTint="#00BCD4"
+        android:background="@drawable/rounded"
+        android:orientation="vertical">
+
+        <!-- Text view for left chat message -->
+        <TextView
+            android:id="@+id/left_chat_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/white"/>
+    </LinearLayout>
+
+    <!-- Container for right message -->
+    <LinearLayout
+        android:id="@+id/rightMessageContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:layout_marginStart="80dp"
+        android:backgroundTint="#8BC34A"
+        android:background="@drawable/rounded"
+        android:layout_alignParentEnd="true">
+
+        <!-- Text view for right chat message -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:id="@+id/right_chat_textview"/>
+    </LinearLayout>
+</RelativeLayout>

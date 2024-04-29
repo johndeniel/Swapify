@@ -18,7 +18,7 @@
             android:id="@+id/search_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/bottom_navigation_label_1" />
+            android:hint="Search" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -53,7 +53,7 @@
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Home"/>
+                    android:text="Messages"/>
 
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
@@ -75,15 +75,13 @@
     <com.google.android.material.search.SearchView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:hint="@string/app_name"
+        android:hint="Search"
         app:layout_anchor="@id/search_bar">
 
-        <!-- Search suggestions/results go here (ScrollView, RecyclerView, etc.). -->
-        <androidx.recyclerview.widget.RecyclerView
+       <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/search_results_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
     </com.google.android.material.search.SearchView>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

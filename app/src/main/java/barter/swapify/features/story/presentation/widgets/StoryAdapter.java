@@ -4,6 +4,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -45,7 +47,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.ViewHolder> 
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-
+        private final LinearLayout linearLayout;
         private final TextView name;
         private final ShimmerFrameLayout shimmerFrameLayout;
         private final CircleImageView avatar;
@@ -54,17 +56,27 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.ViewHolder> 
             super(view);
             avatar = view.findViewById(R.id.avatarImageView);
             name = view.findViewById(R.id.titleTextView);
+            linearLayout= view.findViewById(R.id.story_thumbnail);
             shimmerFrameLayout = view.findViewById(R.id.StoryShimmerFrameLayout);
+
         }
 
         public void bindItem(@NonNull StoryEntity currentItem) {
             name.setText(currentItem.getUsername());
+
             Glide.with(itemView.getContext()).
-                    load(currentItem.getPhotoURL())
+                    load(currentItem.getAvatarURL())
                     .placeholder(R.drawable.rectangle)
                     .centerCrop()
                     .listener(new GlideShimmerHelper(shimmerFrameLayout))
                     .into(avatar);
+
+            Glide.with(itemView.getContext())
+                    .load(currentItem.getPhotoURL())
+                    .placeholder(R.drawable.rectangle)
+                    .centerCrop()
+                    .listener(new GlideShimmerHelper(shimmerFrameLayout))
+                    .into(new CustomImageViewTarget(linearLayout));
         }
     }
 }

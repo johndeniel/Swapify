@@ -8,8 +8,8 @@ import barter.swapify.features.swipe.data.model.SwipeModel;
 import barter.swapify.features.swipe.domain.entity.SwipeEntity;
 
 public class StoryModel extends StoryEntity {
-    public StoryModel(String username, String photoURL) {
-        super(username, photoURL);
+    public StoryModel(String username, String avatarURL, String photoURL) {
+        super(username, avatarURL, photoURL);
     }
 
 
@@ -18,6 +18,7 @@ public class StoryModel extends StoryEntity {
         for (StoryModel item : items) {
             StoryEntity entity = new StoryEntity(
                     item.getUsername(),
+                    item.getAvatarURL(),
                     item.getPhotoURL()
             );
             storyEntity.add(entity);

@@ -19,6 +19,9 @@
         android:theme="@style/Theme.Swapify"
         tools:targetApi="31">
         <activity
+            android:name=".features.chatroom.presentation.pages.ChatRoomPage"
+            android:exported="false" />
+        <activity
             android:name=".features.story.presentation.pages.StoryPage"
             android:exported="false" />
         <activity

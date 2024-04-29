@@ -83,7 +83,7 @@ public class RecentChatPage extends Fragment {
 
     private void displayChatRoom(Either<Failure, FirestoreRecyclerOptions<Chatroom>> result) {
         if (result.isRight()) {
-            ChatHeadAdapter recentChatRecyclerAdapter = new ChatHeadAdapter(result.getRight(), "RZCVBq2uI6SErP4BUcC0qS8G4Az2");
+            ChatHeadAdapter recentChatRecyclerAdapter = new ChatHeadAdapter(result.getRight(), requireContext(),"RZCVBq2uI6SErP4BUcC0qS8G4Az2");
             recentChatRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
             recentChatRecyclerView.setAdapter(recentChatRecyclerAdapter);
             recentChatRecyclerAdapter.startListening();
