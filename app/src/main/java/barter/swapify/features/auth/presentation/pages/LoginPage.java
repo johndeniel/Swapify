@@ -113,6 +113,7 @@ public class LoginPage extends DaggerAppCompatActivity {
     }
 
     private void showSnackBar(String message) {
-        SnackBarHelper.invoke(message, findViewById(R.id.main));
+        View rootView = findViewById(android.R.id.content);
+        SnackBarHelper.invoke(message, rootView);
     }
 }

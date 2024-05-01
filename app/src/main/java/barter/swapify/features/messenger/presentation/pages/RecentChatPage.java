@@ -19,6 +19,8 @@ import barter.swapify.core.credential.domain.entity.CredentialEntity;
 import barter.swapify.core.credential.presentation.notifiers.CredentialNotifiers;
 import barter.swapify.core.errors.Failure;
 import barter.swapify.core.typedef.Either;
+import barter.swapify.core.widgets.snackbar.SnackBarHelper;
+import barter.swapify.features.chatroom.presentation.widgets.ConversationAdapter;
 import barter.swapify.features.messenger.domain.entity.Chatroom;
 import barter.swapify.features.messenger.domain.repository.MessengerRepository;
 import barter.swapify.features.messenger.domain.usecases.RecentUseCases;
@@ -78,16 +80,21 @@ public class RecentChatPage extends Fragment {
         compositeDisposable.add(exploreNotifiers.recent()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::displayChatRoom, this::handleError));
-    }
+                .subscribe(
+                        result -> {
+                            if (result.isRight()) {
 
-    private void displayChatRoom(Either<Failure, FirestoreRecyclerOptions<Chatroom>> result) {
-        if (result.isRight()) {
-            ChatHeadAdapter recentChatRecyclerAdapter = new ChatHeadAdapter(result.getRight(), requireContext(),"RZCVBq2uI6SErP4BUcC0qS8G4Az2");
-            recentChatRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-            recentChatRecyclerView.setAdapter(recentChatRecyclerAdapter);
-            recentChatRecyclerAdapter.startListening();
-        }
+                                ChatHeadAdapter recentChatRecyclerAdapter = new ChatHeadAdapter(result.getRight(), uid,  requireContext());
+                                recentChatRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                                recentChatRecyclerView.setAdapter(recentChatRecyclerAdapter);
+                                recentChatRecyclerAdapter.startListening();
+
+                            } else {
+                                showSnackBar(result.getLeft().getErrorMessage());
+                            }
+                        },
+                        throwable -> Log.e(TAG, "Error loading recent conversation: " + throwable.getMessage())
+                ));
     }
 
     private void handleError(Throwable throwable) {
@@ -98,5 +105,9 @@ public class RecentChatPage extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         compositeDisposable.clear();
+    }
+
+    private void showSnackBar(String message) {
+        SnackBarHelper.invoke(message, requireView());
     }
 }

@@ -20,8 +20,8 @@
             android:id="@+id/left_chat_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white"
+            android:textSize="18sp" />
     </LinearLayout>
 
     <!-- Container for right message -->

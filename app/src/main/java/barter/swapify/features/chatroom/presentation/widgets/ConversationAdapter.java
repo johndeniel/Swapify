@@ -14,14 +14,15 @@ import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
 import barter.swapify.R;
-import barter.swapify.features.chatroom.domain.entity.ConversationMessageModel;
+import barter.swapify.features.chatroom.domain.entity.ChatEntity;
 
-public class ConversationThreadRecyclerAdapter extends FirestoreRecyclerAdapter<ConversationMessageModel, ConversationThreadRecyclerAdapter.ConversationThreadViewHolder> {
-
+public class ConversationAdapter extends FirestoreRecyclerAdapter<ChatEntity, ConversationAdapter.ViewHolder> {
     private final Context context;
     private final String uid;
 
-    public ConversationThreadRecyclerAdapter(@NonNull FirestoreRecyclerOptions<ConversationMessageModel> options, @NonNull Context context, String uid) {
+    public ConversationAdapter(@NonNull FirestoreRecyclerOptions<ChatEntity> options,
+                               @NonNull String uid,
+                               @NonNull Context context) {
         super(options);
         this.context = context;
         this.uid = uid;
@@ -29,24 +30,23 @@ public class ConversationThreadRecyclerAdapter extends FirestoreRecyclerAdapter<
 
     @NonNull
     @Override
-    public ConversationThreadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.temp_conversation, parent, false);
-        return new ConversationThreadViewHolder(view);
+        return new ViewHolder(view);
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull ConversationThreadViewHolder holder, int position, @NonNull ConversationMessageModel model) {
-        holder.handleRenderConversationMessage(model);
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull ChatEntity model) {
+        holder.bind(model);
     }
 
-    // Inner class for RecyclerView view holder
-     class ConversationThreadViewHolder extends RecyclerView.ViewHolder {
+    protected class ViewHolder extends RecyclerView.ViewHolder {
         private final LinearLayout leftMessageContainer;
         private final LinearLayout rightMessageContainer;
         private final TextView leftChatTextview;
         private final TextView rightChatTextview;
 
-        public ConversationThreadViewHolder(@NonNull View view) {
+        public ViewHolder(@NonNull View view) {
             super(view);
             leftMessageContainer = view.findViewById(R.id.leftMessageContainer);
             leftChatTextview = view.findViewById(R.id.left_chat_textview);
@@ -54,7 +54,7 @@ public class ConversationThreadRecyclerAdapter extends FirestoreRecyclerAdapter<
             rightChatTextview = view.findViewById(R.id.right_chat_textview);
         }
 
-        private void handleRenderConversationMessage(@NonNull ConversationMessageModel model) {
+        private void bind(@NonNull ChatEntity model) {
             if (model.getSenderId().equals(uid)) {
                 leftMessageContainer.setVisibility(View.GONE);
                 rightMessageContainer.setVisibility(View.VISIBLE);

@@ -6,6 +6,7 @@ import android.content.Context;
 import javax.inject.Singleton;
 
 import barter.swapify.core.dagger.modules.AuthModule;
+import barter.swapify.core.dagger.modules.ChatModule;
 import barter.swapify.core.dagger.modules.ExploreModule;
 import barter.swapify.core.dagger.modules.MessengerModule;
 import barter.swapify.core.dagger.modules.PostModule;
@@ -25,7 +26,8 @@ import dagger.android.support.AndroidSupportInjectionModule;
                 PostModule.class,
                 ExploreModule.class,
                 StoryModule.class,
-                MessengerModule.class
+                MessengerModule.class,
+                ChatModule.class
         }
 )
 public interface AppComponent extends AndroidInjector<BaseApplication> {

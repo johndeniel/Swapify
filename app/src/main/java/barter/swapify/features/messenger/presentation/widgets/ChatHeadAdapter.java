@@ -31,14 +31,13 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatHeadAdapter extends FirestoreRecyclerAdapter<Chatroom, ChatHeadAdapter.ViewHolder> {
     private static final String TAG = ChatHeadAdapter.class.getSimpleName();
-
     private final String uid;
-
     private final Context context;
-    public ChatHeadAdapter(@NonNull FirestoreRecyclerOptions<Chatroom> options, Context context, String uid) {
+
+    public ChatHeadAdapter(@NonNull FirestoreRecyclerOptions<Chatroom> options, String uid, Context context) {
         super(options);
-        this.context = context;
         this.uid = uid;
+        this.context = context;
     }
 
     @NonNull
@@ -53,20 +52,20 @@ public class ChatHeadAdapter extends FirestoreRecyclerAdapter<Chatroom, ChatHead
         holder.bindItem(uid, model);
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    protected class ViewHolder extends RecyclerView.ViewHolder {
         private final CircleImageView avatarImageView;
         private final TextView nameTextView;
         private final TextView messageTextView;
-        private final TextView timeStamp;
+        private final TextView timeStampTextView;
         private final ShimmerFrameLayout shimmerFrameLayout;
 
 
-        ViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
             avatarImageView = itemView.findViewById(R.id.avatarImageView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
             messageTextView = itemView.findViewById(R.id.messageTextView);
-            timeStamp = itemView.findViewById(R.id.timestamp);
+            timeStampTextView = itemView.findViewById(R.id.timestamp);
             shimmerFrameLayout = itemView.findViewById(R.id.AvatarShimmerFrameLayout);
         }
 
@@ -87,7 +86,18 @@ public class ChatHeadAdapter extends FirestoreRecyclerAdapter<Chatroom, ChatHead
         }
 
         private void setupViews(@NonNull User otherUserModel, @NonNull Chatroom model, String uid) {
+            // Set the name of the user
+            nameTextView.setText(otherUserModel.getFullName());
 
+            // Set the name of the user
+            String messageText = buildMessageText(model, uid);
+            messageTextView.setText(messageText);
+
+            // Format the date to a String with 12 hour clock and AM/PM
+            String timeString = formatTimestamp(model.getLastMessageTimestamp());
+            timeStampTextView.setText(timeString);
+
+            // Set the name of the user
             Glide.with(itemView.getContext())
                     .load(otherUserModel.getAvatar())
                     .placeholder(R.drawable.rectangle)
@@ -95,33 +105,7 @@ public class ChatHeadAdapter extends FirestoreRecyclerAdapter<Chatroom, ChatHead
                     .listener(new GlideShimmerHelper(shimmerFrameLayout))
                     .into(avatarImageView);
 
-            nameTextView.setText(otherUserModel.getFullName());
-
-            // Set message text appropriately
-            String messageText = buildMessageText(model, uid);
-            messageTextView.setText(messageText);
-
-            // Assuming model is an object containing your message data and
-            // getLastMessageTimestamp() returns a Firebase Timestamp object
-
-            Timestamp firebaseTimestamp = model.getLastMessageTimestamp();
-
-            // Convert Firebase Timestamp to milliseconds
-            long timestampInMillis = firebaseTimestamp.getSeconds() * 1000;
-
-            // Create a new Date object from milliseconds
-            Date date = new Date(timestampInMillis);
-
-            // Use a SimpleDateFormat for formatting with 12 hour clock and AM/PM
-            SimpleDateFormat formatter = new SimpleDateFormat("hh:mm aa");
-
-            // Format the date to a String with 12 hour clock and AM/PM
-            String timeString = formatter.format(date);
-
-            // Set the text to the TextView
-            timeStamp.setText(timeString);
-
-            // Set click listener for conversation
+            // Set the name of the user
             itemView.setOnClickListener(v -> navigateToConversation(otherUserModel));
         }
     }
@@ -140,12 +124,19 @@ public class ChatHeadAdapter extends FirestoreRecyclerAdapter<Chatroom, ChatHead
         context.startActivity(intent);
     }
 
+    private String formatTimestamp(Timestamp timestamp) {
+        long timestampInMillis = timestamp.getSeconds() * 1000;
+        Date date = new Date(timestampInMillis);
+        SimpleDateFormat formatter = new SimpleDateFormat("hh:mm aa");
+        return formatter.format(date);
+    }
+
     private static DocumentReference getOtherUserFromChatroom(String uid, List<String> userIds) {
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         if (userIds.get(0).equals(uid)) {
-            return firestore.collection("users").document(userIds.get(1));
+            return db.collection("users").document(userIds.get(1));
         } else {
-            return firestore.collection("users").document(userIds.get(0));
+            return db.collection("users").document(userIds.get(0));
         }
     }
 }
