@@ -320,20 +320,45 @@ public class SocialLoginsFragment extends Fragment {
     private List<PlatformOption> getPlatforms() {
         List<PlatformOption> platforms = new ArrayList<>();
         platforms.add(new PlatformOption(R.drawable.discord, "Discord", "discord.com"));
+        platforms.add(new PlatformOption(R.drawable.dropbox, "Dropbox", "dropbox.com"));
         platforms.add(new PlatformOption(R.drawable.facebook, "Facebook", "facebook.com"));
+        platforms.add(new PlatformOption(R.drawable.gitlab, "GitLab", "gitlab.com"));
         platforms.add(new PlatformOption(R.drawable.github, "GitHub", "github.com"));
         platforms.add(new PlatformOption(R.drawable.gmail, "Gmail", "gmail.com"));
         platforms.add(new PlatformOption(R.drawable.google, "Google", "google.com"));
+        platforms.add(new PlatformOption(R.drawable.google_calendar, "Google Calendar", "calendar.google.com"));
+        platforms.add(new PlatformOption(R.drawable.google_docs, "Google Docs", "docs.google.com"));
+        platforms.add(new PlatformOption(R.drawable.google_drive, "Google Drive", "drive.google.com"));
+        platforms.add(new PlatformOption(R.drawable.google_meet, "Google Meet", "meet.google.com"));
+        platforms.add(new PlatformOption(R.drawable.google_play, "Google Play", "play.google.com"));
+        platforms.add(new PlatformOption(R.drawable.google_spreadsheets, "Google Sheets", "sheets.google.com"));
         platforms.add(new PlatformOption(R.drawable.instagram, "Instagram", "instagram.com"));
+        platforms.add(new PlatformOption(R.drawable.itunes, "iTunes", "itunes.com"));
+        platforms.add(new PlatformOption(R.drawable.line, "LINE", "line.me"));
         platforms.add(new PlatformOption(R.drawable.linkedin, "LinkedIn", "linkedin.com"));
+        platforms.add(new PlatformOption(R.drawable.messenger, "Messenger", "messenger.com"));
+        platforms.add(new PlatformOption(R.drawable.microsoft, "Microsoft", "microsoft.com"));
+        platforms.add(new PlatformOption(R.drawable.microsoft_office, "Microsoft Office", "office.com"));
+        platforms.add(new PlatformOption(R.drawable.microsoft_teams, "Microsoft Teams", "teams.microsoft.com"));
+        platforms.add(new PlatformOption(R.drawable.netflix, "Netflix", "netflix.com"));
+        platforms.add(new PlatformOption(R.drawable.outlook, "Outlook", "outlook.com"));
+        platforms.add(new PlatformOption(R.drawable.paypal, "PayPal", "paypal.com"));
+        platforms.add(new PlatformOption(R.drawable.pinterest, "Pinterest", "pinterest.com"));
         platforms.add(new PlatformOption(R.drawable.reddit, "Reddit", "reddit.com"));
+        platforms.add(new PlatformOption(R.drawable.slack, "Slack", "slack.com"));
         platforms.add(new PlatformOption(R.drawable.snapchat, "Snapchat", "snapchat.com"));
+        platforms.add(new PlatformOption(R.drawable.soundcloud, "SoundCloud", "soundcloud.com"));
         platforms.add(new PlatformOption(R.drawable.spotify, "Spotify", "spotify.com"));
+        platforms.add(new PlatformOption(R.drawable.steam, "Steam", "store.steampowered.com"));
         platforms.add(new PlatformOption(R.drawable.telegram, "Telegram", "telegram.org"));
         platforms.add(new PlatformOption(R.drawable.tiktok, "TikTok", "tiktok.com"));
+        platforms.add(new PlatformOption(R.drawable.tinder, "Tinder", "tinder.com"));
+        platforms.add(new PlatformOption(R.drawable.viber, "Viber", "viber.com"));
+        platforms.add(new PlatformOption(R.drawable.wattpad, "Wattpad", "wattpad.com"));
         platforms.add(new PlatformOption(R.drawable.whatsapp, "WhatsApp", "whatsapp.com"));
         platforms.add(new PlatformOption(R.drawable.x, "X", "x.com"));
         platforms.add(new PlatformOption(R.drawable.youtube, "YouTube", "youtube.com"));
+        platforms.add(new PlatformOption(R.drawable.zoom, "Zoom", "zoom.us"));
         return platforms;
     }
 
