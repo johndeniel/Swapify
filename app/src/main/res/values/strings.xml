@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Akin Wallet</string>
+    <string name="tab_id">IDs</string>
+    <string name="tab_bank">Bank Cards</string>
+    <string name="tab_login">Social</string>
+    <string name="title_id">Personal ID Cards</string>
+    <string name="desc_id">Your Secure ID Wallet</string>
+    <string name="title_bank">Bank Cards</string>
+    <string name="desc_bank">Manage Payment Methods</string>
+    <string name="title_login">My Accounts</string>
+    <string name="desc_login">Keep your accounts organized</string>
+    <string name="btn_add">Add</string>
+    <string name="search">Search</string>
+    <string name="search_hint">Search account\u2026</string>
+    <string name="search_hint_id">Search IDs\u2026</string>
+    <string name="search_hint_bank">Search cards\u2026</string>
+</resources>
