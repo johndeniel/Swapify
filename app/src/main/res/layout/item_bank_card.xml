@@ -45,6 +45,15 @@
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
 
+                <ImageView
+                    android:id="@+id/btn_copy_type"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_copy"
+                    android:alpha="0.6"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Copy card type" />
+
             </LinearLayout>
 
             <View
@@ -73,6 +82,15 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/btn_copy_network"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_copy"
+                    android:alpha="0.6"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Copy card network" />
 
             </LinearLayout>
 
@@ -103,6 +121,15 @@
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
 
+                <ImageView
+                    android:id="@+id/btn_copy_bank"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_copy"
+                    android:alpha="0.6"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Copy bank name" />
+
             </LinearLayout>
 
             <View
@@ -131,6 +158,15 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/btn_copy_holder"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_copy"
+                    android:alpha="0.6"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Copy cardholder name" />
 
             </LinearLayout>
 
@@ -162,6 +198,24 @@
                     android:textSize="14sp"
                     android:fontFamily="monospace" />
 
+                <ImageView
+                    android:id="@+id/btn_toggle_number"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_eye"
+                    android:alpha="0.6"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="Toggle number visibility" />
+
+                <ImageView
+                    android:id="@+id/btn_copy_number"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_copy"
+                    android:alpha="0.6"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Copy card number" />
+
             </LinearLayout>
 
             <View
@@ -192,6 +246,15 @@
                     android:textSize="14sp"
                     android:fontFamily="monospace" />
 
+                <ImageView
+                    android:id="@+id/btn_copy_expiry"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_copy"
+                    android:alpha="0.6"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Copy expiry" />
+
             </LinearLayout>
 
             <View
@@ -218,9 +281,28 @@
                     android:id="@+id/detail_cvv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="•••"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:fontFamily="monospace" />
+
+                <ImageView
+                    android:id="@+id/btn_toggle_cvv"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_eye"
+                    android:alpha="0.6"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="Toggle CVV visibility" />
+
+                <ImageView
+                    android:id="@+id/btn_copy_cvv"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_copy"
+                    android:alpha="0.6"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Copy CVV" />
 
             </LinearLayout>
 
@@ -251,6 +333,24 @@
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:fontFamily="monospace" />
+
+                <ImageView
+                    android:id="@+id/btn_toggle_pin"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_eye"
+                    android:alpha="0.6"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="Toggle PIN visibility" />
+
+                <ImageView
+                    android:id="@+id/btn_copy_pin"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_copy"
+                    android:alpha="0.6"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Copy PIN" />
 
             </LinearLayout>
 

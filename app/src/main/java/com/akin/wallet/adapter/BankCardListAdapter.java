@@ -1,11 +1,15 @@
 package com.akin.wallet.adapter;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -83,10 +87,63 @@ public class BankCardListAdapter extends RecyclerView.Adapter<BankCardListAdapte
             holder.detailNetwork.setText(item.getCardNetwork());
             holder.detailBank.setText(item.getBankName());
             holder.detailHolder.setText(item.getHolderName());
-            holder.detailNumber.setText(grouped(item.getCardNumber()));
+            holder.detailNumber.setText("•••• •••• •••• " + last4(item.getCardNumber()));
             holder.detailExpiry.setText(formatExpiry(item.getExpiry()));
-            holder.detailCvv.setText(item.getCvv());
-            holder.detailPin.setText(item.getPin());
+            holder.detailCvv.setText("•••");
+            holder.detailPin.setText(mask(item.getPin()));
+
+            holder.btnToggleNumber.setTag(false);
+            holder.btnToggleNumber.setOnClickListener(v -> {
+                boolean isShowing = (boolean) v.getTag();
+                if (isShowing) {
+                    holder.detailNumber.setText("•••• •••• •••• " + last4(item.getCardNumber()));
+                    v.setTag(false);
+                } else {
+                    holder.detailNumber.setText(grouped(item.getCardNumber()));
+                    v.setTag(true);
+                }
+            });
+
+            holder.btnToggleCvv.setTag(false);
+            holder.btnToggleCvv.setOnClickListener(v -> {
+                boolean isShowing = (boolean) v.getTag();
+                if (isShowing) {
+                    holder.detailCvv.setText("•••");
+                    v.setTag(false);
+                } else {
+                    holder.detailCvv.setText(item.getCvv());
+                    v.setTag(true);
+                }
+            });
+
+            holder.btnTogglePin.setTag(false);
+            holder.btnTogglePin.setOnClickListener(v -> {
+                boolean isShowing = (boolean) v.getTag();
+                if (isShowing) {
+                    holder.detailPin.setText(mask(item.getPin()));
+                    v.setTag(false);
+                } else {
+                    holder.detailPin.setText(item.getPin());
+                    v.setTag(true);
+                }
+            });
+
+            holder.btnCopyType.setOnClickListener(v ->
+                    copyToClipboard(v.getContext(), "Card type", item.getCardType()));
+            holder.btnCopyNetwork.setOnClickListener(v ->
+                    copyToClipboard(v.getContext(), "Card network", item.getCardNetwork()));
+            holder.btnCopyBank.setOnClickListener(v ->
+                    copyToClipboard(v.getContext(), "Bank name", item.getBankName()));
+            holder.btnCopyHolder.setOnClickListener(v ->
+                    copyToClipboard(v.getContext(), "Cardholder name", item.getHolderName()));
+            holder.btnCopyNumber.setOnClickListener(v ->
+                    copyToClipboard(v.getContext(), "Card number", digitsOnly(item.getCardNumber())));
+            holder.btnCopyExpiry.setOnClickListener(v ->
+                    copyToClipboard(v.getContext(), "Valid thru", item.getExpiry()));
+            holder.btnCopyCvv.setOnClickListener(v ->
+                    copyToClipboard(v.getContext(), "CVV", item.getCvv()));
+            holder.btnCopyPin.setOnClickListener(v ->
+                    copyToClipboard(v.getContext(), "PIN", item.getPin()));
 
             holder.btnEdit.setOnClickListener(v -> {
                 if (listener != null) listener.onEdit(item);
@@ -127,6 +184,28 @@ public class BankCardListAdapter extends RecyclerView.Adapter<BankCardListAdapte
             return "••••";
         }
         return digits.length() > 4 ? digits.substring(digits.length() - 4) : digits;
+    }
+
+    private void copyToClipboard(Context context, String label, String text) {
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText(label, text != null ? text : "");
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(context, label + " copied", Toast.LENGTH_SHORT).show();
+    }
+
+    private static String digitsOnly(String value) {
+        return value != null ? value.replaceAll("\\D", "") : "";
+    }
+
+    private static String mask(String value) {
+        if (value == null || value.isEmpty()) {
+            return "Not set";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            sb.append('•');
+        }
+        return sb.toString();
     }
 
     private static String grouped(String number) {
@@ -172,6 +251,17 @@ public class BankCardListAdapter extends RecyclerView.Adapter<BankCardListAdapte
         TextView detailExpiry;
         TextView detailCvv;
         TextView detailPin;
+        ImageView btnToggleNumber;
+        ImageView btnToggleCvv;
+        ImageView btnTogglePin;
+        ImageView btnCopyType;
+        ImageView btnCopyNetwork;
+        ImageView btnCopyBank;
+        ImageView btnCopyHolder;
+        ImageView btnCopyNumber;
+        ImageView btnCopyExpiry;
+        ImageView btnCopyCvv;
+        ImageView btnCopyPin;
         LinearLayout btnEdit;
         LinearLayout btnDelete;
 
@@ -193,6 +283,17 @@ public class BankCardListAdapter extends RecyclerView.Adapter<BankCardListAdapte
             detailExpiry = itemView.findViewById(R.id.detail_expiry);
             detailCvv = itemView.findViewById(R.id.detail_cvv);
             detailPin = itemView.findViewById(R.id.detail_pin);
+            btnToggleNumber = itemView.findViewById(R.id.btn_toggle_number);
+            btnToggleCvv = itemView.findViewById(R.id.btn_toggle_cvv);
+            btnTogglePin = itemView.findViewById(R.id.btn_toggle_pin);
+            btnCopyType = itemView.findViewById(R.id.btn_copy_type);
+            btnCopyNetwork = itemView.findViewById(R.id.btn_copy_network);
+            btnCopyBank = itemView.findViewById(R.id.btn_copy_bank);
+            btnCopyHolder = itemView.findViewById(R.id.btn_copy_holder);
+            btnCopyNumber = itemView.findViewById(R.id.btn_copy_number);
+            btnCopyExpiry = itemView.findViewById(R.id.btn_copy_expiry);
+            btnCopyCvv = itemView.findViewById(R.id.btn_copy_cvv);
+            btnCopyPin = itemView.findViewById(R.id.btn_copy_pin);
             btnEdit = itemView.findViewById(R.id.btn_edit);
             btnDelete = itemView.findViewById(R.id.btn_delete);
         }

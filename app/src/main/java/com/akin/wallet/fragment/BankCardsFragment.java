@@ -117,7 +117,6 @@ public class BankCardsFragment extends Fragment {
         final int[] selectedNetwork = {0};
         final int[] selectedDesign = {0};
 
-        TextView dialogTitle = dialogView.findViewById(R.id.dialog_title);
         TextView textCardType = dialogView.findViewById(R.id.text_card_type);
         TextView textCardNetwork = dialogView.findViewById(R.id.text_card_network);
         EditText inputBankName = dialogView.findViewById(R.id.input_bank_name);
@@ -157,7 +156,6 @@ public class BankCardsFragment extends Fragment {
         });
 
         if (isEdit) {
-            dialogTitle.setText("Edit Bank Card");
             btnSave.setText("Update");
             selectedType[0] = indexOf(CARD_TYPES, existing.getCardType());
             selectedNetwork[0] = indexOf(CARD_NETWORKS, existing.getCardNetwork());
@@ -310,8 +308,8 @@ public class BankCardsFragment extends Fragment {
                 return;
             }
             String cardDigits = inputCardNumber.getText().toString().replaceAll("\\D", "");
-            if (cardDigits.isEmpty() || cardDigits.length() > 19) {
-                inputCardNumber.setError("Card number is required (max 19 digits)");
+            if (cardDigits.length() < 13 || cardDigits.length() > 19) {
+                inputCardNumber.setError("Card number must be 13-19 digits");
                 return;
             }
             String expDigits = inputExpiry.getText().toString().replaceAll("\\D", "");

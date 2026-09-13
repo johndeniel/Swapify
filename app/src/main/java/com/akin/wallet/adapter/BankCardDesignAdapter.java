@@ -88,7 +88,7 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
             heightDp = 30;
         } else {
             icon = R.drawable.visa;
-            heightDp = 20;
+            heightDp = 16;
         }
         logoView.setImageResource(icon);
         float density = logoView.getResources().getDisplayMetrics().density;
