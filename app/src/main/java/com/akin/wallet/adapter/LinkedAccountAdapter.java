@@ -1,6 +1,5 @@
 package com.akin.wallet.adapter;
 
-import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.akin.wallet.R;
 import com.akin.wallet.model.CredentialItem;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdapter.AssocViewHolder> {

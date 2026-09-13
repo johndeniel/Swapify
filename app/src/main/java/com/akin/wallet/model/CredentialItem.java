@@ -8,15 +8,6 @@ public class CredentialItem {
     private final String pin;
     private final int iconRes;
 
-    public CredentialItem(String platform, String username, int iconRes) {
-        this.id = -1;
-        this.platform = platform;
-        this.username = username;
-        this.password = "";
-        this.pin = "";
-        this.iconRes = iconRes;
-    }
-
     public CredentialItem(String platform, String username, String password, String pin, int iconRes) {
         this.id = -1;
         this.platform = platform;
