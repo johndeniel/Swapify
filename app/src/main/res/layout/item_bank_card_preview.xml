@@ -20,36 +20,26 @@
             android:orientation="horizontal"
             android:gravity="top">
 
-            <TextView
-                android:id="@+id/preview_bank"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="YOUR BANK"
-                android:textColor="#FFFFFFFF"
-                android:textSize="19sp"
-                android:textStyle="bold|italic"
-                android:letterSpacing="0.04"
-                android:shadowColor="#80000000"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="2"
-                android:singleLine="true" />
+                android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="end">
-
-                <ImageView
-                    android:id="@+id/preview_network"
-                    android:layout_width="52dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/visa"
-                    android:scaleType="fitCenter"
-                    android:adjustViewBounds="true"
-                    android:contentDescription="Card network" />
+                <TextView
+                    android:id="@+id/preview_bank"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="YOUR BANK"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="21sp"
+                    android:textStyle="bold|italic"
+                    android:letterSpacing="0.04"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="1"
+                    android:shadowDy="1"
+                    android:shadowRadius="2"
+                    android:singleLine="true" />
 
                 <TextView
                     android:id="@+id/preview_type"
@@ -63,6 +53,16 @@
                     android:layout_marginTop="2dp" />
 
             </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/preview_network"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:maxWidth="96dp"
+                    android:src="@drawable/visa"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Card network" />
 
         </LinearLayout>
 

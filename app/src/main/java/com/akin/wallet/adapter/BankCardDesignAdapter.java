@@ -59,7 +59,7 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         holder.holder.setText(holderName.isEmpty() ? "CARDHOLDER NAME" : holderName.toUpperCase());
         holder.number.setText("•••• •••• •••• " + (last4.isEmpty() ? "••••" : last4));
         holder.expiry.setText(expiry.isEmpty() ? "MM/YY" : expiry);
-        holder.network.setImageResource(networkIcon(cardNetwork));
+        applyNetworkLogo(holder.network, cardNetwork);
         holder.type.setText(cardType.isEmpty() ? "DEBIT" : cardType.toUpperCase());
     }
 
@@ -79,20 +79,22 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         cardRoot.setClipToOutline(true);
     }
 
-    static int networkIcon(String network) {
-        if (network == null) {
-            return R.drawable.visa;
+    static void applyNetworkLogo(ImageView logoView, String network) {
+        String name = network != null ? network.trim().toLowerCase() : "visa";
+        int icon;
+        int heightDp;
+        if ("mastercard".equals(name)) {
+            icon = R.drawable.mastercard;
+            heightDp = 30;
+        } else {
+            icon = R.drawable.visa;
+            heightDp = 20;
         }
-        switch (network.trim().toLowerCase()) {
-            case "mastercard":
-                return R.drawable.mastercard;
-            case "amex":
-                return R.drawable.amex;
-            case "jcb":
-                return R.drawable.jcb;
-            default:
-                return R.drawable.visa;
-        }
+        logoView.setImageResource(icon);
+        float density = logoView.getResources().getDisplayMetrics().density;
+        android.view.ViewGroup.LayoutParams params = logoView.getLayoutParams();
+        params.height = (int) (heightDp * density);
+        logoView.setLayoutParams(params);
     }
 
     static class CardViewHolder extends RecyclerView.ViewHolder {

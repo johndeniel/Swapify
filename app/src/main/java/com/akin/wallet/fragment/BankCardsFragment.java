@@ -32,7 +32,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 public class BankCardsFragment extends Fragment {
 
     private static final String[] CARD_TYPES = {"Debit", "Credit", "Prepaid"};
-    private static final String[] CARD_NETWORKS = {"Visa", "Mastercard", "Amex", "JCB"};
+    private static final String[] CARD_NETWORKS = {"Visa", "Mastercard"};
 
     private AppDatabaseHelper dbHelper;
     private BankCardListAdapter cardAdapter;

@@ -72,7 +72,7 @@ public class BankCardListAdapter extends RecyclerView.Adapter<BankCardListAdapte
         holder.holder.setText(item.getHolderName().toUpperCase());
         holder.number.setText("•••• •••• •••• " + last4(item.getCardNumber()));
         holder.expiry.setText(formatExpiry(item.getExpiry()));
-        holder.network.setImageResource(BankCardDesignAdapter.networkIcon(item.getCardNetwork()));
+        BankCardDesignAdapter.applyNetworkLogo(holder.network, item.getCardNetwork());
         holder.type.setText(item.getCardType().toUpperCase());
 
         boolean isExpanded = position == expandedPosition;
