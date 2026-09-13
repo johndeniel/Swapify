@@ -3,6 +3,7 @@ package com.akin.wallet.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -52,12 +53,13 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
 
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
+        applyCardOutline(holder.cardRoot);
         holder.cardRoot.setBackgroundResource(backgrounds[position]);
         holder.bank.setText(bankName.isEmpty() ? "YOUR BANK" : bankName.toUpperCase());
         holder.holder.setText(holderName.isEmpty() ? "CARDHOLDER NAME" : holderName.toUpperCase());
         holder.number.setText("•••• •••• •••• " + (last4.isEmpty() ? "••••" : last4));
         holder.expiry.setText(expiry.isEmpty() ? "MM/YY" : expiry);
-        holder.network.setText(cardNetwork.isEmpty() ? "VISA" : cardNetwork.toUpperCase());
+        holder.network.setImageResource(networkIcon(cardNetwork));
         holder.type.setText(cardType.isEmpty() ? "DEBIT" : cardType.toUpperCase());
     }
 
@@ -66,10 +68,37 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         return backgrounds.length;
     }
 
+    static void applyCardOutline(View cardRoot) {
+        float density = cardRoot.getResources().getDisplayMetrics().density;
+        cardRoot.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, android.graphics.Outline outline) {
+                outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), 16 * density);
+            }
+        });
+        cardRoot.setClipToOutline(true);
+    }
+
+    static int networkIcon(String network) {
+        if (network == null) {
+            return R.drawable.visa;
+        }
+        switch (network.trim().toLowerCase()) {
+            case "mastercard":
+                return R.drawable.mastercard;
+            case "amex":
+                return R.drawable.amex;
+            case "jcb":
+                return R.drawable.jcb;
+            default:
+                return R.drawable.visa;
+        }
+    }
+
     static class CardViewHolder extends RecyclerView.ViewHolder {
         View cardRoot;
         TextView bank;
-        TextView network;
+        ImageView network;
         TextView type;
         TextView number;
         TextView holder;

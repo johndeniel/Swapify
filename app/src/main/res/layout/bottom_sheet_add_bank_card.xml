@@ -14,6 +14,7 @@
         android:paddingBottom="24dp">
 
         <TextView
+            android:id="@+id/dialog_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Bank Card"
@@ -34,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:clipToPadding="false"
-            android:paddingHorizontal="28dp"
+            android:paddingHorizontal="16dp"
             android:overScrollMode="never" />
 
         <LinearLayout
@@ -226,7 +227,7 @@
                     android:textSize="15sp"
                     android:singleLine="true"
                     android:inputType="number"
-                    android:maxLength="19"
+                    android:maxLength="23"
                     android:paddingHorizontal="16dp"
                     android:paddingVertical="14dp" />
 
@@ -258,7 +259,7 @@
                     android:textSize="15sp"
                     android:singleLine="true"
                     android:inputType="number"
-                    android:maxLength="4"
+                    android:maxLength="5"
                     android:paddingHorizontal="16dp"
                     android:paddingVertical="14dp" />
 
