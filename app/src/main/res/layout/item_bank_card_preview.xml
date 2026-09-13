@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/card_root"
     android:layout_width="match_parent"
     android:layout_height="200dp"
@@ -16,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="top">
 
             <TextView
                 android:id="@+id/preview_bank"
@@ -46,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:text="VISA"
                     android:textColor="#FFFFFFFF"
-                    android:textSize="17sp"
+                    android:textSize="13sp"
                     android:textStyle="bold|italic"
                     android:letterSpacing="0.06"
                     android:shadowColor="#80000000"
@@ -72,33 +73,42 @@
         <ImageView
             android:layout_width="36dp"
             android:layout_height="28dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:src="@drawable/chip"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:contentDescription="Card chip" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/preview_number"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="14dp"
             android:text="•••• •••• •••• ••••"
             android:textColor="#FFFFFFFF"
-            android:textSize="17sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:fontFamily="monospace"
-            android:letterSpacing="0.08"
+            android:letterSpacing="0.05"
+            android:maxLines="1"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="10sp"
+            app:autoSizeMaxTextSize="16sp"
+            app:autoSizeStepGranularity="1sp"
             android:shadowColor="#80000000"
             android:shadowDx="1"
             android:shadowDy="1"
             android:shadowRadius="2"
             android:singleLine="true" />
 
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:orientation="horizontal"
             android:gravity="bottom">
 

@@ -10,22 +10,14 @@
             <corners android:radius="16dp" />
         </shape>
     </item>
-    <item
-        android:left="120dp"
-        android:top="-90dp"
-        android:right="-70dp"
-        android:bottom="60dp">
-        <shape android:shape="oval">
-            <solid android:color="#26FFFFFF" />
-        </shape>
-    </item>
-    <item
-        android:left="-60dp"
-        android:top="110dp"
-        android:right="180dp"
-        android:bottom="-80dp">
-        <shape android:shape="oval">
-            <solid android:color="#1AFFFFFF" />
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#30FFFFFF"
+                android:centerColor="#08FFFFFF"
+                android:endColor="#00FFFFFF" />
+            <corners android:radius="16dp" />
         </shape>
     </item>
     <item>
