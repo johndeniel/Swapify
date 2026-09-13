@@ -150,6 +150,15 @@ public class BankCardsFragment extends Fragment {
                     refreshPreview.run();
                 }));
 
+        dialogView.findViewById(R.id.btn_toggle_cvv).setOnClickListener(v -> {
+            if (inputCvv.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
+                inputCvv.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            } else {
+                inputCvv.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
+            inputCvv.setSelection(inputCvv.getText().length());
+        });
+
         dialogView.findViewById(R.id.btn_toggle_pin).setOnClickListener(v -> {
             if (inputPin.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
                 inputPin.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
