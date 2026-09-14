@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Driver's License: pearl diagonal gradient, purple sheen, purple foot bar. -->
-<!-- Text-only homage to the 2022 LTO palette — no logo, photo or ray artwork. -->
+<!-- Central reusable ID face: neutral charcoal-gold document style that suits -->
+<!-- ANY government ID (National ID, Driver's License, Passport, SSS, GSIS…). -->
+<!-- Per-type identity comes from bound text (title, number label), not layout. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item>
         <shape android:shape="rectangle">
             <gradient
                 android:angle="135"
-                android:startColor="#FFFFFFFF"
-                android:centerColor="#FFF6F3FD"
-                android:endColor="#FFE7E0F8" />
+                android:startColor="#FF141920"
+                android:centerColor="#FF1F2733"
+                android:endColor="#FF2E3A4D" />
             <corners android:radius="16dp" />
-            <stroke android:width="1dp" android:color="#FFD8D2E8" />
+            <stroke android:width="1dp" android:color="#FF0B0E13" />
         </shape>
     </item>
 
@@ -22,7 +23,7 @@
             android:pivotX="85%"
             android:pivotY="0%">
             <shape android:shape="rectangle">
-                <solid android:color="#146A5AA8" />
+                <solid android:color="#14FFFFFF" />
                 <size
                     android:width="110dp"
                     android:height="400dp" />
@@ -30,25 +31,25 @@
         </rotate>
     </item>
 
-    <!-- Thin purple diagonal accent next to the sheen. -->
+    <!-- Thin gold diagonal accent next to the sheen. -->
     <item>
         <rotate
             android:fromDegrees="-20"
             android:pivotX="68%"
             android:pivotY="0%">
             <shape android:shape="rectangle">
-                <solid android:color="#336A5AA8" />
+                <solid android:color="#2EC9A227" />
                 <size
-                    android:width="8dp"
+                    android:width="10dp"
                     android:height="400dp" />
             </shape>
         </rotate>
     </item>
 
-    <!-- Purple foot bar, rounded bottom corners only. -->
-    <item android:top="194dp">
+    <!-- Gold foot bar, rounded bottom corners only. -->
+    <item android:top="193dp">
         <shape android:shape="rectangle">
-            <solid android:color="#FF6A5AA8" />
+            <solid android:color="#FFC9A227" />
             <corners
                 android:topLeftRadius="0dp"
                 android:topRightRadius="0dp"

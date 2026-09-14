@@ -200,6 +200,38 @@ public final class IdTypeSpec {
         return new IdType(safeName, numberKey, "full_name", fields);
     }
 
+    /** Sub-line under the card title, per type. Never null. */
+    public static String previewSubtitle(String typeName) {
+        if (typeName != null) {
+            if (typeName.trim().equalsIgnoreCase(TYPE_NATIONAL_ID)) {
+                return "PHILIPPINE IDENTIFICATION";
+            }
+            if (typeName.trim().equalsIgnoreCase(TYPE_DRIVERS_LICENSE)) {
+                return "LAND TRANSPORT OFFICE";
+            }
+            if (!typeName.trim().isEmpty()) {
+                return "GOVERNMENT ID";
+            }
+        }
+        return "GOVERNMENT ID";
+    }
+
+    /** Face label for the primary number, per type (PSN, LICENSE NO., …). */
+    public static String numberLabel(String typeName) {
+        IdType spec = forName(typeName);
+        String key = spec.numberKey;
+        if ("psn".equalsIgnoreCase(key)) {
+            return "PSN";
+        }
+        if ("license_no".equalsIgnoreCase(key)) {
+            return "LICENSE NO.";
+        }
+        if ("id_number".equalsIgnoreCase(key)) {
+            return "ID NUMBER";
+        }
+        return toLabel(key).toUpperCase();
+    }
+
     /** Footer line for the collapsed preview, per type. Never null. */
     public static String buildPreviewMeta(IdType type, Map<String, String> fields) {
         if (type.name.equals(TYPE_DRIVERS_LICENSE)) {

@@ -15,20 +15,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Fixed authentic preview per ID type — no color picker, nothing reused.
- * National ID always renders the navy/gold layout, Driver's License always
- * renders the pearl-white/purple layout. Typing in the form updates the
- * single preview live via {@link #updatePreview(String, Map)}.
+ * Fixed preview for the ID bottom sheet — the SAME central reusable face
+ * ({@code item_id_card_preview.xml}) used by the list. Typing in the form
+ * updates it live via {@link #updatePreview(String, Map)}; switching ID type
+ * only changes the bound title, number label and values.
  */
 public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapter.CardViewHolder> {
-
-    private static final int VIEW_NATIONAL = 0;
-    private static final int VIEW_DRIVERS = 1;
 
     private String idType = IdTypeSpec.TYPE_NATIONAL_ID;
     private Map<String, String> fields = new LinkedHashMap<>();
 
-    /** Single fixed design per type (kept for the dots/carousel call sites). */
+    /** Single fixed preview (kept for the carousel call sites). */
     public int getDesignCount() {
         return 1;
     }
@@ -39,18 +36,11 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         notifyDataSetChanged();
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        return IdCardListAdapter.isDrivers(idType) ? VIEW_DRIVERS : VIEW_NATIONAL;
-    }
-
     @NonNull
     @Override
     public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        int layout = viewType == VIEW_DRIVERS
-                ? R.layout.item_id_preview_drivers
-                : R.layout.item_id_preview_national;
-        View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_id_card_preview, parent, false);
         return new CardViewHolder(view);
     }
 
@@ -63,13 +53,10 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
 
         holder.idType.setText(idType.trim().isEmpty()
                 ? "GOVERNMENT ID" : idType.trim().toUpperCase());
-        if (holder.subtitle != null) {
-            holder.subtitle.setText(getItemViewType(position) == VIEW_DRIVERS
-                    ? "REPUBLIC OF THE PHILIPPINES" : "PHILIPPINE IDENTIFICATION");
-            holder.subtitle.setVisibility(View.VISIBLE);
-        }
+        holder.subtitle.setText(IdTypeSpec.previewSubtitle(idType));
         holder.holder.setText(holderName != null && !holderName.trim().isEmpty()
                 ? holderName.trim().toUpperCase() : "FULL NAME");
+        holder.numberLabel.setText(IdTypeSpec.numberLabel(idType));
         holder.number.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : "—");
         String meta = IdTypeSpec.buildPreviewMeta(spec, fields);
@@ -87,6 +74,7 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         TextView idType;
         TextView subtitle;
         TextView holder;
+        TextView numberLabel;
         TextView number;
         TextView meta;
 
@@ -96,6 +84,7 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
             idType = itemView.findViewById(R.id.preview_id_type);
             subtitle = itemView.findViewById(R.id.preview_subtitle);
             holder = itemView.findViewById(R.id.preview_holder);
+            numberLabel = itemView.findViewById(R.id.preview_number_label);
             number = itemView.findViewById(R.id.preview_number);
             meta = itemView.findViewById(R.id.preview_meta);
         }
