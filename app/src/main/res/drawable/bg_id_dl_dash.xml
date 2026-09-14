@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Red dashed accent line used inside the Driver's License preview -->
+<!-- (homage to the dashed strip on the back of the 2022 LTO card). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="line">
+    <stroke
+        android:width="2dp"
+        android:color="#FFC0392B"
+        android:dashWidth="6dp"
+        android:dashGap="4dp" />
+    <size android:height="2dp" />
+</shape>

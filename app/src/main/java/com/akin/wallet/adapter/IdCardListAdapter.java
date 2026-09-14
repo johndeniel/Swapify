@@ -1,0 +1,240 @@
+package com.akin.wallet.adapter;
+
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.akin.wallet.R;
+import com.akin.wallet.model.IdCardItem;
+import com.akin.wallet.model.IdTypeSpec;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * One list, one design per ID type — never reused across types.
+ * National ID renders the navy/gold layout, Driver's License renders the
+ * pearl-white/purple layout. Expanded details stay generic (driven by
+ * {@link IdTypeSpec}) so each type still shows exactly its own fields.
+ */
+public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.CardViewHolder> {
+
+    public interface OnIdActionListener {
+        void onEdit(IdCardItem item);
+        void onDelete(IdCardItem item);
+    }
+
+    private static final int VIEW_NATIONAL = 0;
+    private static final int VIEW_DRIVERS = 1;
+
+    private final List<IdCardItem> items = new ArrayList<>();
+    private final OnIdActionListener listener;
+    private int expandedPosition = -1;
+
+    public IdCardListAdapter(List<IdCardItem> items, OnIdActionListener listener) {
+        if (items != null) {
+            this.items.addAll(items);
+        }
+        this.listener = listener;
+    }
+
+    public void updateData(List<IdCardItem> newItems) {
+        items.clear();
+        if (newItems != null) {
+            items.addAll(newItems);
+        }
+        expandedPosition = -1;
+        notifyDataSetChanged();
+    }
+
+    public static boolean isDrivers(String idType) {
+        return idType != null && idType.trim().equalsIgnoreCase(IdTypeSpec.TYPE_DRIVERS_LICENSE);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return isDrivers(items.get(position).getIdType()) ? VIEW_DRIVERS : VIEW_NATIONAL;
+    }
+
+    @NonNull
+    @Override
+    public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        int layout = viewType == VIEW_DRIVERS
+                ? R.layout.item_id_card_drivers
+                : R.layout.item_id_card_national;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
+        return new CardViewHolder(view, viewType);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
+        IdCardItem item = items.get(position);
+        Map<String, String> fields = item.getFields();
+        IdTypeSpec.IdType spec = IdTypeSpec.forName(item.getIdType());
+
+        // Rounded-corner clipping only — the visual design comes from the
+        // per-type background baked into each preview layout.
+        BankCardDesignAdapter.applyCardOutline(holder.cardRoot);
+
+        String holderName = fields.get(spec.nameKey);
+        String number = fields.get(spec.numberKey);
+        holder.previewType.setText(!item.getIdType().trim().isEmpty()
+                ? item.getIdType().trim().toUpperCase() : "GOVERNMENT ID");
+        if (holder.previewSubtitle != null) {
+            if (holder.viewType == VIEW_DRIVERS) {
+                holder.previewSubtitle.setText("REPUBLIC OF THE PHILIPPINES");
+            } else {
+                holder.previewSubtitle.setText("PHILIPPINE IDENTIFICATION");
+            }
+            holder.previewSubtitle.setVisibility(View.VISIBLE);
+        }
+        holder.previewHolder.setText(holderName != null && !holderName.trim().isEmpty()
+                ? holderName.trim().toUpperCase() : "FULL NAME");
+        holder.previewNumber.setText(number != null && !number.trim().isEmpty()
+                ? number.trim() : "—");
+        String meta = IdTypeSpec.buildPreviewMeta(spec, fields);
+        holder.previewMeta.setText(meta);
+        holder.previewMeta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
+
+        boolean isExpanded = position == expandedPosition;
+        holder.expandedSection.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+
+        if (isExpanded) {
+            bindDetails(holder.detailsContainer, spec, fields);
+            holder.btnEdit.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onEdit(item);
+                }
+            });
+            holder.btnDelete.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onDelete(item);
+                }
+            });
+        } else {
+            // Avoid leaking listeners / rows when recycled while collapsed.
+            holder.detailsContainer.removeAllViews();
+            holder.btnEdit.setOnClickListener(null);
+            holder.btnDelete.setOnClickListener(null);
+        }
+
+        holder.cardRoot.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition == RecyclerView.NO_POSITION) {
+                return;
+            }
+            if (expandedPosition == adapterPosition) {
+                expandedPosition = -1;
+            } else {
+                int oldExpanded = expandedPosition;
+                expandedPosition = adapterPosition;
+                if (oldExpanded != -1) {
+                    notifyItemChanged(oldExpanded);
+                }
+            }
+            notifyItemChanged(adapterPosition);
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
+
+    private void bindDetails(LinearLayout container, IdTypeSpec.IdType spec,
+                             Map<String, String> fields) {
+        container.removeAllViews();
+        Context ctx = container.getContext();
+        LayoutInflater inflater = LayoutInflater.from(ctx);
+        Map<String, IdTypeSpec.IdField> display =
+                IdTypeSpec.displayFields(spec, fields != null ? fields : new LinkedHashMap<>());
+
+        for (Map.Entry<String, IdTypeSpec.IdField> entry : display.entrySet()) {
+            String key = entry.getKey();
+            IdTypeSpec.IdField field = entry.getValue();
+            String value = fields != null ? fields.get(key) : null;
+            if (value == null) {
+                value = "";
+            }
+            final String fullValue = value;
+
+            View row = inflater.inflate(R.layout.item_id_detail_row, container, false);
+            TextView labelView = row.findViewById(R.id.row_label);
+            TextView valueView = row.findViewById(R.id.row_value);
+            ImageView toggleView = row.findViewById(R.id.btn_toggle);
+            ImageView copyView = row.findViewById(R.id.btn_copy);
+
+            labelView.setText(field.label);
+
+            // All values shown in full — no masking.
+            valueView.setText(fullValue.isEmpty() ? "Not set" : fullValue);
+            toggleView.setVisibility(View.GONE);
+            toggleView.setOnClickListener(null);
+
+            copyView.setOnClickListener(v ->
+                    copyToClipboard(v.getContext(), field.label, fullValue));
+
+            container.addView(row);
+
+            // Divider after every row — including below the last field
+            // (marital status / conditions), above Edit/Delete.
+            View divider = new View(ctx);
+            divider.setBackgroundColor(
+                    ctx.getResources().getColor(R.color.dark_card_border, null));
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, (int) (1 * ctx.getResources()
+                    .getDisplayMetrics().density));
+            divider.setLayoutParams(params);
+            container.addView(divider);
+        }
+    }
+
+    private void copyToClipboard(Context context, String label, String text) {
+        ClipboardManager clipboard =
+                (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText(label, text != null ? text : "");
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(context, label + " copied", Toast.LENGTH_SHORT).show();
+    }
+
+    static class CardViewHolder extends RecyclerView.ViewHolder {
+        final int viewType;
+        View cardRoot;
+        TextView previewType;
+        TextView previewSubtitle;
+        TextView previewHolder;
+        TextView previewNumber;
+        TextView previewMeta;
+        LinearLayout expandedSection;
+        LinearLayout detailsContainer;
+        LinearLayout btnEdit;
+        LinearLayout btnDelete;
+
+        CardViewHolder(@NonNull View itemView, int viewType) {
+            super(itemView);
+            this.viewType = viewType;
+            cardRoot = itemView.findViewById(R.id.card_root);
+            previewType = itemView.findViewById(R.id.preview_id_type);
+            previewSubtitle = itemView.findViewById(R.id.preview_subtitle);
+            previewHolder = itemView.findViewById(R.id.preview_holder);
+            previewNumber = itemView.findViewById(R.id.preview_number);
+            previewMeta = itemView.findViewById(R.id.preview_meta);
+            expandedSection = itemView.findViewById(R.id.expanded_section);
+            detailsContainer = itemView.findViewById(R.id.details_container);
+            btnEdit = itemView.findViewById(R.id.btn_edit);
+            btnDelete = itemView.findViewById(R.id.btn_delete);
+        }
+    }
+}

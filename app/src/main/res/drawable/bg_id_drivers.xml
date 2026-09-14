@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Driver's License: pearl diagonal gradient, purple sheen, purple foot bar. -->
+<!-- Text-only homage to the 2022 LTO palette — no logo, photo or ray artwork. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#FFFFFFFF"
+                android:centerColor="#FFF6F3FD"
+                android:endColor="#FFE7E0F8" />
+            <corners android:radius="16dp" />
+            <stroke android:width="1dp" android:color="#FFD8D2E8" />
+        </shape>
+    </item>
+
+    <!-- Wide diagonal sheen, top-right. -->
+    <item>
+        <rotate
+            android:fromDegrees="-20"
+            android:pivotX="85%"
+            android:pivotY="0%">
+            <shape android:shape="rectangle">
+                <solid android:color="#146A5AA8" />
+                <size
+                    android:width="110dp"
+                    android:height="400dp" />
+            </shape>
+        </rotate>
+    </item>
+
+    <!-- Thin purple diagonal accent next to the sheen. -->
+    <item>
+        <rotate
+            android:fromDegrees="-20"
+            android:pivotX="68%"
+            android:pivotY="0%">
+            <shape android:shape="rectangle">
+                <solid android:color="#336A5AA8" />
+                <size
+                    android:width="8dp"
+                    android:height="400dp" />
+            </shape>
+        </rotate>
+    </item>
+
+    <!-- Purple foot bar, rounded bottom corners only. -->
+    <item android:top="194dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FF6A5AA8" />
+            <corners
+                android:topLeftRadius="0dp"
+                android:topRightRadius="0dp"
+                android:bottomLeftRadius="16dp"
+                android:bottomRightRadius="16dp" />
+        </shape>
+    </item>
+
+</layer-list>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- National ID: deep-navy diagonal gradient, translucent sheen bands, gold foot bar. -->
+<!-- Text-only homage to the PhilID palette — no seal, flag, photo or QR. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#FF0C2247"
+                android:centerColor="#FF14315F"
+                android:endColor="#FF1E4480" />
+            <corners android:radius="16dp" />
+            <stroke android:width="1dp" android:color="#FF0A1C38" />
+        </shape>
+    </item>
+
+    <!-- Wide diagonal sheen, top-right. -->
+    <item>
+        <rotate
+            android:fromDegrees="-20"
+            android:pivotX="85%"
+            android:pivotY="0%">
+            <shape android:shape="rectangle">
+                <solid android:color="#14FFFFFF" />
+                <size
+                    android:width="110dp"
+                    android:height="400dp" />
+            </shape>
+        </rotate>
+    </item>
+
+    <!-- Thin gold diagonal accent next to the sheen. -->
+    <item>
+        <rotate
+            android:fromDegrees="-20"
+            android:pivotX="68%"
+            android:pivotY="0%">
+            <shape android:shape="rectangle">
+                <solid android:color="#2EC9A227" />
+                <size
+                    android:width="10dp"
+                    android:height="400dp" />
+            </shape>
+        </rotate>
+    </item>
+
+    <!-- Gold foot bar, rounded bottom corners only. -->
+    <item android:top="193dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFC9A227" />
+            <corners
+                android:topLeftRadius="0dp"
+                android:topRightRadius="0dp"
+                android:bottomLeftRadius="16dp"
+                android:bottomRightRadius="16dp" />
+        </shape>
+    </item>
+
+</layer-list>

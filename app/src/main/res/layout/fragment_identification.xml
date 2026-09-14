@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/dark_bg"
     android:fitsSystemWindows="true"
+    android:paddingTop="8dp"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingBottom="16dp"
@@ -26,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/title_id"
                 android:textColor="@color/text_primary"
-                android:textSize="26sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -40,8 +41,8 @@
 
         <ImageButton
             android:id="@+id/btn_add"
-            android:layout_width="34dp"
-            android:layout_height="34dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:background="@drawable/bg_add_button"
@@ -50,5 +51,14 @@
             android:contentDescription="@string/btn_add" />
 
     </RelativeLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_cards"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="12dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp" />
 
 </LinearLayout>

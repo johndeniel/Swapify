@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
+import com.akin.wallet.model.IdCardItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 public class AppDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "akin_wallet.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     private static final String TABLE_LOGINS = "logins";
     private static final String COL_ID = "id";
@@ -40,28 +41,30 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_CARD_PIN = "pin";
     private static final String COL_DESIGN = "design";
 
+    private static final String TABLE_ID_CARDS = "id_cards";
+    private static final String COL_ID_CARD_ID = "id";
+    private static final String COL_ID_TYPE = "id_type";
+    private static final String COL_ID_FIELDS_JSON = "fields_json";
+    private static final String COL_ID_DESIGN = "design";
+
     public AppDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createLogins = "CREATE TABLE " + TABLE_LOGINS + " ("
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_LOGINS + " ("
                 + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_PLATFORM + " TEXT, "
                 + COL_USERNAME + " TEXT, "
                 + COL_PASSWORD + " TEXT, "
                 + COL_PIN + " TEXT, "
-                + COL_ICON_RES + " INTEGER)";
-        db.execSQL(createLogins);
-
-        String createAssociations = "CREATE TABLE " + TABLE_ASSOCIATIONS + " ("
+                + COL_ICON_RES + " INTEGER)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ASSOCIATIONS + " ("
                 + COL_LOGIN_ID + " INTEGER, "
                 + COL_ASSOCIATED_ID + " INTEGER, "
-                + "PRIMARY KEY (" + COL_LOGIN_ID + ", " + COL_ASSOCIATED_ID + "))";
-        db.execSQL(createAssociations);
-
-        String createBankCards = "CREATE TABLE " + TABLE_BANK_CARDS + " ("
+                + "PRIMARY KEY (" + COL_LOGIN_ID + ", " + COL_ASSOCIATED_ID + "))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_BANK_CARDS + " ("
                 + COL_CARD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_CARD_TYPE + " TEXT, "
                 + COL_CARD_NETWORK + " TEXT, "
@@ -71,16 +74,44 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_EXPIRY + " TEXT, "
                 + COL_CVV + " TEXT, "
                 + COL_CARD_PIN + " TEXT, "
-                + COL_DESIGN + " INTEGER)";
-        db.execSQL(createBankCards);
+                + COL_DESIGN + " INTEGER)");
+        db.execSQL(getCreateIdCardsSql());
+    }
+
+    private static String getCreateIdCardsSql() {
+        return "CREATE TABLE IF NOT EXISTS " + TABLE_ID_CARDS + " ("
+                + COL_ID_CARD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_ID_TYPE + " TEXT, "
+                + COL_ID_FIELDS_JSON + " TEXT, "
+                + COL_ID_DESIGN + " INTEGER)";
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ASSOCIATIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOGINS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BANK_CARDS);
-        onCreate(db);
+        // Non-destructive: never drop user data. Create missing tables only.
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_LOGINS + " ("
+                + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_PLATFORM + " TEXT, "
+                + COL_USERNAME + " TEXT, "
+                + COL_PASSWORD + " TEXT, "
+                + COL_PIN + " TEXT, "
+                + COL_ICON_RES + " INTEGER)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ASSOCIATIONS + " ("
+                + COL_LOGIN_ID + " INTEGER, "
+                + COL_ASSOCIATED_ID + " INTEGER, "
+                + "PRIMARY KEY (" + COL_LOGIN_ID + ", " + COL_ASSOCIATED_ID + "))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_BANK_CARDS + " ("
+                + COL_CARD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_CARD_TYPE + " TEXT, "
+                + COL_CARD_NETWORK + " TEXT, "
+                + COL_BANK_NAME + " TEXT, "
+                + COL_HOLDER_NAME + " TEXT, "
+                + COL_CARD_NUMBER + " TEXT, "
+                + COL_EXPIRY + " TEXT, "
+                + COL_CVV + " TEXT, "
+                + COL_CARD_PIN + " TEXT, "
+                + COL_DESIGN + " INTEGER)");
+        db.execSQL(getCreateIdCardsSql());
     }
 
     public long insertLogin(CredentialItem item) {
@@ -198,6 +229,56 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     public int deleteBankCard(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         int rows = db.delete(TABLE_BANK_CARDS, COL_CARD_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
+        return rows;
+    }
+
+    public long insertIdCard(IdCardItem item) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_ID_TYPE, item.getIdType());
+        cv.put(COL_ID_FIELDS_JSON, item.getFieldsJson());
+        cv.put(COL_ID_DESIGN, item.getDesign());
+        long id = db.insert(TABLE_ID_CARDS, null, cv);
+        db.close();
+        return id;
+    }
+
+    public List<IdCardItem> getAllIdCards() {
+        List<IdCardItem> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS, null);
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(new IdCardItem(
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_CARD_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_TYPE)),
+                        IdCardItem.parseFieldsJson(
+                                cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_FIELDS_JSON))),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_DESIGN))
+                ));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return list;
+    }
+
+    public int updateIdCard(IdCardItem item) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_ID_TYPE, item.getIdType());
+        cv.put(COL_ID_FIELDS_JSON, item.getFieldsJson());
+        cv.put(COL_ID_DESIGN, item.getDesign());
+        int rows = db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
+                new String[]{String.valueOf(item.getId())});
+        db.close();
+        return rows;
+    }
+
+    public int deleteIdCard(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows = db.delete(TABLE_ID_CARDS, COL_ID_CARD_ID + "=?", new String[]{String.valueOf(id)});
         db.close();
         return rows;
     }
