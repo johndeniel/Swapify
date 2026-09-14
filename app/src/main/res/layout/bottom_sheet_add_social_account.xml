@@ -17,7 +17,7 @@
         android:id="@+id/dialog_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Social Account"
+        android:text="@string/dialog_social_title"
         android:textColor="@color/text_primary"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -25,14 +25,14 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save your account details securely"
+        android:text="@string/dialog_social_subtitle"
         android:textColor="@color/text_secondary"
         android:textSize="14sp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Platform"
+        android:text="@string/field_platform"
         android:textColor="@color/text_secondary"
         android:textSize="13sp"
         android:layout_marginTop="28dp" />
@@ -71,14 +71,14 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/ic_dropdown"
-            android:contentDescription="Select platform" />
+            android:contentDescription="@string/cd_select_platform" />
 
     </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Account Details"
+        android:text="@string/section_account_details"
         android:textColor="@color/text_secondary"
         android:textSize="13sp"
         android:layout_marginTop="24dp" />
@@ -110,7 +110,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Username"
+                android:text="@string/field_username"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
@@ -119,8 +119,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@null"
-                android:hint="username"
-                android:textColorHint="#55FFFFFF"
+                android:hint="@string/hint_username"
+                android:textColorHint="@color/hint_text"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:singleLine="true"
@@ -159,7 +159,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Password"
+                android:text="@string/field_password"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
@@ -168,8 +168,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@null"
-                android:hint="••••••••"
-                android:textColorHint="#55FFFFFF"
+                android:hint="@string/mask_password"
+                android:textColorHint="@color/hint_text"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:singleLine="true"
@@ -186,7 +186,7 @@
             android:src="@drawable/ic_eye"
             android:alpha="0.6"
             android:layout_marginStart="8dp"
-            android:contentDescription="Toggle visibility" />
+            android:contentDescription="@string/cd_toggle_visibility" />
 
     </LinearLayout>
 
@@ -217,7 +217,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PIN"
+                android:text="@string/field_pin"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
@@ -226,8 +226,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@null"
-                android:hint="••••"
-                android:textColorHint="#55FFFFFF"
+                android:hint="@string/mask_pin"
+                android:textColorHint="@color/hint_text"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:singleLine="true"
@@ -245,7 +245,7 @@
             android:src="@drawable/ic_eye"
             android:alpha="0.6"
             android:layout_marginStart="8dp"
-            android:contentDescription="Toggle visibility" />
+            android:contentDescription="@string/cd_toggle_visibility" />
 
     </LinearLayout>
 
@@ -264,7 +264,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Associated Accounts"
+                android:text="@string/section_associated_accounts"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp"
                 android:layout_alignParentStart="true"
@@ -285,8 +285,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add"
-                    android:textColor="#FF2196F3"
+                    android:text="@string/action_add"
+                    android:textColor="@color/brand_blue"
                     android:textSize="13sp" />
 
                 <ImageView
@@ -294,7 +294,7 @@
                     android:layout_height="18dp"
                     android:layout_marginStart="4dp"
                     android:src="@drawable/ic_add_circle"
-                    android:contentDescription="Add account" />
+                    android:contentDescription="@string/cd_add_account" />
 
             </LinearLayout>
 
@@ -314,8 +314,8 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginTop="24dp"
-        android:backgroundTint="#FF2196F3"
-        android:text="Save"
+        android:backgroundTint="@color/brand_blue"
+        android:text="@string/action_save"
         android:textColor="@color/text_primary"
         android:textSize="16sp"
         android:textStyle="bold"

@@ -12,61 +12,99 @@ import com.akin.wallet.R;
 import com.akin.wallet.model.IdTypeSpec;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Fixed preview for the ID bottom sheet — the SAME central reusable face
- * ({@code item_id_card_preview.xml}) used by the list. Typing in the form
- * updates it live via {@link #updatePreview(String, Map)}; switching ID type
- * only changes the bound title, number label and values.
+ * Bank-style picker carousel for the ID bottom sheet — but here each page
+ * is an ID TYPE's authentic face (National ID navy/gold, Driver's License
+ * pearl/purple), all rendered through the SAME central reusable layout.
+ * Swiping pages (or the ID Type row) selects the type; typing updates every
+ * page live from the shared draft.
  */
 public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapter.CardViewHolder> {
 
-    private String idType = IdTypeSpec.TYPE_NATIONAL_ID;
-    private Map<String, String> fields = new LinkedHashMap<>();
-
-    /** Single fixed preview (kept for the carousel call sites). */
-    public int getDesignCount() {
-        return 1;
+    public interface OnTypePageListener {
+        void onTypePageSelected(int typeIndex);
     }
 
-    public void updatePreview(String idType, Map<String, String> fields) {
-        this.idType = idType != null ? idType : "";
+    private final List<IdTypeSpec.IdType> types = IdTypeSpec.getAllTypes();
+    private final OnTypePageListener listener;
+    private Map<String, String> fields = new LinkedHashMap<>();
+
+    public IdCardDesignAdapter(OnTypePageListener listener) {
+        this.listener = listener;
+    }
+
+    public int getTypeCount() {
+        return types.size();
+    }
+
+    public String getTypeAt(int position) {
+        if (position < 0 || position >= types.size()) {
+            return types.get(0).name;
+        }
+        return types.get(position).name;
+    }
+
+    public void updatePreview(Map<String, String> fields) {
         this.fields = fields != null ? new LinkedHashMap<>(fields) : new LinkedHashMap<>();
         notifyDataSetChanged();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return IdCardListAdapter.isDriversLicense(getTypeAt(position)) ? 1 : 0;
     }
 
     @NonNull
     @Override
     public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_id_card_preview, parent, false);
+        int layout = viewType == 1
+                ? R.layout.item_drivers_license_preview
+                : R.layout.item_national_id_preview;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
         return new CardViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
         BankCardDesignAdapter.applyCardOutline(holder.cardRoot);
-        IdTypeSpec.IdType spec = IdTypeSpec.forName(idType);
-        String holderName = fields.get(spec.nameKey);
-        String number = fields.get(spec.numberKey);
+        String pageType = getTypeAt(position);
+        IdTypeSpec.IdType spec = IdTypeSpec.forName(pageType);
 
-        holder.idType.setText(idType.trim().isEmpty()
-                ? "GOVERNMENT ID" : idType.trim().toUpperCase());
-        holder.subtitle.setText(IdTypeSpec.previewSubtitle(idType));
+        // Each page shows its own type's values from the shared draft so the
+        // user can compare faces while typing (common keys carry over).
+        Map<String, String> pageFields = new LinkedHashMap<>();
+        for (IdTypeSpec.IdField f : spec.fields) {
+            String v = fields.get(f.key);
+            pageFields.put(f.key, v != null ? v : "");
+        }
+        String holderName = pageFields.get(spec.nameKey);
+        String number = pageFields.get(spec.numberKey);
+
+        holder.idType.setText(pageType.toUpperCase());
+        holder.subtitle.setText(IdTypeSpec.previewSubtitle(pageType));
         holder.holder.setText(holderName != null && !holderName.trim().isEmpty()
                 ? holderName.trim().toUpperCase() : "FULL NAME");
-        holder.numberLabel.setText(IdTypeSpec.numberLabel(idType));
+        holder.numberLabel.setText(IdTypeSpec.numberLabel(pageType));
         holder.number.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : "—");
-        String meta = IdTypeSpec.buildPreviewMeta(spec, fields);
+        String meta = IdTypeSpec.buildPreviewMeta(spec, pageFields);
         holder.meta.setText(meta);
         holder.meta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
+
+        holder.cardRoot.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition != RecyclerView.NO_POSITION && listener != null) {
+                listener.onTypePageSelected(adapterPosition);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return 1;
+        return types.size();
     }
 
     static class CardViewHolder extends RecyclerView.ViewHolder {

@@ -25,7 +25,8 @@ import java.util.Map;
 
 /**
  * CENTRAL reusable card list for ALL government ID types.
- * One layout ({@code item_id_card.xml}) serves every type — per-type identity
+ * One face per ID type ({@code item_national_id.xml},
+ * {@code item_drivers_license.xml}) — per-type identity
  * (title, number label, values) is bound from {@link IdTypeSpec}, and the
  * expanded details are inflated dynamically from the type's field spec.
  */
@@ -39,6 +40,13 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
     private final List<IdCardItem> items = new ArrayList<>();
     private final OnIdActionListener listener;
     private int expandedPosition = -1;
+
+    private static final int VIEW_NATIONAL_ID = 0;
+    private static final int VIEW_DRIVERS_LICENSE = 1;
+
+    public static boolean isDriversLicense(String idType) {
+        return idType != null && idType.trim().equalsIgnoreCase(IdTypeSpec.TYPE_DRIVERS_LICENSE);
+    }
 
     public IdCardListAdapter(List<IdCardItem> items, OnIdActionListener listener) {
         if (items != null) {
@@ -56,11 +64,19 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         notifyDataSetChanged();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return isDriversLicense(items.get(position).getIdType())
+                ? VIEW_DRIVERS_LICENSE : VIEW_NATIONAL_ID;
+    }
+
     @NonNull
     @Override
     public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_id_card, parent, false);
+        int layout = viewType == VIEW_DRIVERS_LICENSE
+                ? R.layout.item_drivers_license
+                : R.layout.item_national_id;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
         return new CardViewHolder(view);
     }
 
@@ -70,8 +86,8 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         Map<String, String> fields = item.getFields();
         IdTypeSpec.IdType spec = IdTypeSpec.forName(item.getIdType());
 
-        // Rounded-corner clipping only — the face design is baked into the
-        // single shared preview layout.
+        // Rounded-corner clipping only — each type carries its own face
+        // design (background + ink baked into its unique preview layout).
         BankCardDesignAdapter.applyCardOutline(holder.cardRoot);
 
         String holderName = fields.get(spec.nameKey);
@@ -150,18 +166,15 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
             }
             final String fullValue = value;
 
-            View row = inflater.inflate(R.layout.item_id_detail_row, container, false);
+            View row = inflater.inflate(R.layout.item_government_id_detail_row, container, false);
             TextView labelView = row.findViewById(R.id.row_label);
             TextView valueView = row.findViewById(R.id.row_value);
-            ImageView toggleView = row.findViewById(R.id.btn_toggle);
             ImageView copyView = row.findViewById(R.id.btn_copy);
 
             labelView.setText(field.label);
 
             // All values shown in full — no masking.
             valueView.setText(fullValue.isEmpty() ? "Not set" : fullValue);
-            toggleView.setVisibility(View.GONE);
-            toggleView.setOnClickListener(null);
 
             copyView.setOnClickListener(v ->
                     copyToClipboard(v.getContext(), field.label, fullValue));
@@ -181,8 +194,7 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         }
     }
 
-    private void copyToClipboard(Context context, String label, String text) {
-        ClipboardManager clipboard =
+    private void copyToClipboard(Context context, String label, String text) {        ClipboardManager clipboard =
                 (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText(label, text != null ? text : "");
         clipboard.setPrimaryClip(clip);

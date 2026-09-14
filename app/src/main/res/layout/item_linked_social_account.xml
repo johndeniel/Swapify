@@ -43,6 +43,6 @@
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:src="@drawable/ic_link"
-        android:contentDescription="Link" />
+        android:contentDescription="@string/cd_link_account" />
 
 </LinearLayout>

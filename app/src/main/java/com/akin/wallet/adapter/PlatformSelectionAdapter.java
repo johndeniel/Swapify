@@ -36,7 +36,7 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
     @NonNull
     @Override
     public PlatformViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_platform_option, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_social_platform_option, parent, false);
         return new PlatformViewHolder(view);
     }
 

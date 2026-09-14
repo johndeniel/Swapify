@@ -1,15 +1,139 @@
 <resources>
+
+    <!-- ============================================================
+         Akin Wallet — user-facing text.
+         The app has 3 wallet components, each with its own prefix:
+           1. IDs    → government IDs (National ID, Driver's License…)
+           2. Cards  → bank cards (debit / credit / prepaid)
+           3. Social → social-media credentials (username + password)
+         Shared text lives under action_ / field_ / cd_ (content
+         description) so wording stays identical on every screen.
+         ============================================================ -->
+
+    <!-- App identity -->
     <string name="app_name">Akin Wallet</string>
-    <string name="tab_id">IDs</string>
-    <string name="tab_bank">Bank Cards</string>
-    <string name="tab_login">Social</string>
-    <string name="title_id">Personal ID Cards</string>
-    <string name="desc_id">Your Secure ID Wallet</string>
-    <string name="title_bank">Bank Cards</string>
-    <string name="desc_bank">Manage Payment Methods</string>
-    <string name="title_login">My Accounts</string>
-    <string name="desc_login">Keep your accounts organized</string>
-    <string name="btn_add">Add</string>
-    <string name="search">Search</string>
+
+    <!-- Bottom navigation tabs (short labels) -->
+    <string name="tab_ids">IDs</string>
+    <string name="tab_cards">Cards</string>
+    <string name="tab_social">Social</string>
+
+    <!-- Section headers -->
+    <!-- 1. Government IDs -->
+    <string name="title_ids">Government IDs</string>
+    <string name="desc_ids">Your secure ID wallet</string>
+    <!-- 2. Bank cards -->
+    <string name="title_cards">Bank Cards</string>
+    <string name="desc_cards">Manage payment methods</string>
+    <!-- 3. Social accounts -->
+    <string name="title_social">Social Accounts</string>
+    <string name="desc_social">Usernames and passwords, organized</string>
+
+    <!-- Shared actions (also reused as content descriptions) -->
+    <string name="action_add">Add</string>
+    <string name="action_save">Save</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+
+    <!-- Search -->
     <string name="search_hint">Search account\u2026</string>
+    <string name="hint_search_platforms">Search platforms…</string>
+
+    <!-- Bottom-sheet titles and subtitles -->
+    <!-- Bank card -->
+    <string name="dialog_bank_title">Bank Card</string>
+    <string name="dialog_bank_subtitle">Save your card details securely</string>
+    <!-- Social account -->
+    <string name="dialog_social_title">Social Account</string>
+    <string name="dialog_social_subtitle">Save your account details securely</string>
+    <!-- Government ID -->
+    <string name="dialog_id_title">Government ID</string>
+    <string name="dialog_id_subtitle">Save your ID details securely</string>
+    <!-- Link / platform pickers (social flow) -->
+    <string name="dialog_link_title">Link Account</string>
+    <string name="dialog_link_subtitle">Select an existing account to associate</string>
+    <string name="dialog_platform_title">Select Platform</string>
+    <string name="dialog_platform_subtitle">Choose platform for this account</string>
+
+    <!-- Form sections -->
+    <string name="section_account_details">Account Details</string>
+    <string name="section_account_info">Account Information</string>
+    <string name="section_associated_accounts">Associated Accounts</string>
+
+    <!-- Field labels (identical wording shared across screens) -->
+    <string name="field_platform">Platform</string>
+    <string name="field_username">Username</string>
+    <string name="field_password">Password</string>
+    <string name="field_pin">PIN</string>
+    <string name="field_id_type">ID Type</string>
+    <string name="field_card_type">Card Type</string>
+    <string name="field_card_network">Card Network</string>
+    <string name="field_bank_name">Bank Name</string>
+    <string name="field_holder_name">Cardholder Name</string>
+    <string name="field_card_number">Card Number</string>
+    <string name="field_expiry">Valid Thru</string>
+    <string name="field_cvv">CVV</string>
+
+    <!-- Input hints and design-time defaults (rebound with real data) -->
+    <string name="hint_username">username</string>
+    <string name="hint_bank_name">BDO Unibank</string>
+    <string name="hint_person_name">Juan Dela Cruz</string>
+    <string name="hint_card_number">1234 5678 9012 1233</string>
+    <string name="hint_expiry">MMYY</string>
+    <string name="hint_cvv">123</string>
+    <string name="default_card_type">Debit</string>
+    <string name="default_card_network">Visa</string>
+    <string name="default_id_type">National ID</string>
+
+    <!-- Masked / empty placeholders -->
+    <string name="mask_password">••••••••</string>
+    <string name="mask_pin">••••</string>
+    <string name="mask_cvv">•••</string>
+    <string name="mask_card_number">•••• •••• •••• ••••</string>
+    <string name="empty_value">—</string>
+
+    <!-- Card faces (design-time placeholders, rebound at runtime) -->
+    <!-- Bank card -->
+    <string name="preview_bank_name">YOUR BANK</string>
+    <string name="preview_card_type">DEBIT</string>
+    <string name="preview_holder_label">CARD HOLDER</string>
+    <string name="preview_holder_name">CARDHOLDER NAME</string>
+    <string name="preview_expiry_label">VALID THRU</string>
+    <string name="preview_expiry_value">MM/YY</string>
+    <!-- Government ID -->
+    <string name="preview_republic">REPUBLIC OF THE PHILIPPINES</string>
+    <string name="preview_government_id">GOVERNMENT ID</string>
+    <string name="preview_person_name">FULL NAME</string>
+    <string name="preview_person_label">FULL NAME</string>
+    <string name="preview_number_label">ID NUMBER</string>
+    <!-- Generic detail-row default -->
+    <string name="detail_row_label">Label</string>
+
+    <!-- Content descriptions (accessibility) -->
+    <string name="cd_search">Search</string>
+    <string name="cd_add_account">Add account</string>
+    <string name="cd_link_account">Link</string>
+    <string name="cd_toggle_details">Toggle details</string>
+    <string name="cd_toggle_visibility">Toggle visibility</string>
+    <string name="cd_toggle_number">Toggle number visibility</string>
+    <string name="cd_toggle_cvv">Toggle CVV visibility</string>
+    <string name="cd_toggle_pin">Toggle PIN visibility</string>
+    <string name="cd_toggle_password">Toggle password visibility</string>
+    <string name="cd_select_platform">Select platform</string>
+    <string name="cd_select_card_type">Select card type</string>
+    <string name="cd_select_card_network">Select card network</string>
+    <string name="cd_select_id_type">Select ID type</string>
+    <string name="cd_copy_value">Copy value</string>
+    <string name="cd_copy_username">Copy username</string>
+    <string name="cd_copy_password">Copy password</string>
+    <string name="cd_copy_pin">Copy PIN</string>
+    <string name="cd_copy_card_type">Copy card type</string>
+    <string name="cd_copy_card_network">Copy card network</string>
+    <string name="cd_copy_bank_name">Copy bank name</string>
+    <string name="cd_copy_holder_name">Copy cardholder name</string>
+    <string name="cd_copy_card_number">Copy card number</string>
+    <string name="cd_copy_expiry">Copy expiry</string>
+    <string name="cd_copy_cvv">Copy CVV</string>
+    <string name="cd_card_network">Card network</string>
+    <string name="cd_card_chip">Card chip</string>
 </resources>

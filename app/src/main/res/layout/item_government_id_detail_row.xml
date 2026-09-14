@@ -11,7 +11,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Label"
+        android:text="@string/detail_row_label"
         android:textColor="@color/text_secondary"
         android:textSize="14sp" />
 
@@ -25,22 +25,12 @@
         android:fontFamily="monospace" />
 
     <ImageView
-        android:id="@+id/btn_toggle"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
-        android:src="@drawable/ic_eye"
-        android:alpha="0.6"
-        android:visibility="gone"
-        android:layout_marginStart="8dp"
-        android:contentDescription="Toggle visibility" />
-
-    <ImageView
         android:id="@+id/btn_copy"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:src="@drawable/ic_copy"
         android:alpha="0.6"
         android:layout_marginStart="10dp"
-        android:contentDescription="Copy value" />
+        android:contentDescription="@string/cd_copy_value" />
 
 </LinearLayout>

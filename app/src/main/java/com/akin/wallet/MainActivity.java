@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void hideSystemNavigation() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        getWindow().setStatusBarColor(Color.parseColor("#FF0D1B2A"));
+        getWindow().setStatusBarColor(getColor(R.color.dark_bg));
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowInsetsController controller = getWindow().getInsetsController();

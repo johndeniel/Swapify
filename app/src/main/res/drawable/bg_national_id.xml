@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- National ID face: flat white document, navy hairline. No artwork. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/white" />
+    <corners android:radius="16dp" />
+    <stroke android:width="1dp" android:color="@color/card_hairline" />
+</shape>

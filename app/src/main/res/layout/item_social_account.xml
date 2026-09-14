@@ -52,7 +52,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_dropdown"
-            android:contentDescription="Toggle details" />
+            android:contentDescription="@string/cd_toggle_details" />
 
     </LinearLayout>
 
@@ -69,7 +69,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Account Information"
+            android:text="@string/section_account_info"
             android:textColor="@color/text_secondary"
             android:textSize="13sp"
             android:layout_marginBottom="10dp" />
@@ -100,7 +100,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Username"
+                    android:text="@string/field_username"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
@@ -121,7 +121,7 @@
                 android:src="@drawable/ic_copy"
                 android:alpha="0.6"
                 android:layout_marginStart="8dp"
-                android:contentDescription="Copy username" />
+                android:contentDescription="@string/cd_copy_username" />
 
         </LinearLayout>
 
@@ -152,7 +152,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Password"
+                    android:text="@string/field_password"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
@@ -173,7 +173,7 @@
                 android:src="@drawable/ic_eye"
                 android:alpha="0.6"
                 android:layout_marginStart="8dp"
-                android:contentDescription="Toggle password visibility" />
+                android:contentDescription="@string/cd_toggle_password" />
 
             <ImageView
                 android:id="@+id/btn_copy_password"
@@ -182,7 +182,7 @@
                 android:src="@drawable/ic_copy"
                 android:alpha="0.6"
                 android:layout_marginStart="10dp"
-                android:contentDescription="Copy password" />
+                android:contentDescription="@string/cd_copy_password" />
 
         </LinearLayout>
 
@@ -213,7 +213,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PIN"
+                    android:text="@string/field_pin"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
@@ -234,7 +234,7 @@
                 android:src="@drawable/ic_eye"
                 android:alpha="0.6"
                 android:layout_marginStart="8dp"
-                android:contentDescription="Toggle PIN visibility" />
+                android:contentDescription="@string/cd_toggle_pin" />
 
             <ImageView
                 android:id="@+id/btn_copy_pin"
@@ -243,7 +243,7 @@
                 android:src="@drawable/ic_copy"
                 android:alpha="0.6"
                 android:layout_marginStart="10dp"
-                android:contentDescription="Copy PIN" />
+                android:contentDescription="@string/cd_copy_pin" />
 
         </LinearLayout>
 
@@ -262,7 +262,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Associated Accounts"
+                android:text="@string/section_associated_accounts"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp"
                 android:layout_marginBottom="6dp" />
@@ -299,12 +299,12 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_edit"
-                    android:contentDescription="Edit" />
+                    android:contentDescription="@string/action_edit" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Edit"
+                    android:text="@string/action_edit"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:layout_marginStart="6dp" />
@@ -327,13 +327,13 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_delete"
-                    android:contentDescription="Delete" />
+                    android:contentDescription="@string/action_delete" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Delete"
-                    android:textColor="#FFEE4444"
+                    android:text="@string/action_delete"
+                    android:textColor="@color/danger"
                     android:textSize="14sp"
                     android:layout_marginStart="6dp" />
 

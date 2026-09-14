@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select Platform"
+        android:text="@string/dialog_platform_title"
         android:textColor="@color/text_primary"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -17,7 +17,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose platform for this account"
+        android:text="@string/dialog_platform_subtitle"
         android:textColor="@color/text_secondary"
         android:textSize="14sp"
         android:layout_marginBottom="16dp" />
@@ -36,7 +36,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/ic_search"
-            android:contentDescription="@string/search" />
+            android:contentDescription="@string/cd_search" />
 
         <EditText
             android:id="@+id/search_platform"
@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:background="@null"
-            android:hint="Search platforms…"
+            android:hint="@string/hint_search_platforms"
             android:textColorHint="@color/text_secondary"
             android:textColor="@color/text_primary"
             android:textSize="15sp"

@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Link Account"
+        android:text="@string/dialog_link_title"
         android:textColor="@color/text_primary"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -17,7 +17,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select an existing account to associate"
+        android:text="@string/dialog_link_subtitle"
         android:textColor="@color/text_secondary"
         android:textSize="14sp"
         android:layout_marginBottom="16dp" />

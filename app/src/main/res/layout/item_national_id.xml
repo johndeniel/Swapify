@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_marginBottom="10dp">
 
-    <include layout="@layout/item_id_card_preview" />
+    <include layout="@layout/item_national_id_preview" />
 
     <LinearLayout
         android:id="@+id/expanded_section"
@@ -52,12 +52,12 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_edit"
-                        android:contentDescription="Edit" />
+                        android:contentDescription="@string/action_edit" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Edit"
+                        android:text="@string/action_edit"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:layout_marginStart="6dp" />
@@ -80,13 +80,13 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_delete"
-                        android:contentDescription="Delete" />
+                        android:contentDescription="@string/action_delete" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Delete"
-                        android:textColor="#FFEE4444"
+                        android:text="@string/action_delete"
+                        android:textColor="@color/danger"
                         android:textSize="14sp"
                         android:layout_marginStart="6dp" />
 

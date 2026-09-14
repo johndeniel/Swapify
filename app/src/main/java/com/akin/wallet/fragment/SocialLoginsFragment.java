@@ -1,7 +1,6 @@
 package com.akin.wallet.fragment;
 
 import android.app.AlertDialog;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 
@@ -105,12 +104,12 @@ public class SocialLoginsFragment extends Fragment {
     private void showEditLoginDialog(CredentialItem item) {
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext(),
                 com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_credential, null);
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_social_account, null);
         dialog.setContentView(dialogView);
 
         dialog.setOnShowListener(dialogInterface -> {
             if (dialog.getWindow() != null) {
-                dialog.getWindow().setStatusBarColor(Color.parseColor("#FF0D1B2A"));
+                dialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
             }
             com.google.android.material.bottomsheet.BottomSheetDialog dialog2 =
                     (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -145,12 +144,12 @@ public class SocialLoginsFragment extends Fragment {
         dialogView.findViewById(R.id.platform_selector).setOnClickListener(v -> {
             BottomSheetDialog pickerDialog = new BottomSheetDialog(requireContext(),
                     com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-            View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_select_platform, null);
+            View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_select_social_platform, null);
             pickerDialog.setContentView(pickerView);
 
             pickerDialog.setOnShowListener(dialogInterface -> {
                 if (pickerDialog.getWindow() != null) {
-                    pickerDialog.getWindow().setStatusBarColor(Color.parseColor("#FF0D1B2A"));
+                    pickerDialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
                 }
                 com.google.android.material.bottomsheet.BottomSheetDialog dialog3 =
                         (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -258,12 +257,12 @@ public class SocialLoginsFragment extends Fragment {
 
                 BottomSheetDialog pickerDialog = new BottomSheetDialog(requireContext(),
                         com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-                View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_link_account, null);
+                View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_link_social_account, null);
                 pickerDialog.setContentView(pickerView);
 
                 pickerDialog.setOnShowListener(dialogInterface -> {
                     if (pickerDialog.getWindow() != null) {
-                        pickerDialog.getWindow().setStatusBarColor(Color.parseColor("#FF0D1B2A"));
+                        pickerDialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
                     }
                     com.google.android.material.bottomsheet.BottomSheetDialog d =
                             (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -368,12 +367,12 @@ public class SocialLoginsFragment extends Fragment {
     private void showAddLoginDialog() {
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext(),
                 com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_credential, null);
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_social_account, null);
         dialog.setContentView(dialogView);
 
         dialog.setOnShowListener(dialogInterface -> {
             if (dialog.getWindow() != null) {
-                dialog.getWindow().setStatusBarColor(Color.parseColor("#FF0D1B2A"));
+                dialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
             }
             com.google.android.material.bottomsheet.BottomSheetDialog dialog2 =
                     (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -397,12 +396,12 @@ public class SocialLoginsFragment extends Fragment {
         dialogView.findViewById(R.id.platform_selector).setOnClickListener(v -> {
             BottomSheetDialog pickerDialog = new BottomSheetDialog(requireContext(),
                     com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-            View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_select_platform, null);
+            View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_select_social_platform, null);
             pickerDialog.setContentView(pickerView);
 
             pickerDialog.setOnShowListener(dialogInterface -> {
                 if (pickerDialog.getWindow() != null) {
-                    pickerDialog.getWindow().setStatusBarColor(Color.parseColor("#FF0D1B2A"));
+                    pickerDialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
                 }
                 com.google.android.material.bottomsheet.BottomSheetDialog dialog3 =
                         (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -501,12 +500,12 @@ public class SocialLoginsFragment extends Fragment {
 
                 BottomSheetDialog pickerDialog = new BottomSheetDialog(requireContext(),
                         com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-                View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_link_account, null);
+                View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_link_social_account, null);
                 pickerDialog.setContentView(pickerView);
 
                 pickerDialog.setOnShowListener(dialogInterface -> {
                     if (pickerDialog.getWindow() != null) {
-                        pickerDialog.getWindow().setStatusBarColor(Color.parseColor("#FF0D1B2A"));
+                        pickerDialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
                     }
                     com.google.android.material.bottomsheet.BottomSheetDialog d =
                             (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;

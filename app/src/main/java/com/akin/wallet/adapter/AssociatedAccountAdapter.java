@@ -26,7 +26,7 @@ public class AssociatedAccountAdapter extends RecyclerView.Adapter<AssociatedAcc
     @NonNull
     @Override
     public AssocViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_linked_account, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_linked_social_account, parent, false);
         return new AssocViewHolder(view);
     }
 

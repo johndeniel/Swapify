@@ -1,7 +1,6 @@
 package com.akin.wallet.fragment;
 
 import android.app.AlertDialog;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -21,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
@@ -32,7 +32,6 @@ import com.akin.wallet.model.IdTypeSpec;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 public class IdentificationFragment extends Fragment {
@@ -96,12 +95,12 @@ public class IdentificationFragment extends Fragment {
         final boolean isEdit = existing != null;
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext(),
                 com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_id_card, null);
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_government_id, null);
         dialog.setContentView(dialogView);
 
         dialog.setOnShowListener(dialogInterface -> {
             if (dialog.getWindow() != null) {
-                dialog.getWindow().setStatusBarColor(Color.parseColor("#FF0D1B2A"));
+                dialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
             }
             com.google.android.material.bottomsheet.BottomSheetDialog dialog2 =
                     (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -148,23 +147,59 @@ public class IdentificationFragment extends Fragment {
             }
         }
 
-        IdCardDesignAdapter designAdapter = new IdCardDesignAdapter();
+        final IdCardDesignAdapter[] adapterRef = new IdCardDesignAdapter[1];
+        final RecyclerView[] carouselRef = new RecyclerView[1];
+        final LinearLayout dotsContainer = dialogView.findViewById(R.id.dots_container);
+        dotsContainer.setVisibility(View.VISIBLE);
+
+        Runnable refreshPreview = () -> {
+            if (adapterRef[0] != null) {
+                adapterRef[0].updatePreview(draftValues);
+            }
+        };
+
+        // Bank-style picker: each carousel page IS an ID type's authentic face.
+        // Swiping (or tapping) a page selects that type and rebuilds the form.
+        IdCardDesignAdapter designAdapter = new IdCardDesignAdapter(pos -> {
+            if (isEdit && !knownType[0]) {
+                Toast.makeText(requireContext(),
+                        "ID type is fixed for entries from a newer version", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (pos != selectedType[0]) {
+                applyIdTypeSelection(pos, textIdType, formContainer, draftValues, textInputs,
+                        refreshPreview, dotsContainer, adapterRef[0], selectedType);
+            } else if (carouselRef[0] != null) {
+                carouselRef[0].smoothScrollToPosition(pos);
+            }
+        });
+        adapterRef[0] = designAdapter;
         RecyclerView recyclerDesign = dialogView.findViewById(R.id.recycler_card_design);
+        carouselRef[0] = recyclerDesign;
         LinearLayoutManager layoutManager =
                 new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
         recyclerDesign.setLayoutManager(layoutManager);
         recyclerDesign.setAdapter(designAdapter);
+        PagerSnapHelper snapHelper = new PagerSnapHelper();
+        snapHelper.attachToRecyclerView(recyclerDesign);
 
-        // Single fixed preview per type — no dots, no swipe.
-        LinearLayout dotsContainer = dialogView.findViewById(R.id.dots_container);
-        dotsContainer.setVisibility(View.GONE);
+        setupDots(dotsContainer, designAdapter.getTypeCount(), selectedType[0]);
 
-        Runnable refreshPreview = () -> {
-            String typeName = currentTypeName(selectedType[0], knownType[0],
-                    isEdit ? existing.getIdType() : null);
-            Map<String, String> filtered = filteredDraft(typeName, draftValues);
-            designAdapter.updatePreview(typeName, filtered);
-        };
+        recyclerDesign.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                View snapView = snapHelper.findSnapView(layoutManager);
+                if (snapView != null) {
+                    int pos = layoutManager.getPosition(snapView);
+                    if (pos != RecyclerView.NO_POSITION && knownType[0] && pos != selectedType[0]) {
+                        applyIdTypeSelection(pos, textIdType, formContainer, draftValues, textInputs,
+                                refreshPreview, dotsContainer, adapterRef[0], selectedType);
+                    }
+                }
+            }
+        });
+        final int scrollTo = selectedType[0];
+        recyclerDesign.post(() -> recyclerDesign.scrollToPosition(scrollTo));
 
         // Initial header + form.
         if (isEdit && !knownType[0]) {
@@ -183,11 +218,11 @@ public class IdentificationFragment extends Fragment {
                 return;
             }
             showChoiceDialog("ID Type", IdTypeSpec.getTypeNames(), selectedType[0], which -> {
-                selectedType[0] = which;
-                textIdType.setText(IdTypeSpec.getTypeNames()[which]);
-                rebuildForm(formContainer, currentSpec(selectedType[0], true, null, draftValues),
-                        draftValues, textInputs, refreshPreview);
-                refreshPreview.run();
+                applyIdTypeSelection(which, textIdType, formContainer, draftValues, textInputs,
+                        refreshPreview, dotsContainer, adapterRef[0], selectedType);
+                if (carouselRef[0] != null) {
+                    carouselRef[0].smoothScrollToPosition(which);
+                }
             });
         });
 
@@ -203,7 +238,7 @@ public class IdentificationFragment extends Fragment {
             }
             Map<String, String> filtered = filteredDraft(typeName, draftValues);
 
-            if (!validate(spec, filtered, textInputs, formContainer)) {
+            if (!validate(spec, filtered, textInputs)) {
                 return;
             }
 
@@ -306,7 +341,7 @@ public class IdentificationFragment extends Fragment {
         input.setLayoutParams(inputParams);
         input.setBackgroundResource(R.drawable.bg_card);
         input.setHint(field.hint);
-        input.setHintTextColor(Color.parseColor("#55FFFFFF"));
+        input.setHintTextColor(getResources().getColor(R.color.hint_text, null));
         input.setTextColor(getResources().getColor(R.color.text_primary, null));
         input.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         input.setSingleLine(true);
@@ -427,7 +462,7 @@ public class IdentificationFragment extends Fragment {
     }
 
     private boolean validate(IdTypeSpec.IdType spec, Map<String, String> values,
-                             Map<String, EditText> textInputs, LinearLayout formContainer) {
+                             Map<String, EditText> textInputs) {
         for (IdTypeSpec.IdField f : spec.fields) {
             String v = values.get(f.key);
             if (v == null) {
@@ -471,6 +506,40 @@ public class IdentificationFragment extends Fragment {
     }
 
     // ---------- shared UI helpers (mirrors BankCardsFragment) ----------
+
+    /** Single choke point for ID-type switches (carousel, tap, or dropdown). */
+    private void applyIdTypeSelection(int pos, TextView textIdType, LinearLayout formContainer,
+                                      Map<String, String> draft, Map<String, EditText> textInputs,
+                                      Runnable refreshPreview, LinearLayout dotsContainer,
+                                      IdCardDesignAdapter designAdapter, int[] selectedType) {
+        if (pos < 0 || pos >= IdTypeSpec.getTypeNames().length) {
+            return;
+        }
+        selectedType[0] = pos;
+        textIdType.setText(IdTypeSpec.getTypeNames()[pos]);
+        rebuildForm(formContainer, currentSpec(pos, true, null, draft),
+                draft, textInputs, refreshPreview);
+        if (dotsContainer != null && designAdapter != null) {
+            setupDots(dotsContainer, designAdapter.getTypeCount(), pos);
+        }
+        refreshPreview.run();
+    }
+
+    private void setupDots(LinearLayout container, int count, int selected) {
+        container.removeAllViews();
+        float density = getResources().getDisplayMetrics().density;
+        int size = (int) (8 * density);
+        int margin = (int) (4 * density);
+        for (int i = 0; i < count; i++) {
+            View dot = new View(requireContext());
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
+            params.setMargins(margin, 0, margin, 0);
+            dot.setLayoutParams(params);
+            dot.setBackgroundResource(R.drawable.bg_dot);
+            dot.setAlpha(i == selected ? 1f : 0.3f);
+            container.addView(dot);
+        }
+    }
 
     private void showChoiceDialog(String title, String[] options, int checked, OnChoiceListener listener) {
         new AlertDialog.Builder(requireContext())

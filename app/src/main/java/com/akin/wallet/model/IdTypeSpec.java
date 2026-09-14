@@ -1,7 +1,6 @@
 package com.akin.wallet.model;
 
 import android.text.InputType;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -243,30 +242,6 @@ public final class IdTypeSpec {
         return joinNonEmpty(
                 nonEmpty(fields.get("birth_date")) ? "DOB " + fields.get("birth_date") : "",
                 nonEmpty(fields.get("sex")) ? fields.get("sex") : "");
-    }
-
-    /** Mask sensitive numbers: show last 4 like bank cards, bullets otherwise. */
-    public static String maskNumber(String raw) {
-        if (raw == null) {
-            return "••••";
-        }
-        String digits = raw.replaceAll("[^A-Za-z0-9]", "");
-        if (digits.isEmpty()) {
-            return "••••";
-        }
-        String last4 = digits.length() > 4 ? digits.substring(digits.length() - 4) : digits;
-        return "•••• •••• " + last4;
-    }
-
-    public static String maskAll(String value) {
-        if (value == null || value.isEmpty()) {
-            return "Not set";
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < value.length(); i++) {
-            sb.append('•');
-        }
-        return sb.toString();
     }
 
     /** Ordered display map: spec fields first, then any unknown stored keys (forward-compat). */

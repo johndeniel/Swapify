@@ -1,7 +1,6 @@
 package com.akin.wallet.fragment;
 
 import android.app.AlertDialog;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -98,7 +97,7 @@ public class BankCardsFragment extends Fragment {
 
         dialog.setOnShowListener(dialogInterface -> {
             if (dialog.getWindow() != null) {
-                dialog.getWindow().setStatusBarColor(Color.parseColor("#FF0D1B2A"));
+                dialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
             }
             com.google.android.material.bottomsheet.BottomSheetDialog dialog2 =
                     (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;

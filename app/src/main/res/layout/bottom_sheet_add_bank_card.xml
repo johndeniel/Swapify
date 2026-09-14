@@ -17,7 +17,7 @@
             android:id="@+id/dialog_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bank Card"
+            android:text="@string/dialog_bank_title"
             android:textColor="@color/text_primary"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save your card details securely"
+            android:text="@string/dialog_bank_subtitle"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
@@ -63,7 +63,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Card Type"
+                    android:text="@string/field_card_type"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
@@ -85,7 +85,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Debit"
+                        android:text="@string/default_card_type"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:singleLine="true" />
@@ -94,7 +94,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_dropdown"
-                        android:contentDescription="Select card type" />
+                        android:contentDescription="@string/cd_select_card_type" />
 
                 </LinearLayout>
 
@@ -110,7 +110,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Card Network"
+                    android:text="@string/field_card_network"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
@@ -132,7 +132,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Visa"
+                        android:text="@string/default_card_network"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:singleLine="true" />
@@ -141,7 +141,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_dropdown"
-                        android:contentDescription="Select card network" />
+                        android:contentDescription="@string/cd_select_card_network" />
 
                 </LinearLayout>
 
@@ -153,7 +153,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Bank Name"
+            android:text="@string/field_bank_name"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
@@ -163,8 +163,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_card"
-            android:hint="BDO Unibank"
-            android:textColorHint="#55FFFFFF"
+            android:hint="@string/hint_bank_name"
+            android:textColorHint="@color/hint_text"
             android:textColor="@color/text_primary"
             android:textSize="15sp"
             android:singleLine="true"
@@ -176,7 +176,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Cardholder Name"
+            android:text="@string/field_holder_name"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
@@ -186,8 +186,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_card"
-            android:hint="Juan Dela Cruz"
-            android:textColorHint="#55FFFFFF"
+            android:hint="@string/hint_person_name"
+            android:textColorHint="@color/hint_text"
             android:textColor="@color/text_primary"
             android:textSize="15sp"
             android:singleLine="true"
@@ -211,7 +211,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Card Number"
+                    android:text="@string/field_card_number"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
@@ -221,8 +221,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:background="@drawable/bg_card"
-                    android:hint="1234 5678 9012 1233"
-                    android:textColorHint="#55FFFFFF"
+                    android:hint="@string/hint_card_number"
+                    android:textColorHint="@color/hint_text"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:singleLine="true"
@@ -243,7 +243,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Valid Thru"
+                    android:text="@string/field_expiry"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
@@ -253,8 +253,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:background="@drawable/bg_card"
-                    android:hint="MMYY"
-                    android:textColorHint="#55FFFFFF"
+                    android:hint="@string/hint_expiry"
+                    android:textColorHint="@color/hint_text"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:singleLine="true"
@@ -283,7 +283,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="CVV"
+                    android:text="@string/field_cvv"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
@@ -303,8 +303,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:background="@null"
-                        android:hint="123"
-                        android:textColorHint="#55FFFFFF"
+                        android:hint="@string/hint_cvv"
+                        android:textColorHint="@color/hint_text"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:singleLine="true"
@@ -319,7 +319,7 @@
                         android:src="@drawable/ic_eye"
                         android:alpha="0.6"
                         android:layout_marginStart="8dp"
-                        android:contentDescription="Toggle visibility" />
+                        android:contentDescription="@string/cd_toggle_visibility" />
 
                 </LinearLayout>
 
@@ -335,7 +335,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PIN"
+                    android:text="@string/field_pin"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
@@ -355,8 +355,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:background="@null"
-                        android:hint="••••"
-                        android:textColorHint="#55FFFFFF"
+                        android:hint="@string/mask_pin"
+                        android:textColorHint="@color/hint_text"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:singleLine="true"
@@ -371,7 +371,7 @@
                         android:src="@drawable/ic_eye"
                         android:alpha="0.6"
                         android:layout_marginStart="8dp"
-                        android:contentDescription="Toggle visibility" />
+                        android:contentDescription="@string/cd_toggle_visibility" />
 
                 </LinearLayout>
 
@@ -384,8 +384,8 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="24dp"
-            android:backgroundTint="#FF2196F3"
-            android:text="Save"
+            android:backgroundTint="@color/brand_blue"
+            android:text="@string/action_save"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold"

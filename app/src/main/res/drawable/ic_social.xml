@@ -5,32 +5,32 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
     <path
-        android:strokeColor="#000000"
+        android:strokeColor="@color/black"
         android:strokeWidth="1.5"
         android:fillColor="@android:color/transparent"
         android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2z" />
     <path
-        android:strokeColor="#000000"
+        android:strokeColor="@color/black"
         android:strokeWidth="1.5"
         android:fillColor="@android:color/transparent"
         android:pathData="M2,12h20" />
     <path
-        android:strokeColor="#000000"
+        android:strokeColor="@color/black"
         android:strokeWidth="1.5"
         android:fillColor="@android:color/transparent"
         android:pathData="M12,2c-2.5,3 -4,6.5 -4,10s1.5,7 4,10" />
     <path
-        android:strokeColor="#000000"
+        android:strokeColor="@color/black"
         android:strokeWidth="1.5"
         android:fillColor="@android:color/transparent"
         android:pathData="M12,2c2.5,3 4,6.5 4,10s-1.5,7 -4,10" />
     <path
-        android:strokeColor="#000000"
+        android:strokeColor="@color/black"
         android:strokeWidth="1.2"
         android:fillColor="@android:color/transparent"
         android:pathData="M4.5,5.5 Q12,4 19.5,5.5" />
     <path
-        android:strokeColor="#000000"
+        android:strokeColor="@color/black"
         android:strokeWidth="1.2"
         android:fillColor="@android:color/transparent"
         android:pathData="M4.5,18.5 Q12,20 19.5,18.5" />

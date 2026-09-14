@@ -17,7 +17,7 @@
             android:id="@+id/dialog_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Government ID"
+            android:text="@string/dialog_id_title"
             android:textColor="@color/text_primary"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save your ID details securely"
+            android:text="@string/dialog_id_subtitle"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
@@ -51,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="ID Type"
+            android:text="@string/field_id_type"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
@@ -73,7 +73,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="National ID"
+                android:text="@string/default_id_type"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
                 android:singleLine="true" />
@@ -82,7 +82,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_dropdown"
-                android:contentDescription="Select ID type" />
+                android:contentDescription="@string/cd_select_id_type" />
 
         </LinearLayout>
 
@@ -98,8 +98,8 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="24dp"
-            android:backgroundTint="#FF2196F3"
-            android:text="Save"
+            android:backgroundTint="@color/brand_blue"
+            android:text="@string/action_save"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold"

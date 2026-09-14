@@ -34,7 +34,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Card Type"
+                    android:text="@string/field_card_type"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
@@ -52,7 +52,7 @@
                     android:src="@drawable/ic_copy"
                     android:alpha="0.6"
                     android:layout_marginStart="10dp"
-                    android:contentDescription="Copy card type" />
+                    android:contentDescription="@string/cd_copy_card_type" />
 
             </LinearLayout>
 
@@ -72,7 +72,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Card Network"
+                    android:text="@string/field_card_network"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
@@ -90,7 +90,7 @@
                     android:src="@drawable/ic_copy"
                     android:alpha="0.6"
                     android:layout_marginStart="10dp"
-                    android:contentDescription="Copy card network" />
+                    android:contentDescription="@string/cd_copy_card_network" />
 
             </LinearLayout>
 
@@ -110,7 +110,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Bank Name"
+                    android:text="@string/field_bank_name"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
@@ -128,7 +128,7 @@
                     android:src="@drawable/ic_copy"
                     android:alpha="0.6"
                     android:layout_marginStart="10dp"
-                    android:contentDescription="Copy bank name" />
+                    android:contentDescription="@string/cd_copy_bank_name" />
 
             </LinearLayout>
 
@@ -148,7 +148,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Cardholder Name"
+                    android:text="@string/field_holder_name"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
@@ -166,7 +166,7 @@
                     android:src="@drawable/ic_copy"
                     android:alpha="0.6"
                     android:layout_marginStart="10dp"
-                    android:contentDescription="Copy cardholder name" />
+                    android:contentDescription="@string/cd_copy_holder_name" />
 
             </LinearLayout>
 
@@ -186,7 +186,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Card Number"
+                    android:text="@string/field_card_number"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
@@ -205,7 +205,7 @@
                     android:src="@drawable/ic_eye"
                     android:alpha="0.6"
                     android:layout_marginStart="8dp"
-                    android:contentDescription="Toggle number visibility" />
+                    android:contentDescription="@string/cd_toggle_number" />
 
                 <ImageView
                     android:id="@+id/btn_copy_number"
@@ -214,7 +214,7 @@
                     android:src="@drawable/ic_copy"
                     android:alpha="0.6"
                     android:layout_marginStart="10dp"
-                    android:contentDescription="Copy card number" />
+                    android:contentDescription="@string/cd_copy_card_number" />
 
             </LinearLayout>
 
@@ -234,7 +234,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Valid Thru"
+                    android:text="@string/field_expiry"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
@@ -253,7 +253,7 @@
                     android:src="@drawable/ic_copy"
                     android:alpha="0.6"
                     android:layout_marginStart="10dp"
-                    android:contentDescription="Copy expiry" />
+                    android:contentDescription="@string/cd_copy_expiry" />
 
             </LinearLayout>
 
@@ -273,7 +273,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="CVV"
+                    android:text="@string/field_cvv"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
@@ -281,7 +281,7 @@
                     android:id="@+id/detail_cvv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="•••"
+                    android:text="@string/mask_cvv"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:fontFamily="monospace" />
@@ -293,7 +293,7 @@
                     android:src="@drawable/ic_eye"
                     android:alpha="0.6"
                     android:layout_marginStart="8dp"
-                    android:contentDescription="Toggle CVV visibility" />
+                    android:contentDescription="@string/cd_toggle_cvv" />
 
                 <ImageView
                     android:id="@+id/btn_copy_cvv"
@@ -302,7 +302,7 @@
                     android:src="@drawable/ic_copy"
                     android:alpha="0.6"
                     android:layout_marginStart="10dp"
-                    android:contentDescription="Copy CVV" />
+                    android:contentDescription="@string/cd_copy_cvv" />
 
             </LinearLayout>
 
@@ -322,7 +322,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="PIN"
+                    android:text="@string/field_pin"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
@@ -341,7 +341,7 @@
                     android:src="@drawable/ic_eye"
                     android:alpha="0.6"
                     android:layout_marginStart="8dp"
-                    android:contentDescription="Toggle PIN visibility" />
+                    android:contentDescription="@string/cd_toggle_pin" />
 
                 <ImageView
                     android:id="@+id/btn_copy_pin"
@@ -350,7 +350,7 @@
                     android:src="@drawable/ic_copy"
                     android:alpha="0.6"
                     android:layout_marginStart="10dp"
-                    android:contentDescription="Copy PIN" />
+                    android:contentDescription="@string/cd_copy_pin" />
 
             </LinearLayout>
 
@@ -382,12 +382,12 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_edit"
-                        android:contentDescription="Edit" />
+                        android:contentDescription="@string/action_edit" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Edit"
+                        android:text="@string/action_edit"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:layout_marginStart="6dp" />
@@ -410,13 +410,13 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_delete"
-                        android:contentDescription="Delete" />
+                        android:contentDescription="@string/action_delete" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                    android:text="Delete"
-                    android:textColor="#FFEE4444"
+                    android:text="@string/action_delete"
+                    android:textColor="@color/danger"
                         android:textSize="14sp"
                         android:layout_marginStart="6dp" />
 

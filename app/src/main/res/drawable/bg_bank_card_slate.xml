@@ -4,9 +4,9 @@
         <shape android:shape="rectangle">
             <gradient
                 android:angle="135"
-                android:startColor="#FF111B28"
-                android:centerColor="#FF33465E"
-                android:endColor="#FF05080E" />
+                android:startColor="@color/card_slate_start"
+                android:centerColor="@color/card_slate_center"
+                android:endColor="@color/card_slate_end" />
             <corners android:radius="16dp" />
         </shape>
     </item>
@@ -14,15 +14,15 @@
         <shape android:shape="rectangle">
             <gradient
                 android:angle="135"
-                android:startColor="#30FFFFFF"
-                android:centerColor="#08FFFFFF"
-                android:endColor="#00FFFFFF" />
+                android:startColor="@color/card_gloss_start"
+                android:centerColor="@color/card_gloss_mid"
+                android:endColor="@color/card_gloss_end" />
             <corners android:radius="16dp" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <stroke android:width="1dp" android:color="#33FFFFFF" />
+            <stroke android:width="1dp" android:color="@color/card_edge" />
             <corners android:radius="16dp" />
         </shape>
     </item>
