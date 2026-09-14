@@ -3,6 +3,7 @@ package com.akin.wallet.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -77,11 +78,13 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         String number = pageFields.get(spec.numberKey);
 
         holder.cardRoot.setBackgroundResource(scheme.backgroundRes);
+        holder.eyebrow.setTextColor(colorOf(holder, scheme.subtitleColorRes));
         holder.idType.setText(pageType.toUpperCase());
         holder.idType.setTextColor(colorOf(holder, scheme.titleColorRes));
         holder.subtitle.setText(IdTypeSpec.previewSubtitle(pageType));
         holder.subtitle.setTextColor(colorOf(holder, scheme.subtitleColorRes));
         holder.rule.setBackgroundColor(colorOf(holder, scheme.ruleColorRes));
+        holder.holderLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
         holder.holder.setText(IdTypeSpec.displayName(spec, pageFields));
         holder.holder.setTextColor(colorOf(holder, scheme.holderColorRes));
         holder.numberLabel.setText(IdTypeSpec.numberLabel(pageType));
@@ -93,6 +96,14 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         holder.meta.setText(meta);
         holder.meta.setTextColor(colorOf(holder, scheme.metaColorRes));
         holder.meta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
+
+        // Square photo well adopts the card: tinted fill + border + icon.
+        android.graphics.drawable.GradientDrawable photoBg =
+                (android.graphics.drawable.GradientDrawable) holder.photoBox.getBackground().mutate();
+        photoBg.setColor(colorOf(holder, scheme.photoBgRes));
+        float density = holder.cardRoot.getResources().getDisplayMetrics().density;
+        photoBg.setStroke((int) (1 * density + 0.5f), colorOf(holder, scheme.photoBorderRes));
+        holder.photoIcon.setColorFilter(colorOf(holder, scheme.photoIconRes));
 
         holder.cardRoot.setOnClickListener(v -> {
             int adapterPosition = holder.getAdapterPosition();
@@ -113,24 +124,32 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
 
     static class CardViewHolder extends RecyclerView.ViewHolder {
         View cardRoot;
+        TextView eyebrow;
         TextView idType;
         TextView subtitle;
         View rule;
+        TextView holderLabel;
         TextView holder;
         TextView numberLabel;
         TextView number;
         TextView meta;
+        View photoBox;
+        ImageView photoIcon;
 
         CardViewHolder(@NonNull View itemView) {
             super(itemView);
             cardRoot = itemView.findViewById(R.id.card_root);
+            eyebrow = itemView.findViewById(R.id.preview_eyebrow);
             idType = itemView.findViewById(R.id.preview_id_type);
             subtitle = itemView.findViewById(R.id.preview_subtitle);
             rule = itemView.findViewById(R.id.preview_rule);
+            holderLabel = itemView.findViewById(R.id.preview_holder_label);
             holder = itemView.findViewById(R.id.preview_holder);
             numberLabel = itemView.findViewById(R.id.preview_number_label);
             number = itemView.findViewById(R.id.preview_number);
             meta = itemView.findViewById(R.id.preview_meta);
+            photoBox = itemView.findViewById(R.id.preview_photo_box);
+            photoIcon = itemView.findViewById(R.id.preview_photo_icon);
         }
     }
 }

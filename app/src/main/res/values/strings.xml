@@ -136,4 +136,5 @@
     <string name="cd_copy_cvv">Copy CVV</string>
     <string name="cd_card_network">Card network</string>
     <string name="cd_card_chip">Card chip</string>
+    <string name="cd_id_photo">ID photo placeholder</string>
 </resources>

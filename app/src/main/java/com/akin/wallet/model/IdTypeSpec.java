@@ -316,10 +316,14 @@ public final class IdTypeSpec {
         public final int numberLabelColorRes;
         public final int numberColorRes;
         public final int metaColorRes;
+        public final int photoBgRes;
+        public final int photoBorderRes;
+        public final int photoIconRes;
 
         FaceScheme(int backgroundRes, int titleColorRes, int subtitleColorRes,
                    int ruleColorRes, int holderColorRes, int numberLabelColorRes,
-                   int numberColorRes, int metaColorRes) {
+                   int numberColorRes, int metaColorRes,
+                   int photoBgRes, int photoBorderRes, int photoIconRes) {
             this.backgroundRes = backgroundRes;
             this.titleColorRes = titleColorRes;
             this.subtitleColorRes = subtitleColorRes;
@@ -328,6 +332,9 @@ public final class IdTypeSpec {
             this.numberLabelColorRes = numberLabelColorRes;
             this.numberColorRes = numberColorRes;
             this.metaColorRes = metaColorRes;
+            this.photoBgRes = photoBgRes;
+            this.photoBorderRes = photoBorderRes;
+            this.photoIconRes = photoIconRes;
         }
     }
 
@@ -339,42 +346,50 @@ public final class IdTypeSpec {
                         R.drawable.bg_drivers_license,
                         R.color.dl_ink, R.color.dl_accent, R.color.dl_bar,
                         R.color.dl_ink, R.color.dl_muted,
-                        R.color.dl_ink, R.color.dl_muted);
+                        R.color.dl_ink, R.color.dl_muted,
+                        R.color.photo_bg_dl, R.color.dl_bar, R.color.dl_ink);
             }
             if (t.equalsIgnoreCase(TYPE_PASSPORT)) {
                 return new FaceScheme(
                         R.drawable.bg_passport,
                         R.color.passport_ink, R.color.passport_muted, R.color.passport_rule,
                         R.color.passport_ink, R.color.passport_muted,
-                        R.color.passport_ink, R.color.passport_muted);
+                        R.color.passport_ink, R.color.passport_muted,
+                        R.color.photo_bg_passport, R.color.passport_rule,
+                        R.color.photo_icon_passport);
             }
             if (t.equalsIgnoreCase(TYPE_SSS)) {
                 return new FaceScheme(
                         R.drawable.bg_sss,
                         R.color.text_primary, R.color.sss_muted, R.color.sss_muted,
                         R.color.text_primary, R.color.sss_muted,
-                        R.color.text_primary, R.color.sss_muted);
+                        R.color.text_primary, R.color.sss_muted,
+                        R.color.photo_bg_sss, R.color.sss_muted, R.color.sss_bg_end);
             }
             if (t.equalsIgnoreCase(TYPE_PHILHEALTH)) {
                 return new FaceScheme(
                         R.drawable.bg_philhealth,
                         R.color.philhealth_ink, R.color.philhealth_muted, R.color.philhealth_rule,
                         R.color.philhealth_ink, R.color.philhealth_muted,
-                        R.color.philhealth_ink, R.color.philhealth_muted);
+                        R.color.philhealth_ink, R.color.philhealth_muted,
+                        R.color.photo_bg_philhealth, R.color.philhealth_rule,
+                        R.color.philhealth_ink);
             }
             if (t.equalsIgnoreCase(TYPE_TIN)) {
                 return new FaceScheme(
                         R.drawable.bg_tin,
                         R.color.tin_ink, R.color.tin_muted, R.color.tin_rule,
                         R.color.tin_ink, R.color.tin_muted,
-                        R.color.tin_ink, R.color.tin_muted);
+                        R.color.tin_ink, R.color.tin_muted,
+                        R.color.photo_bg_tin, R.color.tin_rule, R.color.tin_ink);
             }
         }
         return new FaceScheme(
                 R.drawable.bg_national_id,
                 R.color.national_ink, R.color.national_muted, R.color.national_rule,
                 R.color.national_ink, R.color.national_muted,
-                R.color.national_ink, R.color.national_muted);
+                R.color.national_ink, R.color.national_muted,
+                R.color.photo_bg_national, R.color.national_rule, R.color.national_ink);
     }
 
     /** Footer line for the collapsed preview, per type. Never null. */

@@ -78,12 +78,14 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         holder.cardRoot.setBackgroundResource(scheme.backgroundRes);
 
         String number = fields.get(spec.numberKey);
+        holder.previewEyebrow.setTextColor(colorOf(holder, scheme.subtitleColorRes));
         holder.previewType.setText(!item.getIdType().trim().isEmpty()
                 ? item.getIdType().trim().toUpperCase() : "GOVERNMENT ID");
         holder.previewType.setTextColor(colorOf(holder, scheme.titleColorRes));
         holder.previewSubtitle.setText(IdTypeSpec.previewSubtitle(item.getIdType()));
         holder.previewSubtitle.setTextColor(colorOf(holder, scheme.subtitleColorRes));
         holder.previewRule.setBackgroundColor(colorOf(holder, scheme.ruleColorRes));
+        holder.previewHolderLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
         holder.previewHolder.setText(IdTypeSpec.displayName(spec, fields));
         holder.previewHolder.setTextColor(colorOf(holder, scheme.holderColorRes));
         holder.previewNumberLabel.setText(IdTypeSpec.numberLabel(item.getIdType()));
@@ -95,6 +97,14 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         holder.previewMeta.setText(meta);
         holder.previewMeta.setTextColor(colorOf(holder, scheme.metaColorRes));
         holder.previewMeta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
+
+        // Square photo well adopts the card: tinted fill + border + icon.
+        android.graphics.drawable.GradientDrawable photoBg =
+                (android.graphics.drawable.GradientDrawable) holder.photoBox.getBackground().mutate();
+        photoBg.setColor(colorOf(holder, scheme.photoBgRes));
+        float density = holder.cardRoot.getResources().getDisplayMetrics().density;
+        photoBg.setStroke((int) (1 * density + 0.5f), colorOf(holder, scheme.photoBorderRes));
+        holder.photoIcon.setColorFilter(colorOf(holder, scheme.photoIconRes));
 
         boolean isExpanded = position == expandedPosition;
         holder.expandedSection.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
@@ -199,13 +209,17 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
 
     static class CardViewHolder extends RecyclerView.ViewHolder {
         View cardRoot;
+        TextView previewEyebrow;
         TextView previewType;
         TextView previewSubtitle;
         View previewRule;
+        TextView previewHolderLabel;
         TextView previewHolder;
         TextView previewNumberLabel;
         TextView previewNumber;
         TextView previewMeta;
+        View photoBox;
+        ImageView photoIcon;
         LinearLayout expandedSection;
         LinearLayout detailsContainer;
         LinearLayout btnEdit;
@@ -214,13 +228,17 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         CardViewHolder(@NonNull View itemView) {
             super(itemView);
             cardRoot = itemView.findViewById(R.id.card_root);
+            previewEyebrow = itemView.findViewById(R.id.preview_eyebrow);
             previewType = itemView.findViewById(R.id.preview_id_type);
             previewSubtitle = itemView.findViewById(R.id.preview_subtitle);
             previewRule = itemView.findViewById(R.id.preview_rule);
+            previewHolderLabel = itemView.findViewById(R.id.preview_holder_label);
             previewHolder = itemView.findViewById(R.id.preview_holder);
             previewNumberLabel = itemView.findViewById(R.id.preview_number_label);
             previewNumber = itemView.findViewById(R.id.preview_number);
             previewMeta = itemView.findViewById(R.id.preview_meta);
+            photoBox = itemView.findViewById(R.id.preview_photo_box);
+            photoIcon = itemView.findViewById(R.id.preview_photo_icon);
             expandedSection = itemView.findViewById(R.id.expanded_section);
             detailsContainer = itemView.findViewById(R.id.details_container);
             btnEdit = itemView.findViewById(R.id.btn_edit);
