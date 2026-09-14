@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dark_bg"
-    android:fitsSystemWindows="true"
-    android:paddingTop="8dp"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    android:paddingBottom="16dp"
-    android:orientation="vertical">
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -29,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/title_cards"
                 android:textColor="@color/text_primary"
-                android:textSize="20sp"
+                android:textSize="22sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -38,20 +43,20 @@
                 android:layout_height="wrap_content"
                 android:text="@string/desc_cards"
                 android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
         </LinearLayout>
 
         <ImageButton
-            android:id="@+id/btn_add"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:id="@+id/btn_settings"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/bg_add_button"
-            android:src="@drawable/ic_add"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_settings"
             android:scaleType="centerInside"
-            android:contentDescription="@string/action_add" />
+            android:contentDescription="@string/cd_settings" />
 
     </RelativeLayout>
 
@@ -64,4 +69,21 @@
         android:clipToPadding="false"
         android:paddingBottom="16dp" />
 
-</LinearLayout>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/action_add"
+        android:src="@drawable/ic_add"
+        app:backgroundTint="@color/brand_blue"
+        app:tint="@color/white"
+        app:fabCustomSize="40dp"
+        app:cornerSize="50%"
+        app:elevation="6dp" />
+
+</FrameLayout>

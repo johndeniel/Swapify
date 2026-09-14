@@ -68,6 +68,9 @@ public class IdentificationFragment extends Fragment {
         recyclerCards.setAdapter(cardAdapter);
 
         view.findViewById(R.id.btn_add).setOnClickListener(v -> showCardDialog(null));
+        view.findViewById(R.id.btn_settings).setOnClickListener(v ->
+                Toast.makeText(requireContext(), getString(R.string.msg_settings_soon),
+                        Toast.LENGTH_SHORT).show());
     }
 
     @Override

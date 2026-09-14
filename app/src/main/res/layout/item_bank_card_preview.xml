@@ -1,183 +1,203 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Professional bank-card face. Outer ConstraintLayout lets the inner card
+     keep a true credit-card ratio (1.586:1) on every screen: height is always
+     derived from width, so the face is never flat/lengthy in the list nor
+     cramped in the horizontal picker. Same file is used in list + picker. -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/card_root"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
-    android:layout_marginHorizontal="4dp"
-    android:elevation="4dp"
-    android:background="@drawable/bg_bank_card_blue">
+    android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="18dp">
+    <FrameLayout
+        android:id="@+id/card_root"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="4dp"
+        android:elevation="4dp"
+        android:background="@drawable/bg_bank_card_blue"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1.586:1">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="top">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="16dp">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <TextView
-                    android:id="@+id/preview_bank"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/preview_bank_name"
-                    android:textColor="@color/text_primary"
-                    android:textSize="21sp"
-                    android:textStyle="bold|italic"
-                    android:letterSpacing="0.04"
-                    android:shadowColor="@color/text_shadow"
-                    android:shadowDx="1"
-                    android:shadowDy="1"
-                    android:shadowRadius="2"
-                    android:singleLine="true" />
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingEnd="12dp">
 
-                <TextView
-                    android:id="@+id/preview_type"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/preview_card_type"
-                    android:textColor="@color/text_subtle_light"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.2"
-                    android:layout_marginTop="2dp" />
+                    <TextView
+                        android:id="@+id/preview_bank"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/preview_bank_name"
+                        android:textColor="@color/text_primary"
+                        android:textSize="17sp"
+                        android:textStyle="bold|italic"
+                        android:letterSpacing="0.03"
+                        android:shadowColor="@color/text_shadow"
+                        android:shadowDx="1"
+                        android:shadowDy="1"
+                        android:shadowRadius="2"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:ellipsize="end" />
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/preview_type"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/preview_card_type"
+                        android:textColor="@color/text_subtle_light"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.22"
+                        android:layout_marginTop="3dp"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                </LinearLayout>
 
                 <ImageView
                     android:id="@+id/preview_network"
-                    android:layout_width="wrap_content"
-                    android:layout_height="30dp"
-                    android:layout_marginTop="4dp"
-                    android:maxWidth="96dp"
+                    android:layout_width="56dp"
+                    android:layout_height="28dp"
                     android:src="@drawable/visa"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/cd_card_network" />
 
-        </LinearLayout>
+            </LinearLayout>
 
-        <ImageView
-            android:layout_width="36dp"
-            android:layout_height="28dp"
-            android:layout_marginTop="16dp"
-            android:src="@drawable/chip"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/cd_card_chip" />
+            <ImageView
+                android:layout_width="34dp"
+                android:layout_height="26dp"
+                android:layout_marginTop="12dp"
+                android:src="@drawable/chip"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/cd_card_chip" />
 
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/preview_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="@string/mask_card_number"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:fontFamily="monospace"
-            android:letterSpacing="0.05"
-            android:maxLines="1"
-            app:autoSizeTextType="uniform"
-            app:autoSizeMinTextSize="10sp"
-            app:autoSizeMaxTextSize="16sp"
-            app:autoSizeStepGranularity="1sp"
-            android:shadowColor="@color/text_shadow"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="2"
-            android:singleLine="true" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/preview_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="•••• •••• •••• ••••"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.06"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:shadowColor="@color/text_shadow"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="2" />
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="bottom">
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="bottom">
 
-                <TextView
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingEnd="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/preview_holder_label"
+                        android:textColor="@color/text_faint_light"
+                        android:textSize="8sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.22" />
+
+                    <TextView
+                        android:id="@+id/preview_holder"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="@string/preview_holder_name"
+                        android:textColor="@color/text_bright_light"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:fontFamily="monospace"
+                        android:letterSpacing="0.05"
+                        android:shadowColor="@color/text_shadow"
+                        android:shadowDx="1"
+                        android:shadowDy="1"
+                        android:shadowRadius="2"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:ellipsize="end" />
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/preview_holder_label"
-                    android:textColor="@color/text_faint_light"
-                    android:textSize="8sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.2" />
+                    android:orientation="vertical"
+                    android:gravity="end">
 
-                <TextView
-                    android:id="@+id/preview_holder"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/preview_holder_name"
-                    android:textColor="@color/text_bright_light"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:fontFamily="monospace"
-                    android:letterSpacing="0.06"
-                    android:shadowColor="@color/text_shadow"
-                    android:shadowDx="1"
-                    android:shadowDy="1"
-                    android:shadowRadius="2"
-                    android:singleLine="true" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/preview_expiry_label"
+                        android:textColor="@color/text_faint_light"
+                        android:textSize="8sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.22" />
+
+                    <TextView
+                        android:id="@+id/preview_expiry"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="@string/preview_expiry_value"
+                        android:textColor="@color/text_bright_light"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:fontFamily="monospace"
+                        android:letterSpacing="0.05"
+                        android:shadowColor="@color/text_shadow"
+                        android:shadowDx="1"
+                        android:shadowDy="1"
+                        android:shadowRadius="2"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="end">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/preview_expiry_label"
-                    android:textColor="@color/text_faint_light"
-                    android:textSize="8sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.2" />
-
-                <TextView
-                    android:id="@+id/preview_expiry"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/preview_expiry_value"
-                    android:textColor="@color/text_bright_light"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:fontFamily="monospace"
-                    android:letterSpacing="0.06"
-                    android:shadowColor="@color/text_shadow"
-                    android:shadowDx="1"
-                    android:shadowDy="1"
-                    android:shadowRadius="2" />
-
-            </LinearLayout>
-
         </LinearLayout>
 
-    </LinearLayout>
+    </FrameLayout>
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

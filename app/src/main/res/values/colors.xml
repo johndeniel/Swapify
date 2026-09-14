@@ -62,6 +62,7 @@
 
     <!-- National ID face (white-to-steel gradient document, navy ink) -->
     <color name="national_bg_start">#FFFFFFFF</color>
+    <color name="national_bg_center">#FFE9F0F9</color>
     <color name="national_bg_end">#FFD8E2F0</color>
     <color name="national_ink">#FF14315F</color>
     <color name="national_muted">#FF5A6B8C</color>
@@ -69,10 +70,12 @@
 
     <!-- Driver's License face (light-blue gradient document, purple-blue ink) -->
     <color name="dl_bg_start">#FFE8F2FD</color>
+    <color name="dl_bg_center">#FFD4E6FB</color>
     <color name="dl_bg_end">#FFC2D8F2</color>
 
     <!-- Passport face (maroon gradient document, cream ink) -->
     <color name="passport_bg_start">#FF7A2E40</color>
+    <color name="passport_bg_center">#FF962A41</color>
     <color name="passport_bg_end">#FF3D1420</color>
     <color name="passport_ink">#FFF7EBD7</color>
     <color name="passport_muted">#FFD9B8AC</color>
@@ -80,15 +83,18 @@
 
     <!-- SSS face (blue gradient document, white ink) -->
     <color name="sss_bg_start">#FF1663C7</color>
+    <color name="sss_bg_center">#FF287CE8</color>
     <color name="sss_bg_end">#FF082C6E</color>
     <color name="sss_muted">#FFA9BEE3</color>
 
     <!-- PhilHealth face (soft green gradient document, green ink) -->
     <color name="philhealth_bg_start">#FFE3F2E8</color>
+    <color name="philhealth_bg_center">#FFC8E9D3</color>
     <color name="philhealth_bg_end">#FFA9DDBD</color>
 
     <!-- TIN face (warm amber gradient document, dark-brown ink) -->
     <color name="tin_bg_start">#FFFDF6E3</color>
+    <color name="tin_bg_center">#FFF9EAC4</color>
     <color name="tin_bg_end">#FFF0DDAE</color>
     <color name="tin_ink">#FF4A2F1B</color>
     <color name="tin_muted">#FF8A6D4B</color>
