@@ -118,7 +118,6 @@ public class IdentificationFragment extends Fragment {
                     .setDraggable(false);
         });
 
-        TextView textIdType = dialogView.findViewById(R.id.text_id_type);
         LinearLayout formContainer = dialogView.findViewById(R.id.form_container);
         TextView btnSave = dialogView.findViewById(R.id.btn_save);
         TextView dialogTitle = dialogView.findViewById(R.id.dialog_title);
@@ -137,7 +136,6 @@ public class IdentificationFragment extends Fragment {
         final boolean[] knownType = {true};
 
         if (isEdit) {
-            dialogTitle.setText("Edit " + existing.getIdType());
             btnSave.setText("Update");
             if (IdTypeSpec.isKnownType(existing.getIdType())) {
                 selectedType[0] = IdTypeSpec.indexOf(existing.getIdType());
@@ -167,8 +165,8 @@ public class IdentificationFragment extends Fragment {
                 return;
             }
             if (pos != selectedType[0]) {
-                applyIdTypeSelection(pos, textIdType, formContainer, draftValues, textInputs,
-                        refreshPreview, dotsContainer, adapterRef[0], selectedType);
+                applyIdTypeSelection(pos, dialogTitle, isEdit, formContainer, draftValues,
+                        textInputs, refreshPreview, dotsContainer, adapterRef[0], selectedType);
             } else if (carouselRef[0] != null) {
                 carouselRef[0].smoothScrollToPosition(pos);
             }
@@ -192,8 +190,9 @@ public class IdentificationFragment extends Fragment {
                 if (snapView != null) {
                     int pos = layoutManager.getPosition(snapView);
                     if (pos != RecyclerView.NO_POSITION && knownType[0] && pos != selectedType[0]) {
-                        applyIdTypeSelection(pos, textIdType, formContainer, draftValues, textInputs,
-                                refreshPreview, dotsContainer, adapterRef[0], selectedType);
+                        applyIdTypeSelection(pos, dialogTitle, isEdit, formContainer, draftValues,
+                                textInputs, refreshPreview, dotsContainer, adapterRef[0],
+                                selectedType);
                     }
                 }
             }
@@ -201,30 +200,12 @@ public class IdentificationFragment extends Fragment {
         final int scrollTo = selectedType[0];
         recyclerDesign.post(() -> recyclerDesign.scrollToPosition(scrollTo));
 
-        // Initial header + form.
-        if (isEdit && !knownType[0]) {
-            textIdType.setText(existing.getIdType());
-        } else {
-            textIdType.setText(IdTypeSpec.getTypeNames()[selectedType[0]]);
-        }
+        // Initial title + form.
+        updateDialogTitle(dialogTitle, isEdit, isEdit ? existing.getIdType()
+                : IdTypeSpec.getTypeNames()[selectedType[0]]);
         rebuildForm(formContainer, currentSpec(selectedType[0], knownType[0],
                 isEdit ? existing : null, draftValues), draftValues, textInputs, refreshPreview);
         refreshPreview.run();
-
-        dialogView.findViewById(R.id.row_id_type).setOnClickListener(v -> {
-            if (isEdit && !knownType[0]) {
-                Toast.makeText(requireContext(),
-                        "ID type is fixed for entries from a newer version", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            showChoiceDialog("ID Type", IdTypeSpec.getTypeNames(), selectedType[0], which -> {
-                applyIdTypeSelection(which, textIdType, formContainer, draftValues, textInputs,
-                        refreshPreview, dotsContainer, adapterRef[0], selectedType);
-                if (carouselRef[0] != null) {
-                    carouselRef[0].smoothScrollToPosition(which);
-                }
-            });
-        });
 
         btnSave.setOnClickListener(v -> {
             String typeName = currentTypeName(selectedType[0], knownType[0],
@@ -507,8 +488,9 @@ public class IdentificationFragment extends Fragment {
 
     // ---------- shared UI helpers (mirrors BankCardsFragment) ----------
 
-    /** Single choke point for ID-type switches (carousel, tap, or dropdown). */
-    private void applyIdTypeSelection(int pos, TextView textIdType, LinearLayout formContainer,
+    /** Single choke point for ID-type switches (carousel swipe or tap). */
+    private void applyIdTypeSelection(int pos, TextView dialogTitle, boolean isEdit,
+                                      LinearLayout formContainer,
                                       Map<String, String> draft, Map<String, EditText> textInputs,
                                       Runnable refreshPreview, LinearLayout dotsContainer,
                                       IdCardDesignAdapter designAdapter, int[] selectedType) {
@@ -516,13 +498,21 @@ public class IdentificationFragment extends Fragment {
             return;
         }
         selectedType[0] = pos;
-        textIdType.setText(IdTypeSpec.getTypeNames()[pos]);
+        updateDialogTitle(dialogTitle, isEdit, IdTypeSpec.getTypeNames()[pos]);
         rebuildForm(formContainer, currentSpec(pos, true, null, draft),
                 draft, textInputs, refreshPreview);
         if (dotsContainer != null && designAdapter != null) {
             setupDots(dotsContainer, designAdapter.getTypeCount(), pos);
         }
         refreshPreview.run();
+    }
+
+    private void updateDialogTitle(TextView dialogTitle, boolean isEdit, String typeName) {
+        if (isEdit) {
+            dialogTitle.setText("Edit " + typeName);
+        } else {
+            dialogTitle.setText(typeName);
+        }
     }
 
     private void setupDots(LinearLayout container, int count, int selected) {
@@ -541,23 +531,8 @@ public class IdentificationFragment extends Fragment {
         }
     }
 
-    private void showChoiceDialog(String title, String[] options, int checked, OnChoiceListener listener) {
-        new AlertDialog.Builder(requireContext())
-                .setTitle(title)
-                .setSingleChoiceItems(options, checked, (d, which) -> {
-                    listener.onChoice(which);
-                    d.dismiss();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
     private int dp(int value) {
         float density = getResources().getDisplayMetrics().density;
         return (int) (value * density);
-    }
-
-    private interface OnChoiceListener {
-        void onChoice(int which);
     }
 }

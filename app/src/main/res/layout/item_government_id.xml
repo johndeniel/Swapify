@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- CENTRAL reusable government-ID list row: shared face + expandable -->
+<!-- details + actions. One layout serves every ID type. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:layout_marginBottom="10dp">
 
-    <include layout="@layout/item_national_id_preview" />
+    <include layout="@layout/item_government_id_preview" />
 
     <LinearLayout
         android:id="@+id/expanded_section"

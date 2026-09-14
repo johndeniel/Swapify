@@ -60,14 +60,42 @@
     <color name="card_slate_center">#FF33465E</color>
     <color name="card_slate_end">#FF05080E</color>
 
-    <!-- National ID face (flat white document, navy ink) -->
+    <!-- National ID face (white-to-steel gradient document, navy ink) -->
+    <color name="national_bg_start">#FFFFFFFF</color>
+    <color name="national_bg_end">#FFD8E2F0</color>
     <color name="national_ink">#FF14315F</color>
     <color name="national_muted">#FF5A6B8C</color>
     <color name="national_rule">#FF1E4480</color>
 
-    <!-- Driver's License face (flat pearl document, purple-blue ink) -->
-    <color name="dl_card_bg">#FFF6F3FD</color>
-    <color name="card_hairline">#FFD9E1EA</color>
+    <!-- Driver's License face (light-blue gradient document, purple-blue ink) -->
+    <color name="dl_bg_start">#FFE8F2FD</color>
+    <color name="dl_bg_end">#FFC2D8F2</color>
+
+    <!-- Passport face (maroon gradient document, cream ink) -->
+    <color name="passport_bg_start">#FF7A2E40</color>
+    <color name="passport_bg_end">#FF3D1420</color>
+    <color name="passport_ink">#FFF7EBD7</color>
+    <color name="passport_muted">#FFD9B8AC</color>
+    <color name="passport_rule">#FFD9B8AC</color>
+
+    <!-- SSS face (blue gradient document, white ink) -->
+    <color name="sss_bg_start">#FF1663C7</color>
+    <color name="sss_bg_end">#FF082C6E</color>
+    <color name="sss_muted">#FFA9BEE3</color>
+
+    <!-- PhilHealth face (soft green gradient document, green ink) -->
+    <color name="philhealth_bg_start">#FFE3F2E8</color>
+    <color name="philhealth_bg_end">#FFA9DDBD</color>
+
+    <!-- TIN face (warm amber gradient document, dark-brown ink) -->
+    <color name="tin_bg_start">#FFFDF6E3</color>
+    <color name="tin_bg_end">#FFF0DDAE</color>
+    <color name="tin_ink">#FF4A2F1B</color>
+    <color name="tin_muted">#FF8A6D4B</color>
+    <color name="tin_rule">#FF8A6D4B</color>
+    <color name="philhealth_ink">#FF006B3F</color>
+    <color name="philhealth_muted">#FF6B8F7F</color>
+    <color name="philhealth_rule">#FF006B3F</color>
     <color name="dl_bar">#FF6A5AA8</color>
     <color name="dl_ink">#FF2B2545</color>
     <color name="dl_muted">#FF8B84A8</color>

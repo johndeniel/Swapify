@@ -25,8 +25,8 @@ import java.util.Map;
 
 /**
  * CENTRAL reusable card list for ALL government ID types.
- * One face per ID type ({@code item_national_id.xml},
- * {@code item_drivers_license.xml}) — per-type identity
+ * One layout ({@code item_government_id.xml}) serves every type — per-type identity
+ * (face background, ink, titles, numbers) is bound from {@link IdTypeSpec}, and the
  * (title, number label, values) is bound from {@link IdTypeSpec}, and the
  * expanded details are inflated dynamically from the type's field spec.
  */
@@ -40,13 +40,6 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
     private final List<IdCardItem> items = new ArrayList<>();
     private final OnIdActionListener listener;
     private int expandedPosition = -1;
-
-    private static final int VIEW_NATIONAL_ID = 0;
-    private static final int VIEW_DRIVERS_LICENSE = 1;
-
-    public static boolean isDriversLicense(String idType) {
-        return idType != null && idType.trim().equalsIgnoreCase(IdTypeSpec.TYPE_DRIVERS_LICENSE);
-    }
 
     public IdCardListAdapter(List<IdCardItem> items, OnIdActionListener listener) {
         if (items != null) {
@@ -64,19 +57,11 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         notifyDataSetChanged();
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        return isDriversLicense(items.get(position).getIdType())
-                ? VIEW_DRIVERS_LICENSE : VIEW_NATIONAL_ID;
-    }
-
     @NonNull
     @Override
     public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        int layout = viewType == VIEW_DRIVERS_LICENSE
-                ? R.layout.item_drivers_license
-                : R.layout.item_national_id;
-        View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_government_id, parent, false);
         return new CardViewHolder(view);
     }
 
@@ -86,22 +71,29 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         Map<String, String> fields = item.getFields();
         IdTypeSpec.IdType spec = IdTypeSpec.forName(item.getIdType());
 
-        // Rounded-corner clipping only — each type carries its own face
-        // design (background + ink baked into its unique preview layout).
+        // Rounded-corner clipping only — the per-type face (background + ink)
+        // comes from FaceScheme on the single shared preview layout.
         BankCardDesignAdapter.applyCardOutline(holder.cardRoot);
+        IdTypeSpec.FaceScheme scheme = IdTypeSpec.faceScheme(item.getIdType());
+        holder.cardRoot.setBackgroundResource(scheme.backgroundRes);
 
-        String holderName = fields.get(spec.nameKey);
         String number = fields.get(spec.numberKey);
         holder.previewType.setText(!item.getIdType().trim().isEmpty()
                 ? item.getIdType().trim().toUpperCase() : "GOVERNMENT ID");
+        holder.previewType.setTextColor(colorOf(holder, scheme.titleColorRes));
         holder.previewSubtitle.setText(IdTypeSpec.previewSubtitle(item.getIdType()));
-        holder.previewHolder.setText(holderName != null && !holderName.trim().isEmpty()
-                ? holderName.trim().toUpperCase() : "FULL NAME");
+        holder.previewSubtitle.setTextColor(colorOf(holder, scheme.subtitleColorRes));
+        holder.previewRule.setBackgroundColor(colorOf(holder, scheme.ruleColorRes));
+        holder.previewHolder.setText(IdTypeSpec.displayName(spec, fields));
+        holder.previewHolder.setTextColor(colorOf(holder, scheme.holderColorRes));
         holder.previewNumberLabel.setText(IdTypeSpec.numberLabel(item.getIdType()));
+        holder.previewNumberLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
         holder.previewNumber.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : "—");
+        holder.previewNumber.setTextColor(colorOf(holder, scheme.numberColorRes));
         String meta = IdTypeSpec.buildPreviewMeta(spec, fields);
         holder.previewMeta.setText(meta);
+        holder.previewMeta.setTextColor(colorOf(holder, scheme.metaColorRes));
         holder.previewMeta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
 
         boolean isExpanded = position == expandedPosition;
@@ -194,6 +186,10 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         }
     }
 
+    private static int colorOf(CardViewHolder holder, int colorRes) {
+        return holder.cardRoot.getResources().getColor(colorRes, null);
+    }
+
     private void copyToClipboard(Context context, String label, String text) {        ClipboardManager clipboard =
                 (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText(label, text != null ? text : "");
@@ -205,6 +201,7 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         View cardRoot;
         TextView previewType;
         TextView previewSubtitle;
+        View previewRule;
         TextView previewHolder;
         TextView previewNumberLabel;
         TextView previewNumber;
@@ -219,6 +216,7 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
             cardRoot = itemView.findViewById(R.id.card_root);
             previewType = itemView.findViewById(R.id.preview_id_type);
             previewSubtitle = itemView.findViewById(R.id.preview_subtitle);
+            previewRule = itemView.findViewById(R.id.preview_rule);
             previewHolder = itemView.findViewById(R.id.preview_holder);
             previewNumberLabel = itemView.findViewById(R.id.preview_number_label);
             previewNumber = itemView.findViewById(R.id.preview_number);

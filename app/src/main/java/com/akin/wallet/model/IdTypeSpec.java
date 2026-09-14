@@ -1,7 +1,8 @@
 package com.akin.wallet.model;
 
 import android.text.InputType;
-import java.util.ArrayList;
+
+import com.akin.wallet.R;import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -20,6 +21,10 @@ public final class IdTypeSpec {
 
     public static final String TYPE_NATIONAL_ID = "National ID";
     public static final String TYPE_DRIVERS_LICENSE = "Driver's License";
+    public static final String TYPE_PASSPORT = "Passport";
+    public static final String TYPE_SSS = "SSS";
+    public static final String TYPE_PHILHEALTH = "PhilHealth ID";
+    public static final String TYPE_TIN = "TIN ID";
 
     private static final String[] SEX_OPTIONS =
             {"Male", "Female"};
@@ -27,6 +32,9 @@ public final class IdTypeSpec {
             {"Unknown", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"};
     private static final String[] CIVIL_STATUS_OPTIONS =
             {"Single", "Married", "Widowed", "Divorced", "Separated"};
+    private static final String[] PHILHEALTH_MEMBER_OPTIONS =
+            {"Formal Economy", "Informal Economy", "Indigent", "Sponsored",
+                    "Senior Citizen", "Lifetime Member"};
 
     private IdTypeSpec() {
     }
@@ -80,14 +88,12 @@ public final class IdTypeSpec {
     /** One ID type definition. */
     public static class IdType {
         public final String name;
-        public final String numberKey; // primary number shown masked on preview
-        public final String nameKey;   // holder name key (usually "full_name")
+        public final String numberKey; // primary number shown on the face
         public final List<IdField> fields;
 
-        IdType(String name, String numberKey, String nameKey, List<IdField> fields) {
+        IdType(String name, String numberKey, List<IdField> fields) {
             this.name = name;
             this.numberKey = numberKey;
-            this.nameKey = nameKey;
             this.fields = Collections.unmodifiableList(fields);
         }
 
@@ -106,7 +112,7 @@ public final class IdTypeSpec {
     static {
         List<IdType> list = new ArrayList<>();
 
-        list.add(new IdType(TYPE_NATIONAL_ID, "psn", "full_name", Arrays.asList(
+        list.add(new IdType(TYPE_NATIONAL_ID, "psn", Arrays.asList(
                 IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
                 IdField.number("psn", "PSN (PhilSys Number)", "1234 5678 9012 3456", true, true, 19),
                 IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
@@ -117,7 +123,7 @@ public final class IdTypeSpec {
                 IdField.dropdown("marital_status", "Marital Status", false, CIVIL_STATUS_OPTIONS)
         )));
 
-        list.add(new IdType(TYPE_DRIVERS_LICENSE, "license_no", "full_name", Arrays.asList(
+        list.add(new IdType(TYPE_DRIVERS_LICENSE, "license_no", Arrays.asList(
                 IdField.text("license_no", "License No.", "N01-23-456789", true, true, 20),
                 IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
                 IdField.text("address", "Address", "Street, City", false, false, 120),
@@ -128,6 +134,47 @@ public final class IdTypeSpec {
                 IdField.dropdown("blood_type", "Blood Type", false, BLOOD_OPTIONS),
                 IdField.text("restrictions", "Restrictions", "e.g. 1, 2", false, false, 20),
                 IdField.text("conditions", "Conditions", "e.g. A", false, false, 20)
+        )));
+
+        list.add(new IdType(TYPE_PASSPORT, "passport_no", Arrays.asList(
+                IdField.text("passport_no", "Passport No.", "P1234567A", true, true, 20),
+                IdField.text("surname", "Surname", "Dela Cruz", true, false, 60),
+                IdField.text("given_names", "Given Names", "Juan", true, false, 80),
+                IdField.text("middle_name", "Middle Name", "Santos", false, false, 60),
+                IdField.text("nationality", "Nationality", "Filipino", false, false, 40),
+                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
+                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
+                IdField.text("place_of_birth", "Place of Birth", "Manila, PH", false, false, 80),
+                IdField.text("issue_date", "Date of Issue", "YYYY-MM-DD", false, false, 10),
+                IdField.text("expiry_date", "Date of Expiry", "YYYY-MM-DD", false, false, 10),
+                IdField.text("issuing_authority", "Issuing Authority", "DFA Manila", false, false, 60)
+        )));
+
+        list.add(new IdType(TYPE_SSS, "ss_number", Arrays.asList(
+                IdField.text("ss_number", "SS Number", "34-1234567-8", true, true, 14),
+                IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
+                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
+                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
+                IdField.text("address", "Address", "Street, City", false, false, 120),
+                IdField.text("mobile_no", "Mobile No.", "09XX XXX XXXX", false, false, 20)
+        )));
+
+        list.add(new IdType(TYPE_PHILHEALTH, "philhealth_no", Arrays.asList(
+                IdField.text("philhealth_no", "PhilHealth No.", "01-2345678-9", true, true, 16),
+                IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
+                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
+                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
+                IdField.text("address", "Address", "Street, City", false, false, 120),
+                IdField.dropdown("membership_type", "Membership Type", false, PHILHEALTH_MEMBER_OPTIONS)
+        )));
+
+        list.add(new IdType(TYPE_TIN, "tin", Arrays.asList(
+                IdField.text("tin", "TIN", "123-456-789-000", true, true, 15),
+                IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
+                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
+                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
+                IdField.text("address", "Address", "Street, City", false, false, 120),
+                IdField.text("employer_name", "Employer Name", "Company Inc.", false, false, 80)
         )));
 
         TYPES = Collections.unmodifiableList(list);
@@ -196,7 +243,7 @@ public final class IdTypeSpec {
         String safeName = name != null && !name.trim().isEmpty() ? name.trim() : "Government ID";
         String numberKey = stored != null && stored.containsKey("id_number") ? "id_number"
                 : (!fields.isEmpty() ? fields.get(fields.size() > 1 ? 1 : 0).key : "id_number");
-        return new IdType(safeName, numberKey, "full_name", fields);
+        return new IdType(safeName, numberKey, fields);
     }
 
     /** Sub-line under the card title, per type. Never null. */
@@ -207,6 +254,18 @@ public final class IdTypeSpec {
             }
             if (typeName.trim().equalsIgnoreCase(TYPE_DRIVERS_LICENSE)) {
                 return "LAND TRANSPORT OFFICE";
+            }
+            if (typeName.trim().equalsIgnoreCase(TYPE_PASSPORT)) {
+                return "DEPARTMENT OF FOREIGN AFFAIRS";
+            }
+            if (typeName.trim().equalsIgnoreCase(TYPE_SSS)) {
+                return "SOCIAL SECURITY SYSTEM";
+            }
+            if (typeName.trim().equalsIgnoreCase(TYPE_PHILHEALTH)) {
+                return "PHILHEALTH";
+            }
+            if (typeName.trim().equalsIgnoreCase(TYPE_TIN)) {
+                return "BUREAU OF INTERNAL REVENUE";
             }
             if (!typeName.trim().isEmpty()) {
                 return "GOVERNMENT ID";
@@ -225,23 +284,127 @@ public final class IdTypeSpec {
         if ("license_no".equalsIgnoreCase(key)) {
             return "LICENSE NO.";
         }
+        if ("passport_no".equalsIgnoreCase(key)) {
+            return "PASSPORT NO.";
+        }
+        if ("ss_number".equalsIgnoreCase(key)) {
+            return "SS NUMBER";
+        }
+        if ("philhealth_no".equalsIgnoreCase(key)) {
+            return "PHILHEALTH NO.";
+        }
+        if ("tin".equalsIgnoreCase(key)) {
+            return "TIN";
+        }
         if ("id_number".equalsIgnoreCase(key)) {
             return "ID NUMBER";
         }
         return toLabel(key).toUpperCase();
     }
 
+    /**
+     * Face theming for the single shared preview layout. The design (which
+     * background + ink) varies per ID type, but the XML stays the same, so
+     * adding a type never needs a new layout. Unknown types reuse National.
+     */
+    public static class FaceScheme {
+        public final int backgroundRes;
+        public final int titleColorRes;
+        public final int subtitleColorRes;
+        public final int ruleColorRes;
+        public final int holderColorRes;
+        public final int numberLabelColorRes;
+        public final int numberColorRes;
+        public final int metaColorRes;
+
+        FaceScheme(int backgroundRes, int titleColorRes, int subtitleColorRes,
+                   int ruleColorRes, int holderColorRes, int numberLabelColorRes,
+                   int numberColorRes, int metaColorRes) {
+            this.backgroundRes = backgroundRes;
+            this.titleColorRes = titleColorRes;
+            this.subtitleColorRes = subtitleColorRes;
+            this.ruleColorRes = ruleColorRes;
+            this.holderColorRes = holderColorRes;
+            this.numberLabelColorRes = numberLabelColorRes;
+            this.numberColorRes = numberColorRes;
+            this.metaColorRes = metaColorRes;
+        }
+    }
+
+    public static FaceScheme faceScheme(String typeName) {
+        if (typeName != null) {
+            String t = typeName.trim();
+            if (t.equalsIgnoreCase(TYPE_DRIVERS_LICENSE)) {
+                return new FaceScheme(
+                        R.drawable.bg_drivers_license,
+                        R.color.dl_ink, R.color.dl_accent, R.color.dl_bar,
+                        R.color.dl_ink, R.color.dl_muted,
+                        R.color.dl_ink, R.color.dl_muted);
+            }
+            if (t.equalsIgnoreCase(TYPE_PASSPORT)) {
+                return new FaceScheme(
+                        R.drawable.bg_passport,
+                        R.color.passport_ink, R.color.passport_muted, R.color.passport_rule,
+                        R.color.passport_ink, R.color.passport_muted,
+                        R.color.passport_ink, R.color.passport_muted);
+            }
+            if (t.equalsIgnoreCase(TYPE_SSS)) {
+                return new FaceScheme(
+                        R.drawable.bg_sss,
+                        R.color.text_primary, R.color.sss_muted, R.color.sss_muted,
+                        R.color.text_primary, R.color.sss_muted,
+                        R.color.text_primary, R.color.sss_muted);
+            }
+            if (t.equalsIgnoreCase(TYPE_PHILHEALTH)) {
+                return new FaceScheme(
+                        R.drawable.bg_philhealth,
+                        R.color.philhealth_ink, R.color.philhealth_muted, R.color.philhealth_rule,
+                        R.color.philhealth_ink, R.color.philhealth_muted,
+                        R.color.philhealth_ink, R.color.philhealth_muted);
+            }
+            if (t.equalsIgnoreCase(TYPE_TIN)) {
+                return new FaceScheme(
+                        R.drawable.bg_tin,
+                        R.color.tin_ink, R.color.tin_muted, R.color.tin_rule,
+                        R.color.tin_ink, R.color.tin_muted,
+                        R.color.tin_ink, R.color.tin_muted);
+            }
+        }
+        return new FaceScheme(
+                R.drawable.bg_national_id,
+                R.color.national_ink, R.color.national_muted, R.color.national_rule,
+                R.color.national_ink, R.color.national_muted,
+                R.color.national_ink, R.color.national_muted);
+    }
+
     /** Footer line for the collapsed preview, per type. Never null. */
     public static String buildPreviewMeta(IdType type, Map<String, String> fields) {
-        if (type.name.equals(TYPE_DRIVERS_LICENSE)) {
+        Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
+        String birth = nonEmpty(safe.get("birth_date")) ? safe.get("birth_date").trim() : "";
+        String expiry = nonEmpty(safe.get("expiry_date")) ? safe.get("expiry_date").trim() : "";
+        if (!expiry.isEmpty()) {
             return joinNonEmpty(
-                    nonEmpty(fields.get("birth_date")) ? "DOB " + fields.get("birth_date") : "",
-                    nonEmpty(fields.get("expiry_date")) ? "EXP " + fields.get("expiry_date") : "");
+                    birth.isEmpty() ? "" : "DOB " + birth,
+                    "EXP " + expiry);
         }
-        // National ID + default
+        // National ID, SSS, PhilHealth + default
+        String sex = nonEmpty(safe.get("sex")) ? safe.get("sex").trim() : "";
         return joinNonEmpty(
-                nonEmpty(fields.get("birth_date")) ? "DOB " + fields.get("birth_date") : "",
-                nonEmpty(fields.get("sex")) ? fields.get("sex") : "");
+                birth.isEmpty() ? "" : "DOB " + birth,
+                sex);
+    }
+
+    /** Card-face holder line: full name, or Given + Surname for passports. */
+    public static String displayName(IdType type, Map<String, String> fields) {
+        Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
+        String full = safe.get("full_name");
+        if (nonEmpty(full)) {
+            return full.trim().toUpperCase();
+        }
+        String given = nonEmpty(safe.get("given_names")) ? safe.get("given_names").trim() : "";
+        String surname = nonEmpty(safe.get("surname")) ? safe.get("surname").trim() : "";
+        String combined = (given + " " + surname).trim();
+        return combined.isEmpty() ? "FULL NAME" : combined.toUpperCase();
     }
 
     /** Ordered display map: spec fields first, then any unknown stored keys (forward-compat). */

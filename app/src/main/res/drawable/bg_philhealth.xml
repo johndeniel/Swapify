@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- National ID face: white-to-steel gradient document. No outline, no artwork. -->
+<!-- PhilHealth face: soft green gradient document, hairline edge. No artwork. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient
         android:angle="135"
-        android:startColor="@color/national_bg_start"
-        android:endColor="@color/national_bg_end"
+        android:startColor="@color/philhealth_bg_start"
+        android:endColor="@color/philhealth_bg_end"
         android:type="linear" />
     <corners android:radius="16dp" />
 </shape>

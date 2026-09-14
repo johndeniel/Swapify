@@ -20,7 +20,8 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:adjustViewBounds="true"
-            android:scaleType="fitCenter" />
+            android:scaleType="fitCenter"
+            android:contentDescription="@null" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -87,9 +88,10 @@
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/ic_person"
-                android:alpha="0.6"
-                android:layout_marginEnd="14dp" />
+            android:src="@drawable/ic_person"
+            android:alpha="0.6"
+            android:contentDescription="@null"
+            android:layout_marginEnd="14dp" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -139,9 +141,10 @@
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/ic_lock"
-                android:alpha="0.6"
-                android:layout_marginEnd="14dp" />
+            android:src="@drawable/ic_lock"
+            android:alpha="0.6"
+            android:contentDescription="@null"
+            android:layout_marginEnd="14dp" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -200,9 +203,10 @@
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/ic_lock"
-                android:alpha="0.6"
-                android:layout_marginEnd="14dp" />
+            android:src="@drawable/ic_lock"
+            android:alpha="0.6"
+            android:contentDescription="@null"
+            android:layout_marginEnd="14dp" />
 
             <LinearLayout
                 android:layout_width="0dp"

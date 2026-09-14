@@ -52,18 +52,11 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         notifyDataSetChanged();
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        return IdCardListAdapter.isDriversLicense(getTypeAt(position)) ? 1 : 0;
-    }
-
     @NonNull
     @Override
     public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        int layout = viewType == 1
-                ? R.layout.item_drivers_license_preview
-                : R.layout.item_national_id_preview;
-        View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_government_id_preview, parent, false);
         return new CardViewHolder(view);
     }
 
@@ -72,6 +65,7 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         BankCardDesignAdapter.applyCardOutline(holder.cardRoot);
         String pageType = getTypeAt(position);
         IdTypeSpec.IdType spec = IdTypeSpec.forName(pageType);
+        IdTypeSpec.FaceScheme scheme = IdTypeSpec.faceScheme(pageType);
 
         // Each page shows its own type's values from the shared draft so the
         // user can compare faces while typing (common keys carry over).
@@ -80,18 +74,24 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
             String v = fields.get(f.key);
             pageFields.put(f.key, v != null ? v : "");
         }
-        String holderName = pageFields.get(spec.nameKey);
         String number = pageFields.get(spec.numberKey);
 
+        holder.cardRoot.setBackgroundResource(scheme.backgroundRes);
         holder.idType.setText(pageType.toUpperCase());
+        holder.idType.setTextColor(colorOf(holder, scheme.titleColorRes));
         holder.subtitle.setText(IdTypeSpec.previewSubtitle(pageType));
-        holder.holder.setText(holderName != null && !holderName.trim().isEmpty()
-                ? holderName.trim().toUpperCase() : "FULL NAME");
+        holder.subtitle.setTextColor(colorOf(holder, scheme.subtitleColorRes));
+        holder.rule.setBackgroundColor(colorOf(holder, scheme.ruleColorRes));
+        holder.holder.setText(IdTypeSpec.displayName(spec, pageFields));
+        holder.holder.setTextColor(colorOf(holder, scheme.holderColorRes));
         holder.numberLabel.setText(IdTypeSpec.numberLabel(pageType));
+        holder.numberLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
         holder.number.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : "—");
+        holder.number.setTextColor(colorOf(holder, scheme.numberColorRes));
         String meta = IdTypeSpec.buildPreviewMeta(spec, pageFields);
         holder.meta.setText(meta);
+        holder.meta.setTextColor(colorOf(holder, scheme.metaColorRes));
         holder.meta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
 
         holder.cardRoot.setOnClickListener(v -> {
@@ -107,10 +107,15 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         return types.size();
     }
 
+    private static int colorOf(CardViewHolder holder, int colorRes) {
+        return holder.cardRoot.getResources().getColor(colorRes, null);
+    }
+
     static class CardViewHolder extends RecyclerView.ViewHolder {
         View cardRoot;
         TextView idType;
         TextView subtitle;
+        View rule;
         TextView holder;
         TextView numberLabel;
         TextView number;
@@ -121,6 +126,7 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
             cardRoot = itemView.findViewById(R.id.card_root);
             idType = itemView.findViewById(R.id.preview_id_type);
             subtitle = itemView.findViewById(R.id.preview_subtitle);
+            rule = itemView.findViewById(R.id.preview_rule);
             holder = itemView.findViewById(R.id.preview_holder);
             numberLabel = itemView.findViewById(R.id.preview_number_label);
             number = itemView.findViewById(R.id.preview_number);

@@ -65,7 +65,6 @@
     <string name="field_username">Username</string>
     <string name="field_password">Password</string>
     <string name="field_pin">PIN</string>
-    <string name="field_id_type">ID Type</string>
     <string name="field_card_type">Card Type</string>
     <string name="field_card_network">Card Network</string>
     <string name="field_bank_name">Bank Name</string>
@@ -83,7 +82,6 @@
     <string name="hint_cvv">123</string>
     <string name="default_card_type">Debit</string>
     <string name="default_card_network">Visa</string>
-    <string name="default_id_type">National ID</string>
 
     <!-- Masked / empty placeholders -->
     <string name="mask_password">••••••••</string>
@@ -102,6 +100,7 @@
     <string name="preview_expiry_value">MM/YY</string>
     <!-- Government ID -->
     <string name="preview_republic">REPUBLIC OF THE PHILIPPINES</string>
+    <string name="preview_philsys">PHILIPPINE IDENTIFICATION SYSTEM</string>
     <string name="preview_government_id">GOVERNMENT ID</string>
     <string name="preview_person_name">FULL NAME</string>
     <string name="preview_person_label">FULL NAME</string>
@@ -122,7 +121,6 @@
     <string name="cd_select_platform">Select platform</string>
     <string name="cd_select_card_type">Select card type</string>
     <string name="cd_select_card_network">Select card network</string>
-    <string name="cd_select_id_type">Select ID type</string>
     <string name="cd_copy_value">Copy value</string>
     <string name="cd_copy_username">Copy username</string>
     <string name="cd_copy_password">Copy password</string>
