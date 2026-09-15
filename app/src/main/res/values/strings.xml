@@ -110,8 +110,6 @@
 
     <!-- Content descriptions (accessibility) -->
     <string name="cd_search">Search</string>
-    <string name="cd_settings">Settings</string>
-    <string name="msg_settings_soon">Settings coming soon</string>
     <string name="cd_add_account">Add account</string>
     <string name="cd_link_account">Link</string>
     <string name="cd_toggle_details">Toggle details</string>

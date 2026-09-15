@@ -86,9 +86,6 @@ public class SocialLoginsFragment extends Fragment {
         });
 
         view.findViewById(R.id.btn_add).setOnClickListener(v -> showAddLoginDialog());
-        view.findViewById(R.id.btn_settings).setOnClickListener(v ->
-                Toast.makeText(requireContext(), getString(R.string.msg_settings_soon),
-                        Toast.LENGTH_SHORT).show());
     }
 
     private void showDeleteConfirmation(CredentialItem item) {

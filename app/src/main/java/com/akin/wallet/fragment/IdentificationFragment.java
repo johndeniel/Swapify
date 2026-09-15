@@ -68,9 +68,6 @@ public class IdentificationFragment extends Fragment {
         recyclerCards.setAdapter(cardAdapter);
 
         view.findViewById(R.id.btn_add).setOnClickListener(v -> showCardDialog(null));
-        view.findViewById(R.id.btn_settings).setOnClickListener(v ->
-                Toast.makeText(requireContext(), getString(R.string.msg_settings_soon),
-                        Toast.LENGTH_SHORT).show());
     }
 
     @Override
@@ -186,13 +183,24 @@ public class IdentificationFragment extends Fragment {
 
         setupDots(dotsContainer, designAdapter.getTypeCount(), selectedType[0]);
 
+        // Guard: ignore carousel callbacks until the initial scroll to the
+        // edited type has settled. Otherwise the initial layout at position 0
+        // fires onScrolled and rebuilds the form for the wrong type (empty/
+        // wrong fields until the user swipes).
+        final boolean[] carouselReady = {false};
         recyclerDesign.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (!carouselReady[0] || !knownType[0]) {
+                    return;
+                }
+                if (newState != RecyclerView.SCROLL_STATE_IDLE) {
+                    return;
+                }
                 View snapView = snapHelper.findSnapView(layoutManager);
                 if (snapView != null) {
                     int pos = layoutManager.getPosition(snapView);
-                    if (pos != RecyclerView.NO_POSITION && knownType[0] && pos != selectedType[0]) {
+                    if (pos != RecyclerView.NO_POSITION && pos != selectedType[0]) {
                         applyIdTypeSelection(pos, dialogTitle, isEdit, formContainer, draftValues,
                                 textInputs, refreshPreview, dotsContainer, adapterRef[0],
                                 selectedType);
@@ -201,7 +209,6 @@ public class IdentificationFragment extends Fragment {
             }
         });
         final int scrollTo = selectedType[0];
-        recyclerDesign.post(() -> recyclerDesign.scrollToPosition(scrollTo));
 
         // Initial title + form.
         updateDialogTitle(dialogTitle, isEdit, isEdit ? existing.getIdType()
@@ -209,6 +216,15 @@ public class IdentificationFragment extends Fragment {
         rebuildForm(formContainer, currentSpec(selectedType[0], knownType[0],
                 isEdit ? existing : null, draftValues), draftValues, textInputs, refreshPreview);
         refreshPreview.run();
+
+        // Position the carousel on the edited type, then enable callbacks.
+        // Nested post ensures the scroll layout pass has run before we listen.
+        recyclerDesign.post(() -> {
+            if (scrollTo != 0) {
+                recyclerDesign.scrollToPosition(scrollTo);
+            }
+            recyclerDesign.post(() -> carouselReady[0] = true);
+        });
 
         btnSave.setOnClickListener(v -> {
             String typeName = currentTypeName(selectedType[0], knownType[0],
