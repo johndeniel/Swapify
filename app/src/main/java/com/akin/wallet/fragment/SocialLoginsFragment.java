@@ -1,6 +1,7 @@
 package com.akin.wallet.fragment;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 
@@ -38,6 +39,7 @@ public class SocialLoginsFragment extends Fragment {
 
     private SocialLoginAdapter adapter;
     private AppDatabaseHelper dbHelper;
+    private Runnable sheetSavedListener;
     private int selectedIcon = R.drawable.google;
     private String selectedName = "Google";
 
@@ -85,12 +87,26 @@ public class SocialLoginsFragment extends Fragment {
             public void afterTextChanged(Editable s) {}
         });
 
-        view.findViewById(R.id.btn_add).setOnClickListener(v -> showAddLoginDialog());
+    }
 
-        Bundle args = getArguments();
-        if (args != null && args.getBoolean("open_add", false)) {
-            args.remove("open_add");
-            view.post(this::showAddLoginDialog);
+    /**
+     * Headless sheet host: lets the dashboard open the creation sheet without
+     * navigating to this tab. Attach via FragmentManager first, then call.
+     */
+    public void initSheetHost(@NonNull Context context, @Nullable Runnable onSaved) {
+        dbHelper = new AppDatabaseHelper(context);
+        adapter = new SocialLoginAdapter(new ArrayList<>(), dbHelper);
+        sheetSavedListener = onSaved;
+    }
+
+    /** Opens the creation sheet directly (no navigation). */
+    public void openAddSheet() {
+        showAddLoginDialog();
+    }
+
+    private void notifySheetSaved() {
+        if (sheetSavedListener != null) {
+            sheetSavedListener.run();
         }
     }
 
@@ -557,6 +573,7 @@ public class SocialLoginsFragment extends Fragment {
                 }
 
             adapter.updateData(dbHelper.getAllLogins());
+            notifySheetSaved();
             dialog.dismiss();
             Toast.makeText(requireContext(), "Account Saved", Toast.LENGTH_SHORT).show();
         });

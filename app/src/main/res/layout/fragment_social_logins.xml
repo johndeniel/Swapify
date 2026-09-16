@@ -92,19 +92,4 @@
 
 </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btn_add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="@string/action_add"
-        android:src="@drawable/ic_add"
-        app:backgroundTint="@color/brand_blue"
-        app:tint="@color/white"
-        app:fabCustomSize="40dp"
-        app:cornerSize="50%"
-        app:elevation="6dp" />
-
 </FrameLayout>

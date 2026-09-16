@@ -1,6 +1,7 @@
 package com.akin.wallet.fragment;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,6 +29,8 @@ import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import java.util.ArrayList;
+
 public class BankCardsFragment extends Fragment {
 
     private static final String[] CARD_TYPES = {"Debit", "Credit", "Prepaid"};
@@ -35,6 +38,28 @@ public class BankCardsFragment extends Fragment {
 
     private AppDatabaseHelper dbHelper;
     private BankCardListAdapter cardAdapter;
+    private Runnable sheetSavedListener;
+
+    /**
+     * Headless sheet host: lets the dashboard open the creation sheet without
+     * navigating to this tab. Attach via FragmentManager first, then call.
+     */
+    public void initSheetHost(@NonNull Context context, @Nullable Runnable onSaved) {
+        dbHelper = new AppDatabaseHelper(context);
+        cardAdapter = new BankCardListAdapter(new ArrayList<>(), null);
+        sheetSavedListener = onSaved;
+    }
+
+    /** Opens the creation sheet directly (no navigation). */
+    public void openAddSheet() {
+        showCardDialog(null);
+    }
+
+    private void notifySheetSaved() {
+        if (sheetSavedListener != null) {
+            sheetSavedListener.run();
+        }
+    }
 
     @Nullable
     @Override
@@ -63,14 +88,6 @@ public class BankCardsFragment extends Fragment {
                     }
                 });
         recyclerCards.setAdapter(cardAdapter);
-
-        view.findViewById(R.id.btn_add).setOnClickListener(v -> showCardDialog(null));
-
-        Bundle args = getArguments();
-        if (args != null && args.getBoolean("open_add", false)) {
-            args.remove("open_add");
-            view.post(() -> showCardDialog(null));
-        }
     }
 
     @Override
@@ -364,6 +381,7 @@ public class BankCardsFragment extends Fragment {
                 cardAdapter.updateData(dbHelper.getAllBankCards());
                 Toast.makeText(requireContext(), "Card Saved", Toast.LENGTH_SHORT).show();
             }
+            notifySheetSaved();
             dialog.dismiss();
         });
 

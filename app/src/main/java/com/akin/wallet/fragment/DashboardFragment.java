@@ -52,6 +52,7 @@ public class DashboardFragment extends Fragment {
     private View fabAddMenu;
     private View fabScrim;
     private boolean isFabMenuOpen = false;
+    private Fragment sheetHost;
 
     @Nullable
     @Override
@@ -163,10 +164,42 @@ public class DashboardFragment extends Fragment {
         }
     }
 
-    /** Jump to a tab and auto-open its add sheet. */
+    /**
+     * Opens a creation sheet directly over the dashboard — no navigation, so
+     * the destination tab is never shown. The tab fragment is attached
+     * headless purely as the sheet owner; dashboard refreshes on save.
+     */
     private void addNew(int navId) {
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).navigateToTab(navId, true);
+        if (isFabMenuOpen) {
+            toggleAddMenu();
+        }
+        if (sheetHost != null) {
+            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
+            sheetHost = null;
+        }
+        Runnable onSaved = () -> {
+            if (isAdded()) {
+                refreshDashboard();
+            }
+        };
+        if (navId == R.id.nav_id) {
+            IdentificationFragment host = new IdentificationFragment();
+            getChildFragmentManager().beginTransaction().add(host, null).commitNow();
+            sheetHost = host;
+            host.initSheetHost(requireContext(), onSaved);
+            host.openAddSheet();
+        } else if (navId == R.id.nav_bank) {
+            BankCardsFragment host = new BankCardsFragment();
+            getChildFragmentManager().beginTransaction().add(host, null).commitNow();
+            sheetHost = host;
+            host.initSheetHost(requireContext(), onSaved);
+            host.openAddSheet();
+        } else if (navId == R.id.nav_login) {
+            SocialLoginsFragment host = new SocialLoginsFragment();
+            getChildFragmentManager().beginTransaction().add(host, null).commitNow();
+            sheetHost = host;
+            host.initSheetHost(requireContext(), onSaved);
+            host.openAddSheet();
         }
     }
 

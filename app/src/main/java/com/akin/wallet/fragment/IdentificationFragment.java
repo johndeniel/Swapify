@@ -1,6 +1,7 @@
 package com.akin.wallet.fragment;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -31,6 +32,7 @@ import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.IdTypeSpec;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -38,6 +40,28 @@ public class IdentificationFragment extends Fragment {
 
     private AppDatabaseHelper dbHelper;
     private IdCardListAdapter cardAdapter;
+    private Runnable sheetSavedListener;
+
+    /**
+     * Headless sheet host: lets the dashboard open the creation sheet without
+     * navigating to this tab. Attach via FragmentManager first, then call.
+     */
+    public void initSheetHost(@NonNull Context context, @Nullable Runnable onSaved) {
+        dbHelper = new AppDatabaseHelper(context);
+        cardAdapter = new IdCardListAdapter(new ArrayList<>(), null);
+        sheetSavedListener = onSaved;
+    }
+
+    /** Opens the creation sheet directly (no navigation). */
+    public void openAddSheet() {
+        showCardDialog(null);
+    }
+
+    private void notifySheetSaved() {
+        if (sheetSavedListener != null) {
+            sheetSavedListener.run();
+        }
+    }
 
     @Nullable
     @Override
@@ -66,14 +90,6 @@ public class IdentificationFragment extends Fragment {
                     }
                 });
         recyclerCards.setAdapter(cardAdapter);
-
-        view.findViewById(R.id.btn_add).setOnClickListener(v -> showCardDialog(null));
-
-        Bundle args = getArguments();
-        if (args != null && args.getBoolean("open_add", false)) {
-            args.remove("open_add");
-            view.post(() -> showCardDialog(null));
-        }
     }
 
     @Override
@@ -264,6 +280,7 @@ public class IdentificationFragment extends Fragment {
                 cardAdapter.updateData(dbHelper.getAllIdCards());
                 Toast.makeText(requireContext(), "ID Saved", Toast.LENGTH_SHORT).show();
             }
+            notifySheetSaved();
             dialog.dismiss();
         });
 
