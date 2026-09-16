@@ -103,7 +103,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Government IDs"
+                android:text="Government ID"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:textStyle="bold" />
@@ -205,7 +205,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bank Cards"
+                android:text="Bank Card"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:textStyle="bold" />
@@ -307,7 +307,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Social Logins"
+                android:text="Social Account"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:textStyle="bold" />
@@ -440,7 +440,11 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginBottom="8dp"
-            android:text="@string/dialog_id_title" />
+            android:text="@string/dialog_id_title"
+            android:textColor="@color/text_primary"
+            app:backgroundTint="@color/dashboard_surface"
+            app:strokeColor="@color/dashboard_surface_border"
+            app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_option_card"
@@ -449,7 +453,11 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginBottom="8dp"
-            android:text="@string/dialog_bank_title" />
+            android:text="@string/dialog_bank_title"
+            android:textColor="@color/text_primary"
+            app:backgroundTint="@color/dashboard_surface"
+            app:strokeColor="@color/dashboard_surface_border"
+            app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_option_login"
@@ -457,7 +465,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:text="@string/dialog_social_title" />
+            android:text="@string/dialog_social_title"
+            android:textColor="@color/text_primary"
+            app:backgroundTint="@color/dashboard_surface"
+            app:strokeColor="@color/dashboard_surface_border"
+            app:strokeWidth="1dp" />
 
     </LinearLayout>
 
