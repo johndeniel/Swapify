@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dashboard brand shield: solid blue shield with white keyhole. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="40"
+    android:viewportHeight="40">
+    <path
+        android:fillColor="#1A8CFF"
+        android:pathData="M20,2l13,5v9c0,8.5 -5.6,14.4 -13,18C12.6,30.4 7,24.5 7,16V7z" />
+    <path
+        android:fillColor="#0A2B64"
+        android:fillAlpha="0.35"
+        android:pathData="M20,2l13,5v9c0,8.5 -5.6,14.4 -13,18C12.6,30.4 7,24.5 7,16V7zM20,5.5L10.2,9.3v6.7c0,6.9 4.3,11.8 9.8,14.7 5.5,-2.9 9.8,-7.8 9.8,-14.7V9.3z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,12.5m-4,0a4,4 0 1 0 8,0a4,4 0 1 0 -8,0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M18.2,18.5h3.6l1.2,8h-6z" />
+</vector>

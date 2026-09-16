@@ -25,8 +25,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:paddingHorizontal="18dp"
-            android:paddingVertical="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="14dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -47,9 +47,9 @@
                         android:layout_height="wrap_content"
                         android:text="@string/preview_bank_name"
                         android:textColor="@color/text_primary"
-                        android:textSize="17sp"
+                        android:textSize="15sp"
                         android:textStyle="bold|italic"
-                        android:letterSpacing="0.03"
+                        android:letterSpacing="0.02"
                         android:shadowColor="@color/text_shadow"
                         android:shadowDx="1"
                         android:shadowDy="1"
@@ -64,10 +64,10 @@
                         android:layout_height="wrap_content"
                         android:text="@string/preview_card_type"
                         android:textColor="@color/text_subtle_light"
-                        android:textSize="10sp"
+                        android:textSize="9sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.22"
-                        android:layout_marginTop="3dp"
+                        android:letterSpacing="0.2"
+                        android:layout_marginTop="2dp"
                         android:maxLines="1"
                         android:singleLine="true" />
 
@@ -75,8 +75,10 @@
 
                 <ImageView
                     android:id="@+id/preview_network"
-                    android:layout_width="56dp"
-                    android:layout_height="28dp"
+                    android:layout_width="38dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="top"
+                    android:layout_marginTop="2dp"
                     android:src="@drawable/visa"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"
@@ -85,9 +87,9 @@
             </LinearLayout>
 
             <ImageView
-                android:layout_width="34dp"
-                android:layout_height="26dp"
-                android:layout_marginTop="12dp"
+                android:layout_width="30dp"
+                android:layout_height="23dp"
+                android:layout_marginTop="10dp"
                 android:src="@drawable/chip"
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
@@ -97,13 +99,13 @@
                 android:id="@+id/preview_number"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="8dp"
                 android:text="•••• •••• •••• ••••"
                 android:textColor="@color/text_primary"
-                android:textSize="16sp"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 android:fontFamily="monospace"
-                android:letterSpacing="0.06"
+                android:letterSpacing="0.04"
                 android:maxLines="1"
                 android:singleLine="true"
                 android:shadowColor="@color/text_shadow"
@@ -134,21 +136,20 @@
                         android:layout_height="wrap_content"
                         android:text="@string/preview_holder_label"
                         android:textColor="@color/text_faint_light"
-                        android:textSize="8sp"
+                        android:textSize="7sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.22" />
+                        android:letterSpacing="0.2" />
 
                     <TextView
                         android:id="@+id/preview_holder"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
+                        android:layout_marginTop="2dp"
                         android:text="@string/preview_holder_name"
                         android:textColor="@color/text_bright_light"
-                        android:textSize="12sp"
+                        android:textSize="10sp"
                         android:textStyle="bold"
-                        android:fontFamily="monospace"
-                        android:letterSpacing="0.05"
+                        android:letterSpacing="0.02"
                         android:shadowColor="@color/text_shadow"
                         android:shadowDx="1"
                         android:shadowDy="1"
@@ -170,21 +171,20 @@
                         android:layout_height="wrap_content"
                         android:text="@string/preview_expiry_label"
                         android:textColor="@color/text_faint_light"
-                        android:textSize="8sp"
+                        android:textSize="7sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.22" />
+                        android:letterSpacing="0.2" />
 
                     <TextView
                         android:id="@+id/preview_expiry"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
+                        android:layout_marginTop="2dp"
                         android:text="@string/preview_expiry_value"
                         android:textColor="@color/text_bright_light"
-                        android:textSize="12sp"
+                        android:textSize="10sp"
                         android:textStyle="bold"
-                        android:fontFamily="monospace"
-                        android:letterSpacing="0.05"
+                        android:letterSpacing="0.02"
                         android:shadowColor="@color/text_shadow"
                         android:shadowDx="1"
                         android:shadowDy="1"

@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_bg"
+    android:background="@drawable/bg_dashboard_root"
     android:fitsSystemWindows="false"
     tools:context=".MainActivity">
 
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_gravity="bottom"
-        android:background="@color/dark_card"
+        android:background="@color/dashboard_surface"
         app:itemIconTint="@color/bottom_tab_item_tint"
         app:itemTextColor="@color/bottom_tab_item_tint"
         app:itemActiveIndicatorStyle="@style/NoIndicator"

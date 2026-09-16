@@ -3,10 +3,11 @@
 <!-- National ID, Driver's License, Passport, SSS, PhilHealth and future. -->
 <!-- Per-type identity (background, ink, titles, numbers, photo-well tint) -->
 <!-- is bound in code from IdTypeSpec; only structure lives here. -->
-<!-- Title header on top, rule, then a small square photo well below the -->
-<!-- line with the data column beside it. The eyebrow line is retired -->
-<!-- (gone) — the subtitle carries the agency. The photo is static decor: -->
-<!-- it never changes, only its tint adapts to the card. Ratio 1.586:1. -->
+<!-- Title header on top, rule, then a document-style row: rounded photo -->
+<!-- well left with the identity data stacked right, meta anchored bottom -->
+<!-- end. The eyebrow line is retired (gone) — the subtitle carries the -->
+<!-- agency. The photo is static decor: it never changes, only its tint -->
+<!-- adapts to the card. Ratio 1.586:1. -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -71,71 +72,69 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <!-- Square photo well below the line. Data stacks under it:
-                 full name first, then number + value + meta. -->
-            <FrameLayout
-                android:id="@+id/preview_photo_box"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:background="@drawable/bg_id_photo_placeholder">
-
-                <ImageView
-                    android:id="@+id/preview_photo_icon"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_person"
-                    android:contentDescription="@string/cd_id_photo" />
-
-            </FrameLayout>
-
-            <!-- Full name full-width below the square. -->
-            <TextView
-                android:id="@+id/preview_holder_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/preview_person_label"
-                android:textColor="@color/national_muted"
-                android:textSize="8sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.26"
-                android:maxLines="1"
-                android:singleLine="true" />
-
-            <TextView
-                android:id="@+id/preview_holder"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/preview_person_name"
-                android:textColor="@color/national_ink"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.02"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:ellipsize="end" />
-
-            <!-- Number + value + meta below the full name. -->
+            <!-- Photo + identity data: document-style photo left, data right. -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:orientation="horizontal"
-                android:gravity="bottom">
+                android:gravity="center_vertical">
+
+                <FrameLayout
+                    android:id="@+id/preview_photo_box"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:elevation="2dp"
+                    android:background="@drawable/bg_id_photo_placeholder">
+
+                    <ImageView
+                        android:id="@+id/preview_photo_icon"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_person"
+                        android:contentDescription="@string/cd_id_photo" />
+
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingEnd="12dp">
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/preview_holder_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/preview_person_label"
+                        android:textColor="@color/national_muted"
+                        android:textSize="8sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.26"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                    <TextView
+                        android:id="@+id/preview_holder"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/preview_person_name"
+                        android:textColor="@color/national_ink"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.02"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:ellipsize="end" />
 
                     <TextView
                         android:id="@+id/preview_number_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:text="@string/preview_number_label"
                         android:textColor="@color/national_muted"
                         android:textSize="8sp"
@@ -151,7 +150,7 @@
                         android:layout_marginTop="2dp"
                         android:text="@string/empty_value"
                         android:textColor="@color/national_ink"
-                        android:textSize="12sp"
+                        android:textSize="13sp"
                         android:textStyle="bold"
                         android:fontFamily="monospace"
                         android:letterSpacing="0.04"
@@ -161,28 +160,27 @@
 
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/preview_meta"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_gravity="bottom"
-                    android:gravity="end"
-                    android:maxWidth="130dp"
-                    android:textColor="@color/national_muted"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05"
-                    android:maxLines="1"
-                    android:singleLine="true"
-                    android:ellipsize="end" />
-
             </LinearLayout>
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/preview_meta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:gravity="end"
+                android:maxWidth="160dp"
+                android:textColor="@color/national_muted"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:ellipsize="end" />
 
         </LinearLayout>
 

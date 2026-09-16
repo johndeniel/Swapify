@@ -3,11 +3,11 @@
         <item name="colorPrimary">@color/brand_blue</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="android:colorAccent">@color/brand_blue</item>
-        <item name="colorSurface">@color/dark_bg</item>
+        <item name="colorSurface">@color/dashboard_bg_start</item>
         <item name="colorOnSurface">@color/white</item>
-        <item name="android:windowBackground">@color/dark_bg</item>
-        <item name="android:statusBarColor">@color/dark_bg</item>
-        <item name="android:navigationBarColor">@color/dark_bg</item>
+        <item name="android:windowBackground">@color/dashboard_bg_start</item>
+        <item name="android:statusBarColor">@color/dashboard_bg_start</item>
+        <item name="android:navigationBarColor">@color/dashboard_bg_start</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
     <style name="Theme.AkinWallet" parent="Base.Theme.AkinWallet" />

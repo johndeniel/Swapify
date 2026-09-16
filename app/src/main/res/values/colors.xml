@@ -73,49 +73,101 @@
     <color name="card_slate_end">#FF05080E</color>
 
     <!-- National ID face (paper-white document, navy ink) -->
-    <color name="national_bg_start">#FFFAFCFE</color>
-    <color name="national_bg_center">#FFE9EFF7</color>
-    <color name="national_bg_end">#FFD5E0EF</color>
-    <color name="national_ink">#FF14315F</color>
-    <color name="national_muted">#FF5D6E8A</color>
-    <color name="national_rule">#FF1E4480</color>
+    <color name="national_bg_start">#FFFFFFFF</color>
+    <color name="national_bg_center">#FFDFE7F2</color>
+    <color name="national_bg_end">#FFB4C4D8</color>
+    <color name="national_ink">#FF0F2A52</color>
+    <color name="national_muted">#FF54637D</color>
+    <color name="national_rule">#FF1B3D75</color>
 
     <!-- Driver's License face (cool steel document, indigo ink) -->
-    <color name="dl_bg_start">#FFEDF3FA</color>
-    <color name="dl_bg_center">#FFD9E5F4</color>
-    <color name="dl_bg_end">#FFC3D4E8</color>
+    <color name="dl_bg_start">#FFF4F8FD</color>
+    <color name="dl_bg_center">#FFCFDDF0</color>
+    <color name="dl_bg_end">#FF9FB8D4</color>
 
     <!-- Passport face (deep maroon document, cream ink) -->
-    <color name="passport_bg_start">#FF722637</color>
-    <color name="passport_bg_center">#FF8E2A40</color>
-    <color name="passport_bg_end">#FF38111C</color>
+    <color name="passport_bg_start">#FF7E2C40</color>
+    <color name="passport_bg_center">#FF932C44</color>
+    <color name="passport_bg_end">#FF2A0C15</color>
     <color name="passport_ink">#FFF7EBD7</color>
-    <color name="passport_muted">#FFD9B8AC</color>
+    <color name="passport_muted">#FFC9ACA0</color>
     <color name="passport_rule">#FFD9B8AC</color>
 
     <!-- SSS face (corporate blue document, white ink) -->
-    <color name="sss_bg_start">#FF0F4C9C</color>
-    <color name="sss_bg_center">#FF2070D4</color>
-    <color name="sss_bg_end">#FF0A2B64</color>
-    <color name="sss_muted">#FFA9BEE3</color>
+    <color name="sss_bg_start">#FF1463B4</color>
+    <color name="sss_bg_center">#FF1F6FD6</color>
+    <color name="sss_bg_end">#FF071E49</color>
+    <color name="sss_muted">#FFB4C8E8</color>
 
     <!-- PhilHealth face (soft sage document, green ink) -->
-    <color name="philhealth_bg_start">#FFE7F3EB</color>
-    <color name="philhealth_bg_center">#FFC9E7D3</color>
-    <color name="philhealth_bg_end">#FFAED8BC</color>
+    <color name="philhealth_bg_start">#FFEFF7F1</color>
+    <color name="philhealth_bg_center">#FFBFE0CA</color>
+    <color name="philhealth_bg_end">#FF8DBFA0</color>
 
     <!-- TIN face (warm ivory document, dark-brown ink) -->
-    <color name="tin_bg_start">#FFFCF5E1</color>
-    <color name="tin_bg_center">#FFF4E3B9</color>
-    <color name="tin_bg_end">#FFE8CF9C</color>
+    <color name="tin_bg_start">#FFFFFAE9</color>
+    <color name="tin_bg_center">#FFF0DCAC</color>
+    <color name="tin_bg_end">#FFD9B87E</color>
     <color name="tin_ink">#FF4A2F1B</color>
-    <color name="tin_muted">#FF8A6D4B</color>
-    <color name="tin_rule">#FF8A6D4B</color>
-    <color name="philhealth_ink">#FF006B3F</color>
-    <color name="philhealth_muted">#FF6B8F7F</color>
+    <color name="tin_muted">#FF7D6242</color>
+    <color name="tin_rule">#FF6E5636</color>
+    <color name="philhealth_ink">#FF005C36</color>
+    <color name="philhealth_muted">#FF5E8473</color>
     <color name="philhealth_rule">#FF006B3F</color>
-    <color name="dl_bar">#FF6A5AA8</color>
+    <color name="dl_bar">#FF5B4FA3</color>
     <color name="dl_ink">#FF2B2545</color>
-    <color name="dl_muted">#FF8B84A8</color>
+    <color name="dl_muted">#FF7A7396</color>
     <color name="dl_accent">#FF4A3F7A</color>
+
+    <!-- ============================================================
+         Dashboard (MyKey reference) — professional deep-navy theme.
+         Background is near-black navy; surfaces are lifted navy with
+         a cool hairline. Banner + wallet rows use restrained
+         blue / emerald / violet gradients sampled from the mock.
+         ============================================================ -->
+    <color name="dashboard_bg_start">#FF050B18</color>
+    <color name="dashboard_bg_end">#FF0A1E3A</color>
+    <color name="dashboard_surface">#FF0E1C33</color>
+    <color name="dashboard_surface_border">#FF1D3154</color>
+    <color name="dashboard_muted">#FF8A9BB5</color>
+    <color name="dashboard_active">#FF2EA6FF</color>
+    <color name="dashboard_inactive">#FF64748F</color>
+
+    <!-- Privacy banner gradient (sampled from reference:
+         bright steel-blue left, royal mid, dark navy right) -->
+    <color name="dashboard_banner_start">#FF2057B8</color>
+    <color name="dashboard_banner_center">#FF14367F</color>
+    <color name="dashboard_banner_end">#FF0A1B3D</color>
+    <color name="dashboard_banner_border">#FF2B5BA6</color>
+
+    <!-- Category icon tiles -->
+    <color name="dashboard_tile_blue">#FF1A8CFF</color>
+    <color name="dashboard_tile_green">#FF10B981</color>
+    <color name="dashboard_tile_purple">#FF8B5CF6</color>
+    <color name="dashboard_tile_glass">#33FFFFFF</color>
+
+    <!-- Wallet row gradients (one ramp per row) -->
+    <color name="dashboard_wallet_blue_start">#FF1E56D6</color>
+    <color name="dashboard_wallet_blue_end">#FF0A1E58</color>
+    <color name="dashboard_wallet_green_start">#FF0E9F6E</color>
+    <color name="dashboard_wallet_green_end">#FF04382B</color>
+    <color name="dashboard_wallet_purple_start">#FF7C3AED</color>
+    <color name="dashboard_wallet_purple_end">#FF2E165E</color>
+
+    <!-- Category card gradients (dark navy ramps with a whisper of hue,
+         sampled from the reference where the cards read near-flat dark
+         and the icon tiles carry the color) -->
+    <color name="dashboard_cat_blue_start">#FF142743</color>
+    <color name="dashboard_cat_blue_end">#FF0A1526</color>
+    <color name="dashboard_cat_blue_border">#FF243C63</color>
+    <color name="dashboard_cat_green_start">#FF122A30</color>
+    <color name="dashboard_cat_green_end">#FF0A161D</color>
+    <color name="dashboard_cat_green_border">#FF1F4149</color>
+    <color name="dashboard_cat_purple_start">#FF1B2145</color>
+    <color name="dashboard_cat_purple_end">#FF0D1026</color>
+    <color name="dashboard_cat_purple_border">#FF303A6E</color>
+
+    <!-- Header avatar / settings wells -->
+    <color name="dashboard_well">#FF16305A</color>
+    <color name="dashboard_well_border">#FF2A4A7A</color>
 </resources>

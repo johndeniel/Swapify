@@ -11,11 +11,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.akin.wallet.fragment.BankCardsFragment;
+import com.akin.wallet.fragment.DashboardFragment;
 import com.akin.wallet.fragment.IdentificationFragment;
 import com.akin.wallet.fragment.SocialLoginsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
+
+    private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         hideSystemNavigation();
         if (savedInstanceState == null) {
-            loadFragment(new IdentificationFragment());
+            loadFragment(new DashboardFragment());
         }
         setupBottomNav();
     }
@@ -38,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void hideSystemNavigation() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        getWindow().setStatusBarColor(getColor(R.color.dark_bg));
+        getWindow().setStatusBarColor(getColor(R.color.dashboard_bg_start));
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowInsetsController controller = getWindow().getInsetsController();
@@ -57,23 +60,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBottomNav() {
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        bottomNav = findViewById(R.id.bottom_nav);
 
         bottomNav.setOnItemSelectedListener(item -> {
-            Fragment fragment = null;
-            int id = item.getItemId();
-            if (id == R.id.nav_id) {
-                fragment = new IdentificationFragment();
-            } else if (id == R.id.nav_bank) {
-                fragment = new BankCardsFragment();
-            } else if (id == R.id.nav_login) {
-                fragment = new SocialLoginsFragment();
-            }
+            Fragment fragment = fragmentFor(item.getItemId());
             if (fragment != null) {
                 loadFragment(fragment);
             }
             return true;
         });
+    }
+
+    /** Dashboard cards/rows call this to switch tabs. */
+    public void navigateToTab(int itemId) {
+        Fragment fragment = fragmentFor(itemId);
+        if (fragment == null) {
+            return;
+        }
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(itemId);
+        } else {
+            loadFragment(fragment);
+        }
+    }
+
+    private Fragment fragmentFor(int id) {
+        if (id == R.id.nav_home) {
+            return new DashboardFragment();
+        } else if (id == R.id.nav_id) {
+            return new IdentificationFragment();
+        } else if (id == R.id.nav_bank) {
+            return new BankCardsFragment();
+        } else if (id == R.id.nav_login) {
+            return new SocialLoginsFragment();
+        }
+        return null;
     }
 
     private void loadFragment(Fragment fragment) {

@@ -14,9 +14,10 @@
     <string name="app_name">Akin Wallet</string>
 
     <!-- Bottom navigation tabs (short labels) -->
+    <string name="tab_home">Home</string>
     <string name="tab_ids">IDs</string>
     <string name="tab_cards">Cards</string>
-    <string name="tab_social">Social</string>
+    <string name="tab_social">Logins</string>
 
     <!-- Section headers -->
     <!-- 1. Government IDs -->
