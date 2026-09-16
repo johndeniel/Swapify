@@ -347,7 +347,7 @@ public final class IdTypeSpec {
                         R.color.dl_ink, R.color.dl_accent, R.color.dl_bar,
                         R.color.dl_ink, R.color.dl_muted,
                         R.color.dl_ink, R.color.dl_muted,
-                        R.color.photo_bg_neutral, R.color.dl_bar, R.color.dl_ink);
+                        R.color.photo_bg_dl, R.color.dl_bar, R.color.dl_ink);
             }
             if (t.equalsIgnoreCase(TYPE_PASSPORT)) {
                 return new FaceScheme(
@@ -355,7 +355,7 @@ public final class IdTypeSpec {
                         R.color.passport_ink, R.color.passport_muted, R.color.passport_rule,
                         R.color.passport_ink, R.color.passport_muted,
                         R.color.passport_ink, R.color.passport_muted,
-                        R.color.photo_bg_neutral, R.color.passport_rule,
+                        R.color.photo_bg_passport, R.color.passport_rule,
                         R.color.photo_icon_passport);
             }
             if (t.equalsIgnoreCase(TYPE_SSS)) {
@@ -364,7 +364,7 @@ public final class IdTypeSpec {
                         R.color.text_primary, R.color.sss_muted, R.color.sss_muted,
                         R.color.text_primary, R.color.sss_muted,
                         R.color.text_primary, R.color.sss_muted,
-                        R.color.photo_bg_neutral, R.color.sss_muted, R.color.sss_bg_end);
+                        R.color.photo_bg_sss, R.color.sss_bg_start, R.color.sss_bg_end);
             }
             if (t.equalsIgnoreCase(TYPE_PHILHEALTH)) {
                 return new FaceScheme(
@@ -372,7 +372,7 @@ public final class IdTypeSpec {
                         R.color.philhealth_ink, R.color.philhealth_muted, R.color.philhealth_rule,
                         R.color.philhealth_ink, R.color.philhealth_muted,
                         R.color.philhealth_ink, R.color.philhealth_muted,
-                        R.color.photo_bg_neutral, R.color.philhealth_rule,
+                        R.color.photo_bg_philhealth, R.color.philhealth_rule,
                         R.color.philhealth_ink);
             }
             if (t.equalsIgnoreCase(TYPE_TIN)) {
@@ -381,7 +381,7 @@ public final class IdTypeSpec {
                         R.color.tin_ink, R.color.tin_muted, R.color.tin_rule,
                         R.color.tin_ink, R.color.tin_muted,
                         R.color.tin_ink, R.color.tin_muted,
-                        R.color.photo_bg_neutral, R.color.tin_rule, R.color.tin_ink);
+                        R.color.photo_bg_tin, R.color.tin_rule, R.color.tin_ink);
             }
         }
         return new FaceScheme(
@@ -389,7 +389,7 @@ public final class IdTypeSpec {
                 R.color.national_ink, R.color.national_muted, R.color.national_rule,
                 R.color.national_ink, R.color.national_muted,
                 R.color.national_ink, R.color.national_muted,
-                R.color.photo_bg_neutral, R.color.national_rule, R.color.national_ink);
+                R.color.photo_bg_national, R.color.national_rule, R.color.national_ink);
     }
 
     /** Footer line for the collapsed preview, per type. Never null. */

@@ -45,17 +45,17 @@
     <!-- Hairline for light document faces (dark ink at low alpha) -->
     <color name="id_edge_on_light">#2B1A2E4D</color>
 
-    <!-- Square photo-well tints: one neutral photo paper shared by all
-         faces for consistency; each face keeps its own ink for the
-         well border + icon so identity is preserved. -->
+    <!-- Photo wells: each face tints the well with its own hue at
+         photo-paper lightness (~90%), framed by the face mid-tone and
+         stamped with the face ink — one monochromatic family per card. -->
     <color name="photo_bg_neutral">#FFE9EEF3</color>
-    <color name="photo_bg_national">#FFD9E3F0</color>
-    <color name="photo_bg_dl">#FFD2DFF0</color>
-    <color name="photo_bg_passport">#FFEFD3C6</color>
+    <color name="photo_bg_national">#FFDCE6F2</color>
+    <color name="photo_bg_dl">#FFD9DDF2</color>
+    <color name="photo_bg_passport">#FFF0D9CE</color>
     <color name="photo_icon_passport">#FF5C1F2E</color>
-    <color name="photo_bg_sss">#FFD8E5F7</color>
-    <color name="photo_bg_philhealth">#FFCFE8D6</color>
-    <color name="photo_bg_tin">#FFF1DFB4</color>
+    <color name="photo_bg_sss">#FFD5E3F7</color>
+    <color name="photo_bg_philhealth">#FFD6EBDD</color>
+    <color name="photo_bg_tin">#FFF3E3BC</color>
 
     <!-- Bank card gradients (one ramp per card colorway) -->
     <color name="card_blue_start">#FF0A1F44</color>
@@ -97,7 +97,7 @@
 
     <!-- SSS face (corporate blue document, white ink) -->
     <color name="sss_bg_start">#FF1463B4</color>
-    <color name="sss_bg_center">#FF1F6FD6</color>
+    <color name="sss_bg_center">#FF1B5FC4</color>
     <color name="sss_bg_end">#FF071E49</color>
     <color name="sss_muted">#FFB4C8E8</color>
 
@@ -111,14 +111,14 @@
     <color name="tin_bg_center">#FFF0DCAC</color>
     <color name="tin_bg_end">#FFD9B87E</color>
     <color name="tin_ink">#FF4A2F1B</color>
-    <color name="tin_muted">#FF7D6242</color>
+    <color name="tin_muted">#FF6B5433</color>
     <color name="tin_rule">#FF6E5636</color>
     <color name="philhealth_ink">#FF005C36</color>
-    <color name="philhealth_muted">#FF5E8473</color>
+    <color name="philhealth_muted">#FF4E7263</color>
     <color name="philhealth_rule">#FF006B3F</color>
     <color name="dl_bar">#FF5B4FA3</color>
     <color name="dl_ink">#FF2B2545</color>
-    <color name="dl_muted">#FF7A7396</color>
+    <color name="dl_muted">#FF5F5878</color>
     <color name="dl_accent">#FF4A3F7A</color>
 
     <!-- ============================================================
