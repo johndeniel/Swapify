@@ -3,21 +3,26 @@
      Akin Wallet — Dashboard (Home).
       New overhaul layout matching the MyKey reference:
        professional header, Recent Access,
-      Your Wallet gradient rows. Loaded by DashboardFragment,
+      Your Wallet gradient rows, circular quick-add FAB. Loaded by DashboardFragment,
      hosted in MainActivity's fragment_container.
      activity_main.xml is untouched in structure (kept).
      ============================================================ -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/dashboard_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_dashboard_root"
-    android:orientation="vertical"
-    android:paddingStart="20dp"
-    android:paddingEnd="20dp"
-    android:paddingTop="16dp"
-    android:paddingBottom="16dp">
+    android:background="@drawable/bg_dashboard_root">
+
+        <!-- Fixed dashboard content (not scrollable); FAB floats over it, no reserved gap -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
 
         <!-- Akin Wallet header: app wordmark + trust tagline.
              Transparent so the dashboard navy theme shows through (no banner card). -->
@@ -404,4 +409,75 @@
 
         </LinearLayout>
 
-</LinearLayout>
+        </LinearLayout>
+
+    <!-- Scrim: dims content while the quick-add menu is open; tap closes the menu -->
+    <View
+        android:id="@+id/fab_scrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/text_shadow"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone" />
+
+    <!-- M3 FAB menu: tonal pills (theme container, light label, blue icon),
+         equal widths, trailing-edge aligned, 4dp FAB-to-menu gap. -->
+    <LinearLayout
+        android:id="@+id/fab_add_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="76dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fab_option_id"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginBottom="8dp"
+            android:text="@string/dialog_id_title" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fab_option_card"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginBottom="8dp"
+            android:text="@string/dialog_bank_title" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fab_option_login"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="@string/dialog_social_title" />
+
+    </LinearLayout>
+
+    <!-- FAB menu close button: true circle via shape overlay (cornerSize is
+         ignored by FAB), no compat padding so the 56dp visual sits exactly
+         on the 16dp margins and clears the menu above it. -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/fab_add"
+        android:src="@drawable/ic_add"
+        app:backgroundTint="?attr/colorPrimary"
+        app:elevation="8dp"
+        app:fabSize="normal"
+        app:pressedTranslationZ="12dp"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Circle"
+        app:tint="@color/white" />
+
+</FrameLayout>

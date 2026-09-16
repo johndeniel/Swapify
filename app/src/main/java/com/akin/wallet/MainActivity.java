@@ -19,6 +19,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
+    private boolean pendingOpenAdd = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +66,12 @@ public class MainActivity extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             Fragment fragment = fragmentFor(item.getItemId());
             if (fragment != null) {
+                if (pendingOpenAdd) {
+                    Bundle args = new Bundle();
+                    args.putBoolean("open_add", true);
+                    fragment.setArguments(args);
+                    pendingOpenAdd = false;
+                }
                 loadFragment(fragment);
             }
             return true;
@@ -73,13 +80,32 @@ public class MainActivity extends AppCompatActivity {
 
     /** Dashboard cards/rows call this to switch tabs. */
     public void navigateToTab(int itemId) {
+        navigateToTab(itemId, false);
+    }
+
+    /** Dashboard quick-add menu calls this to switch tabs and auto-open the add sheet. */
+    public void navigateToTab(int itemId, boolean openAdd) {
         Fragment fragment = fragmentFor(itemId);
         if (fragment == null) {
             return;
         }
-        if (bottomNav != null) {
+        if (bottomNav != null && bottomNav.getSelectedItemId() == itemId) {
+            // Re-selecting the active tab doesn't retrigger the listener.
+            if (openAdd) {
+                Bundle args = new Bundle();
+                args.putBoolean("open_add", true);
+                fragment.setArguments(args);
+            }
+            loadFragment(fragment);
+        } else if (bottomNav != null) {
+            pendingOpenAdd = openAdd;
             bottomNav.setSelectedItemId(itemId);
         } else {
+            if (openAdd) {
+                Bundle args = new Bundle();
+                args.putBoolean("open_add", true);
+                fragment.setArguments(args);
+            }
             loadFragment(fragment);
         }
     }

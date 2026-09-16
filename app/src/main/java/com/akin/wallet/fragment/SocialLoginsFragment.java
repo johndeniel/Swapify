@@ -86,6 +86,12 @@ public class SocialLoginsFragment extends Fragment {
         });
 
         view.findViewById(R.id.btn_add).setOnClickListener(v -> showAddLoginDialog());
+
+        Bundle args = getArguments();
+        if (args != null && args.getBoolean("open_add", false)) {
+            args.remove("open_add");
+            view.post(this::showAddLoginDialog);
+        }
     }
 
     private void showDeleteConfirmation(CredentialItem item) {

@@ -68,6 +68,12 @@ public class IdentificationFragment extends Fragment {
         recyclerCards.setAdapter(cardAdapter);
 
         view.findViewById(R.id.btn_add).setOnClickListener(v -> showCardDialog(null));
+
+        Bundle args = getArguments();
+        if (args != null && args.getBoolean("open_add", false)) {
+            args.remove("open_add");
+            view.post(() -> showCardDialog(null));
+        }
     }
 
     @Override

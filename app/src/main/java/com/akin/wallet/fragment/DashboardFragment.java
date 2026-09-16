@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +23,7 @@ import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
@@ -46,6 +48,10 @@ public class DashboardFragment extends Fragment {
     private DashboardLoginAdapter loginAdapter;
     private RecyclerView recyclerRecentLogins;
     private View emptyLogins;
+    private FloatingActionButton fabAdd;
+    private View fabAddMenu;
+    private View fabScrim;
+    private boolean isFabMenuOpen = false;
 
     @Nullable
     @Override
@@ -62,6 +68,7 @@ public class DashboardFragment extends Fragment {
         setupCardCarousel(view);
         setupIdsCarousel(view);
         setupRecentLogins(view);
+        setupAddMenu(view);
 
         view.findViewById(R.id.btn_view_all_cards).setOnClickListener(v -> goTo(R.id.nav_bank));
         view.findViewById(R.id.btn_view_all_ids).setOnClickListener(v -> goTo(R.id.nav_id));
@@ -79,6 +86,87 @@ public class DashboardFragment extends Fragment {
     private void goTo(int navId) {
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).navigateToTab(navId);
+        }
+    }
+
+    /** Extended FAB: round main button expanding the 3-option menu above it. */
+    private void setupAddMenu(@NonNull View view) {
+        fabAdd = view.findViewById(R.id.fab_add);
+        fabAddMenu = view.findViewById(R.id.fab_add_menu);
+        fabScrim = view.findViewById(R.id.fab_scrim);
+        if (fabAdd == null) {
+            return;
+        }
+        fabAdd.setOnClickListener(v -> toggleAddMenu());
+        if (fabScrim != null) {
+            fabScrim.setOnClickListener(v -> {
+                if (isFabMenuOpen) {
+                    toggleAddMenu();
+                }
+            });
+        }
+        view.findViewById(R.id.fab_option_id).setOnClickListener(v -> addNew(R.id.nav_id));
+        view.findViewById(R.id.fab_option_card).setOnClickListener(v -> addNew(R.id.nav_bank));
+        view.findViewById(R.id.fab_option_login).setOnClickListener(v -> addNew(R.id.nav_login));
+    }
+
+    private void toggleAddMenu() {
+        isFabMenuOpen = !isFabMenuOpen;
+        if (fabAddMenu != null) {
+            if (isFabMenuOpen) {
+                fabAddMenu.setVisibility(View.VISIBLE);
+                playMenuEntrance();
+            } else {
+                cancelMenuEntrance();
+                fabAddMenu.setVisibility(View.GONE);
+            }
+        }
+        if (fabScrim != null) {
+            fabScrim.setVisibility(isFabMenuOpen ? View.VISIBLE : View.GONE);
+        }
+        if (fabAdd != null) {
+            fabAdd.setImageResource(isFabMenuOpen ? R.drawable.ic_close : R.drawable.ic_add);
+        }
+    }
+
+    /** Staggered fade/rise entrance, top item first (M3 FAB menu motion). */
+    private void playMenuEntrance() {
+        if (!(fabAddMenu instanceof ViewGroup)) {
+            return;
+        }
+        ViewGroup menu = (ViewGroup) fabAddMenu;
+        float rise = dp(10);
+        for (int i = 0; i < menu.getChildCount(); i++) {
+            View child = menu.getChildAt(i);
+            child.setAlpha(0f);
+            child.setTranslationY(rise);
+            child.animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setStartDelay(i * 45L)
+                    .setDuration(180L)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .start();
+        }
+    }
+
+    private void cancelMenuEntrance() {
+        if (!(fabAddMenu instanceof ViewGroup)) {
+            return;
+        }
+        ViewGroup menu = (ViewGroup) fabAddMenu;
+        for (int i = 0; i < menu.getChildCount(); i++) {
+            View child = menu.getChildAt(i);
+            child.animate().cancel();
+            child.setAlpha(1f);
+            child.setTranslationY(0f);
+        }
+    }
+
+    /** Jump to a tab and auto-open its add sheet. */
+    private void addNew(int navId) {
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).navigateToTab(navId, true);
         }
     }
 

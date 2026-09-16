@@ -16,6 +16,12 @@
         <item name="android:color">@color/brand_blue</item>
     </style>
 
+    <!-- True-circle overlay for the dashboard FAB (M3 default is a squircle). -->
+    <style name="ShapeAppearanceOverlay.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
     <!-- Shared government-ID face header. Sizes, tracking and rhythm live
          here so all 6 faces stay identical; each face sets only its text,
          ink colors and rule color. Title is the single bold anchor;

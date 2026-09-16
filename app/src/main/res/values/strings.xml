@@ -16,6 +16,9 @@
     <!-- Dashboard header -->
     <string name="header_tagline">Offline  •  Private  •  Secure</string>
 
+    <!-- Dashboard quick-add FAB -->
+    <string name="fab_add">Add</string>
+
     <!-- Bottom navigation tabs (short labels) -->
     <string name="tab_home">Home</string>
     <string name="tab_ids">IDs</string>
