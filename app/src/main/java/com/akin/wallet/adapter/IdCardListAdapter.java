@@ -93,14 +93,18 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         holder.previewNumber.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : "—");
         holder.previewNumber.setTextColor(colorOf(holder, scheme.numberColorRes));
+        if (holder.barcode != null) {
+            holder.barcode.setBarColor(colorOf(holder, scheme.numberColorRes));
+        }
         String birth = fields.get("birth_date");
         holder.dob.setText(birth != null && !birth.trim().isEmpty() ? birth.trim() : "—");
         holder.dob.setTextColor(colorOf(holder, scheme.numberColorRes));
         holder.dobLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
-        String meta = IdTypeSpec.buildPreviewMeta(spec, fields);
-        holder.previewMeta.setText(meta);
-        holder.previewMeta.setTextColor(colorOf(holder, scheme.metaColorRes));
-        holder.previewMeta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
+        IdTypeSpec.FaceExtra extra = IdTypeSpec.faceExtra(item.getIdType(), fields);
+        holder.expiryLabel.setText(extra.label);
+        holder.expiry.setText(extra.value);
+        holder.expiry.setTextColor(colorOf(holder, scheme.numberColorRes));
+        holder.expiryLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
 
         // Square photo well adopts the card: tinted fill + border + icon.
         android.graphics.drawable.GradientDrawable photoBg =
@@ -221,9 +225,11 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         TextView previewHolder;
         TextView previewNumberLabel;
         TextView previewNumber;
-        TextView previewMeta;
+        com.akin.wallet.widget.BarcodeView barcode;
         TextView dob;
         TextView dobLabel;
+        TextView expiry;
+        TextView expiryLabel;
         View photoBox;
         ImageView photoIcon;
         LinearLayout expandedSection;
@@ -242,9 +248,11 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
             previewHolder = itemView.findViewById(R.id.preview_holder);
             previewNumberLabel = itemView.findViewById(R.id.preview_number_label);
             previewNumber = itemView.findViewById(R.id.preview_number);
-            previewMeta = itemView.findViewById(R.id.preview_meta);
+            barcode = itemView.findViewById(R.id.preview_barcode);
             dob = itemView.findViewById(R.id.preview_dob);
             dobLabel = itemView.findViewById(R.id.preview_dob_label);
+            expiry = itemView.findViewById(R.id.preview_expiry);
+            expiryLabel = itemView.findViewById(R.id.preview_expiry_label);
             photoBox = itemView.findViewById(R.id.preview_photo_box);
             photoIcon = itemView.findViewById(R.id.preview_photo_icon);
             expandedSection = itemView.findViewById(R.id.expanded_section);

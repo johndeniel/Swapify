@@ -392,6 +392,43 @@ public final class IdTypeSpec {
                 R.color.photo_bg_national, R.color.national_rule, R.color.national_ink);
     }
 
+    /** Card-face address line: street address, or place of birth for
+     *  types without one (Passport). Never null — "—" when unset. */
+    public static String faceAddress(Map<String, String> fields) {
+        Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
+        String[] keys = {"present_address", "address", "place_of_birth"};
+        for (String key : keys) {
+            String v = safe.get(key);
+            if (v != null && !v.trim().isEmpty()) {
+                return v.trim();
+            }
+        }
+        return "—";
+    }
+
+    /** Fourth face slot: the holder's sex, beside date of birth. */
+    public static class FaceExtra {
+        public final String label;
+        public final String value;
+
+        FaceExtra(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+    }
+
+    public static FaceExtra faceExtra(String typeName, Map<String, String> fields) {
+        Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
+        return new FaceExtra("SEX", orDash(safe.get("sex")));
+    }
+
+    private static String orDash(String s) {
+        if (s == null || s.trim().isEmpty()) {
+            return "—";
+        }
+        return s.trim();
+    }
+
     /** Footer line for the collapsed preview, per type. Never null. */
     public static String buildPreviewMeta(IdType type, Map<String, String> fields) {
         Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();

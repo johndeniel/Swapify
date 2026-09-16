@@ -92,6 +92,9 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         holder.number.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : "—");
         holder.number.setTextColor(colorOf(holder, scheme.numberColorRes));
+        if (holder.barcode != null) {
+            holder.barcode.setBarColor(colorOf(holder, scheme.numberColorRes));
+        }
         String birth = pageFields.get("birth_date");
         if (holder.dob != null) {
             holder.dob.setText(birth != null && !birth.trim().isEmpty() ? birth.trim() : "—");
@@ -100,10 +103,15 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         if (holder.dobLabel != null) {
             holder.dobLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
         }
-        String meta = IdTypeSpec.buildPreviewMeta(spec, pageFields);
-        holder.meta.setText(meta);
-        holder.meta.setTextColor(colorOf(holder, scheme.metaColorRes));
-        holder.meta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
+        IdTypeSpec.FaceExtra extra = IdTypeSpec.faceExtra(pageType, pageFields);
+        if (holder.expiryLabel != null) {
+            holder.expiryLabel.setText(extra.label);
+            holder.expiryLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
+        }
+        if (holder.expiry != null) {
+            holder.expiry.setText(extra.value);
+            holder.expiry.setTextColor(colorOf(holder, scheme.numberColorRes));
+        }
 
         // Square photo well adopts the card: tinted fill + border + icon.
         android.graphics.drawable.GradientDrawable photoBg =
@@ -140,9 +148,11 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         TextView holder;
         TextView numberLabel;
         TextView number;
-        TextView meta;
+        com.akin.wallet.widget.BarcodeView barcode;
         TextView dob;
         TextView dobLabel;
+        TextView expiry;
+        TextView expiryLabel;
         View photoBox;
         ImageView photoIcon;
 
@@ -157,9 +167,11 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
             holder = itemView.findViewById(R.id.preview_holder);
             numberLabel = itemView.findViewById(R.id.preview_number_label);
             number = itemView.findViewById(R.id.preview_number);
-            meta = itemView.findViewById(R.id.preview_meta);
+            barcode = itemView.findViewById(R.id.preview_barcode);
             dob = itemView.findViewById(R.id.preview_dob);
             dobLabel = itemView.findViewById(R.id.preview_dob_label);
+            expiry = itemView.findViewById(R.id.preview_expiry);
+            expiryLabel = itemView.findViewById(R.id.preview_expiry_label);
             photoBox = itemView.findViewById(R.id.preview_photo_box);
             photoIcon = itemView.findViewById(R.id.preview_photo_icon);
         }

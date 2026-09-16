@@ -4,10 +4,10 @@
 <!-- Per-type identity (background, ink, titles, numbers, photo-well tint) -->
 <!-- is bound in code from IdTypeSpec; only structure lives here. -->
 <!-- Title header on top, rule, then a document-style row: rounded photo -->
-<!-- well left with the identity data stacked right, meta anchored bottom -->
-<!-- end. The eyebrow line is retired (gone) — the subtitle carries the -->
-<!-- agency. The photo is static decor: it never changes, only its tint -->
-<!-- adapts to the card. Ratio 1.586:1. -->
+<!-- well left with the identity data stacked right (name, number, date -->
+<!-- of birth, address, expiry). The eyebrow line is retired (gone) — the -->
+<!-- subtitle carries the agency. The photo is static decor: it never -->
+<!-- changes, only its tint adapts to the card. Ratio 1.586:1. -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -72,35 +72,51 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <!-- Photo + identity data: document-style photo left, data right. -->
+            <!-- Photo + identity data: portrait photo left, compact data
+                 grid right (name, number, then date-of-birth/expiry pair,
+                 then address). Short date fields share one row so the
+                 fixed-height face never overflows. -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="6dp"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="top">
 
-                <FrameLayout
-                    android:id="@+id/preview_photo_box"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:elevation="2dp"
-                    android:background="@drawable/bg_id_photo_placeholder">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-                    <ImageView
-                        android:id="@+id/preview_photo_icon"
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_person"
-                        android:contentDescription="@string/cd_id_photo" />
+                    <FrameLayout
+                        android:id="@+id/preview_photo_box"
+                        android:layout_width="46dp"
+                        android:layout_height="60dp"
+                        android:elevation="2dp"
+                        android:background="@drawable/bg_id_photo_placeholder">
 
-                </FrameLayout>
+                        <ImageView
+                            android:id="@+id/preview_photo_icon"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_person"
+                            android:contentDescription="@string/cd_id_photo" />
+
+                    </FrameLayout>
+
+                    <com.akin.wallet.widget.BarcodeView
+                        android:id="@+id/preview_barcode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="8dp"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
+                    android:layout_marginStart="12dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -110,7 +126,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/preview_person_label"
                         android:textColor="@color/national_muted"
-                        android:textSize="8sp"
+                        android:textSize="7sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.26"
                         android:maxLines="1"
@@ -123,21 +139,99 @@
                         android:layout_marginTop="2dp"
                         android:text="@string/preview_person_name"
                         android:textColor="@color/national_ink"
-                        android:textSize="15sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.02"
                         android:maxLines="1"
                         android:singleLine="true"
                         android:ellipsize="end" />
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="horizontal"
+                        android:gravity="top">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:paddingEnd="8dp">
+
+                            <TextView
+                                android:id="@+id/preview_dob_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="DATE OF BIRTH"
+                                android:textColor="@color/national_muted"
+                                android:textSize="7sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.26"
+                                android:maxLines="1"
+                                android:singleLine="true" />
+
+                            <TextView
+                                android:id="@+id/preview_dob"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/empty_value"
+                                android:textColor="@color/national_ink"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.04"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:ellipsize="end" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/preview_expiry_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="EXPIRY DATE"
+                                android:textColor="@color/national_muted"
+                                android:textSize="7sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.26"
+                                android:maxLines="1"
+                                android:singleLine="true" />
+
+                            <TextView
+                                android:id="@+id/preview_expiry"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/empty_value"
+                                android:textColor="@color/national_ink"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.04"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:ellipsize="end" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
                     <TextView
                         android:id="@+id/preview_number_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="6dp"
                         android:text="@string/preview_number_label"
                         android:textColor="@color/national_muted"
-                        android:textSize="8sp"
+                        android:textSize="7sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.26"
                         android:maxLines="1"
@@ -150,36 +244,9 @@
                         android:layout_marginTop="2dp"
                         android:text="@string/empty_value"
                         android:textColor="@color/national_ink"
-                        android:textSize="12sp"
+                        android:textSize="10sp"
                         android:textStyle="bold"
                         android:fontFamily="monospace"
-                        android:letterSpacing="0.04"
-                        android:maxLines="1"
-                        android:singleLine="true"
-                        android:ellipsize="end" />
-
-                    <TextView
-                        android:id="@+id/preview_dob_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="DATE OF BIRTH"
-                        android:textColor="@color/national_muted"
-                        android:textSize="8sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.26"
-                        android:maxLines="1"
-                        android:singleLine="true" />
-
-                    <TextView
-                        android:id="@+id/preview_dob"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/empty_value"
-                        android:textColor="@color/national_ink"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
                         android:letterSpacing="0.04"
                         android:maxLines="1"
                         android:singleLine="true"
@@ -193,23 +260,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/preview_meta"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_gravity="bottom"
-                android:gravity="end"
-                android:maxWidth="160dp"
-                android:textColor="@color/national_muted"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.05"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:ellipsize="end" />
-
         </LinearLayout>
 
     </FrameLayout>

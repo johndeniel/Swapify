@@ -86,9 +86,11 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
         holder.holder.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10);
         holder.previewType.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
         holder.subtitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
-        holder.number.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10);
-        holder.holderLabel.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
-        holder.numberLabel.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
+        holder.number.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9);
+        compactLabel(holder, holder.holderLabel, scheme.numberLabelColorRes);
+        compactLabel(holder, holder.numberLabel, scheme.numberLabelColorRes);
+        compactLabel(holder, holder.dobLabel, scheme.numberLabelColorRes);
+        compactLabel(holder, holder.expiryLabel, scheme.numberLabelColorRes);
         // Dashboard-only: less space above the header so the face shifts up.
         android.view.View faceContent = (android.view.View) holder.previewType.getParent();
         if (faceContent != null) {
@@ -97,7 +99,7 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
                     faceContent.getPaddingStart(),
                     (int) (6 * cdh),
                     faceContent.getPaddingEnd(),
-                    (int) (8 * cdh));
+                    (int) (6 * cdh));
         }
         // Dashboard-only: tighter title -> description -> rule stack.
         float dh = holder.itemView.getResources().getDisplayMetrics().density;
@@ -117,17 +119,18 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
         holder.number.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : "—");
         holder.number.setTextColor(colorOf(holder, scheme.numberColorRes));
+        if (holder.barcode != null) {
+            holder.barcode.setBarColor(colorOf(holder, scheme.numberColorRes));
+        }
         String dobValue = fields.get("birth_date");
         holder.dob.setText(dobValue != null && !dobValue.trim().isEmpty() ? dobValue.trim() : "—");
         holder.dob.setTextColor(colorOf(holder, scheme.numberColorRes));
-        holder.dob.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10);
-        holder.dobLabel.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
-        holder.dobLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
-        String expDate = fields.get("expiry_date") != null ? fields.get("expiry_date").trim() : "";
-        String meta = expDate.isEmpty() ? "" : "EXP " + expDate;
-        holder.meta.setText(meta);
-        holder.meta.setTextColor(colorOf(holder, scheme.metaColorRes));
-        holder.meta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
+        holder.dob.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9);
+        IdTypeSpec.FaceExtra extra = IdTypeSpec.faceExtra(item.getIdType(), fields);
+        holder.expiryLabel.setText(extra.label);
+        holder.expiry.setText(extra.value);
+        holder.expiry.setTextColor(colorOf(holder, scheme.numberColorRes));
+        holder.expiry.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9);
 
         android.graphics.drawable.GradientDrawable photoBg =
                 (android.graphics.drawable.GradientDrawable) holder.photoBox.getBackground().mutate();
@@ -154,7 +157,9 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
             holder.photoIcon.setLayoutParams(iconLp);
         }
         // Dashboard-only: tighter gap above the avatar row.
-        android.view.View photoRow = (android.view.View) holder.photoBox.getParent();
+        android.view.View photoCol = (android.view.View) holder.photoBox.getParent();
+        android.view.View photoRow = photoCol != null
+                ? (android.view.View) photoCol.getParent() : null;
         if (photoRow != null) {
             android.view.ViewGroup.LayoutParams rowLp = photoRow.getLayoutParams();
             if (rowLp instanceof android.view.ViewGroup.MarginLayoutParams) {
@@ -180,6 +185,25 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
         return items.size();
     }
 
+    /** Dashboard-only micro-label: 6sp, tight gap, face-muted ink. */
+    private void compactLabel(IdViewHolder holder, TextView label, int colorRes) {
+        if (label == null) {
+            return;
+        }
+        label.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 6);
+        label.setTextColor(colorOf(holder, colorRes));
+        android.view.ViewGroup.LayoutParams lp = label.getLayoutParams();
+        if (lp instanceof android.view.ViewGroup.MarginLayoutParams) {
+            android.view.ViewGroup.MarginLayoutParams mlp =
+                    (android.view.ViewGroup.MarginLayoutParams) lp;
+            if (mlp.topMargin > 0) {
+                mlp.topMargin = (int) (3 * holder.itemView.getResources()
+                        .getDisplayMetrics().density);
+                label.setLayoutParams(lp);
+            }
+        }
+    }
+
     private static int colorOf(IdViewHolder holder, int res) {
         return holder.itemView.getResources().getColor(res, null);
     }
@@ -194,9 +218,11 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
         TextView holder;
         TextView numberLabel;
         TextView number;
-        TextView meta;
+        com.akin.wallet.widget.BarcodeView barcode;
         TextView dob;
         TextView dobLabel;
+        TextView expiry;
+        TextView expiryLabel;
         FrameLayout photoBox;
         ImageView photoIcon;
 
@@ -211,9 +237,11 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
             holder = itemView.findViewById(R.id.preview_holder);
             numberLabel = itemView.findViewById(R.id.preview_number_label);
             number = itemView.findViewById(R.id.preview_number);
-            meta = itemView.findViewById(R.id.preview_meta);
+            barcode = itemView.findViewById(R.id.preview_barcode);
             dob = itemView.findViewById(R.id.preview_dob);
             dobLabel = itemView.findViewById(R.id.preview_dob_label);
+            expiry = itemView.findViewById(R.id.preview_expiry);
+            expiryLabel = itemView.findViewById(R.id.preview_expiry_label);
             photoBox = itemView.findViewById(R.id.preview_photo_box);
             photoIcon = itemView.findViewById(R.id.preview_photo_icon);
         }
