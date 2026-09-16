@@ -13,6 +13,9 @@
     <!-- App identity -->
     <string name="app_name">Akin Wallet</string>
 
+    <!-- Dashboard header -->
+    <string name="header_tagline">Offline  •  Private  •  Secure</string>
+
     <!-- Bottom navigation tabs (short labels) -->
     <string name="tab_home">Home</string>
     <string name="tab_ids">IDs</string>
@@ -110,6 +113,7 @@
     <string name="detail_row_label">Label</string>
 
     <!-- Content descriptions (accessibility) -->
+    <string name="cd_notifications">Notifications</string>
     <string name="cd_search">Search</string>
     <string name="cd_add_account">Add account</string>
     <string name="cd_link_account">Link</string>

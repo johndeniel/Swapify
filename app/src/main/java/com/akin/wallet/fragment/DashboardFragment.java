@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,10 +47,6 @@ public class DashboardFragment extends Fragment {
     private RecyclerView recyclerRecentLogins;
     private View emptyLogins;
 
-    private TextView txtIdsCount;
-    private TextView txtCardsCount;
-    private TextView txtLoginsCount;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -65,26 +59,13 @@ public class DashboardFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         dbHelper = new AppDatabaseHelper(requireContext());
 
-        txtIdsCount = view.findViewById(R.id.txt_ids_count);
-        txtCardsCount = view.findViewById(R.id.txt_cards_count);
-        txtLoginsCount = view.findViewById(R.id.txt_logins_count);
-
         setupCardCarousel(view);
         setupIdsCarousel(view);
         setupRecentLogins(view);
 
-        view.findViewById(R.id.card_ids).setOnClickListener(v -> goTo(R.id.nav_id));
-        view.findViewById(R.id.card_bank).setOnClickListener(v -> goTo(R.id.nav_bank));
-        view.findViewById(R.id.card_social).setOnClickListener(v -> goTo(R.id.nav_login));
-
         view.findViewById(R.id.btn_view_all_cards).setOnClickListener(v -> goTo(R.id.nav_bank));
         view.findViewById(R.id.btn_view_all_ids).setOnClickListener(v -> goTo(R.id.nav_id));
         view.findViewById(R.id.btn_view_all_logins).setOnClickListener(v -> goTo(R.id.nav_login));
-
-        view.findViewById(R.id.banner_privacy).setOnClickListener(v ->
-                Toast.makeText(requireContext(),
-                        "Offline-first: your data never leaves this device",
-                        Toast.LENGTH_SHORT).show());
 
         refreshDashboard();
     }
@@ -212,20 +193,12 @@ public class DashboardFragment extends Fragment {
     }
 
     private void refreshDashboard() {
-        if (dbHelper == null || txtIdsCount == null) {
+        if (dbHelper == null) {
             return;
         }
         List<IdCardItem> ids = dbHelper.getAllIdCards();
         List<BankCardItem> cards = dbHelper.getAllBankCards();
         List<CredentialItem> logins = dbHelper.getAllLogins();
-
-        String idsText = ids.size() + (ids.size() == 1 ? " item" : " items");
-        String cardsText = cards.size() + (cards.size() == 1 ? " item" : " items");
-        String loginsText = logins.size() + (logins.size() == 1 ? " item" : " items");
-
-        txtIdsCount.setText(idsText);
-        txtCardsCount.setText(cardsText);
-        txtLoginsCount.setText(loginsText);
 
         refreshCardCarousel(cards);
         refreshIdsCarousel(ids);
