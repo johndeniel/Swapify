@@ -83,13 +83,48 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
         holder.rule.setBackgroundColor(colorOf(holder, scheme.ruleColorRes));
         holder.holderLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
         holder.holder.setText(IdTypeSpec.displayName(spec, fields));
+        holder.holder.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10);
+        holder.previewType.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
+        holder.subtitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
+        holder.number.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10);
+        holder.holderLabel.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
+        holder.numberLabel.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
+        // Dashboard-only: less space above the header so the face shifts up.
+        android.view.View faceContent = (android.view.View) holder.previewType.getParent();
+        if (faceContent != null) {
+            float cdh = holder.itemView.getResources().getDisplayMetrics().density;
+            faceContent.setPadding(
+                    faceContent.getPaddingStart(),
+                    (int) (6 * cdh),
+                    faceContent.getPaddingEnd(),
+                    (int) (8 * cdh));
+        }
+        // Dashboard-only: tighter title -> description -> rule stack.
+        float dh = holder.itemView.getResources().getDisplayMetrics().density;
+        android.view.ViewGroup.LayoutParams subLp = holder.subtitle.getLayoutParams();
+        if (subLp instanceof android.view.ViewGroup.MarginLayoutParams) {
+            ((android.view.ViewGroup.MarginLayoutParams) subLp).topMargin = (int) (1 * dh);
+            holder.subtitle.setLayoutParams(subLp);
+        }
+        android.view.ViewGroup.LayoutParams ruleLp = holder.rule.getLayoutParams();
+        if (ruleLp instanceof android.view.ViewGroup.MarginLayoutParams) {
+            ((android.view.ViewGroup.MarginLayoutParams) ruleLp).topMargin = (int) (4 * dh);
+            holder.rule.setLayoutParams(ruleLp);
+        }
         holder.holder.setTextColor(colorOf(holder, scheme.holderColorRes));
         holder.numberLabel.setText(IdTypeSpec.numberLabel(item.getIdType()));
         holder.numberLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
         holder.number.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : "—");
         holder.number.setTextColor(colorOf(holder, scheme.numberColorRes));
-        String meta = IdTypeSpec.buildPreviewMeta(spec, fields);
+        String dobValue = fields.get("birth_date");
+        holder.dob.setText(dobValue != null && !dobValue.trim().isEmpty() ? dobValue.trim() : "—");
+        holder.dob.setTextColor(colorOf(holder, scheme.numberColorRes));
+        holder.dob.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10);
+        holder.dobLabel.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
+        holder.dobLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
+        String expDate = fields.get("expiry_date") != null ? fields.get("expiry_date").trim() : "";
+        String meta = expDate.isEmpty() ? "" : "EXP " + expDate;
         holder.meta.setText(meta);
         holder.meta.setTextColor(colorOf(holder, scheme.metaColorRes));
         holder.meta.setVisibility(meta.isEmpty() ? View.GONE : View.VISIBLE);
@@ -99,7 +134,39 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
         photoBg.setColor(colorOf(holder, scheme.photoBgRes));
         float density = holder.cardRoot.getResources().getDisplayMetrics().density;
         photoBg.setStroke((int) (1 * density + 0.5f), colorOf(holder, scheme.photoBorderRes));
+        photoBg.setCornerRadius(6 * density);
         holder.photoIcon.setColorFilter(colorOf(holder, scheme.photoIconRes));
+
+        // Dashboard-only: smaller avatar well (IDs tab keeps original size).
+        float d = holder.itemView.getResources().getDisplayMetrics().density;
+        android.view.ViewGroup.LayoutParams photoLp = holder.photoBox.getLayoutParams();
+        if (photoLp != null) {
+            int well = (int) (32 * d);
+            photoLp.width = well;
+            photoLp.height = well;
+            holder.photoBox.setLayoutParams(photoLp);
+        }
+        android.view.ViewGroup.LayoutParams iconLp = holder.photoIcon.getLayoutParams();
+        if (iconLp != null) {
+            int icon = (int) (24 * d);
+            iconLp.width = icon;
+            iconLp.height = icon;
+            holder.photoIcon.setLayoutParams(iconLp);
+        }
+        // Dashboard-only: tighter gap above the avatar row.
+        android.view.View photoRow = (android.view.View) holder.photoBox.getParent();
+        if (photoRow != null) {
+            android.view.ViewGroup.LayoutParams rowLp = photoRow.getLayoutParams();
+            if (rowLp instanceof android.view.ViewGroup.MarginLayoutParams) {
+                ((android.view.ViewGroup.MarginLayoutParams) rowLp).topMargin = (int) (2 * d);
+                photoRow.setLayoutParams(rowLp);
+            }
+            // Top-align avatar and name column (was center-aligned).
+            if (photoRow instanceof android.widget.LinearLayout) {
+                ((android.widget.LinearLayout) photoRow)
+                        .setGravity(android.view.Gravity.TOP);
+            }
+        }
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -128,6 +195,8 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
         TextView numberLabel;
         TextView number;
         TextView meta;
+        TextView dob;
+        TextView dobLabel;
         FrameLayout photoBox;
         ImageView photoIcon;
 
@@ -143,6 +212,8 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
             numberLabel = itemView.findViewById(R.id.preview_number_label);
             number = itemView.findViewById(R.id.preview_number);
             meta = itemView.findViewById(R.id.preview_meta);
+            dob = itemView.findViewById(R.id.preview_dob);
+            dobLabel = itemView.findViewById(R.id.preview_dob_label);
             photoBox = itemView.findViewById(R.id.preview_photo_box);
             photoIcon = itemView.findViewById(R.id.preview_photo_icon);
         }

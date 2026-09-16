@@ -45,8 +45,10 @@
     <!-- Hairline for light document faces (dark ink at low alpha) -->
     <color name="id_edge_on_light">#2B1A2E4D</color>
 
-    <!-- Square photo-well tints: each face tints the placeholder so it -->
-    <!-- belongs to the card (pale tint of the face hue + face ink icon). -->
+    <!-- Square photo-well tints: one neutral photo paper shared by all
+         faces for consistency; each face keeps its own ink for the
+         well border + icon so identity is preserved. -->
+    <color name="photo_bg_neutral">#FFE9EEF3</color>
     <color name="photo_bg_national">#FFD9E3F0</color>
     <color name="photo_bg_dl">#FFD2DFF0</color>
     <color name="photo_bg_passport">#FFEFD3C6</color>

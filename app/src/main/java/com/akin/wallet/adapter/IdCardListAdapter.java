@@ -93,6 +93,10 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         holder.previewNumber.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : "—");
         holder.previewNumber.setTextColor(colorOf(holder, scheme.numberColorRes));
+        String birth = fields.get("birth_date");
+        holder.dob.setText(birth != null && !birth.trim().isEmpty() ? birth.trim() : "—");
+        holder.dob.setTextColor(colorOf(holder, scheme.numberColorRes));
+        holder.dobLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
         String meta = IdTypeSpec.buildPreviewMeta(spec, fields);
         holder.previewMeta.setText(meta);
         holder.previewMeta.setTextColor(colorOf(holder, scheme.metaColorRes));
@@ -218,6 +222,8 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
         TextView previewNumberLabel;
         TextView previewNumber;
         TextView previewMeta;
+        TextView dob;
+        TextView dobLabel;
         View photoBox;
         ImageView photoIcon;
         LinearLayout expandedSection;
@@ -237,6 +243,8 @@ public class IdCardListAdapter extends RecyclerView.Adapter<IdCardListAdapter.Ca
             previewNumberLabel = itemView.findViewById(R.id.preview_number_label);
             previewNumber = itemView.findViewById(R.id.preview_number);
             previewMeta = itemView.findViewById(R.id.preview_meta);
+            dob = itemView.findViewById(R.id.preview_dob);
+            dobLabel = itemView.findViewById(R.id.preview_dob_label);
             photoBox = itemView.findViewById(R.id.preview_photo_box);
             photoIcon = itemView.findViewById(R.id.preview_photo_icon);
             expandedSection = itemView.findViewById(R.id.expanded_section);
