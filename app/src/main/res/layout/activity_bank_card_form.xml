@@ -2,7 +2,7 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_bg"
+    android:background="@drawable/bg_dashboard_root"
     android:fillViewport="true">
 
     <LinearLayout
@@ -59,7 +59,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/field_card_type"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/dashboard_muted"
                     android:textSize="13sp" />
 
                 <LinearLayout
@@ -67,7 +67,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_card"
+                    android:background="@drawable/bg_dashboard_card"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="16dp"
@@ -106,7 +106,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/field_card_network"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/dashboard_muted"
                     android:textSize="13sp" />
 
                 <LinearLayout
@@ -114,7 +114,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_card"
+                    android:background="@drawable/bg_dashboard_card"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="16dp"
@@ -149,7 +149,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/field_bank_name"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/dashboard_muted"
             android:textSize="13sp" />
 
         <EditText
@@ -157,7 +157,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_dashboard_card"
             android:hint="@string/hint_bank_name"
             android:textColorHint="@color/hint_text"
             android:textColor="@color/text_primary"
@@ -172,7 +172,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/field_holder_name"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/dashboard_muted"
             android:textSize="13sp" />
 
         <EditText
@@ -180,7 +180,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_dashboard_card"
             android:hint="@string/hint_person_name"
             android:textColorHint="@color/hint_text"
             android:textColor="@color/text_primary"
@@ -207,7 +207,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/field_card_number"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/dashboard_muted"
                     android:textSize="13sp" />
 
                 <EditText
@@ -215,7 +215,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_card"
+                    android:background="@drawable/bg_dashboard_card"
                     android:hint="@string/hint_card_number"
                     android:textColorHint="@color/hint_text"
                     android:textColor="@color/text_primary"
@@ -239,7 +239,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/field_expiry"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/dashboard_muted"
                     android:textSize="13sp" />
 
                 <EditText
@@ -247,7 +247,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_card"
+                    android:background="@drawable/bg_dashboard_card"
                     android:hint="@string/hint_expiry"
                     android:textColorHint="@color/hint_text"
                     android:textColor="@color/text_primary"
@@ -279,14 +279,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/field_cvv"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/dashboard_muted"
                     android:textSize="13sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_card"
+                    android:background="@drawable/bg_dashboard_card"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="16dp"
@@ -331,14 +331,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/field_pin"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/dashboard_muted"
                     android:textSize="13sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_card"
+                    android:background="@drawable/bg_dashboard_card"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="16dp"

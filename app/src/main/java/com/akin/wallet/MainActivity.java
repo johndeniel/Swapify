@@ -1,6 +1,5 @@
 package com.akin.wallet;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -12,85 +11,48 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.akin.wallet.fragment.DashboardFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
-
-    private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        hideSystemNavigation();
+        setupSystemBars();
         if (savedInstanceState == null) {
             loadFragment(new DashboardFragment());
         }
-        setupBottomNav();
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            hideSystemNavigation();
+            setupSystemBars();
         }
     }
 
-    private void hideSystemNavigation() {
+    /**
+     * System bars stay visible (no immersive mode): the bottom navigation bar
+     * is shown, not hidden. Re-applied on focus in case the system hid it
+     * transiently (e.g. after a fullscreen intent returns).
+     */
+    private void setupSystemBars() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setStatusBarColor(getColor(R.color.dashboard_bg_start));
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowInsetsController controller = getWindow().getInsetsController();
             if (controller != null) {
-                controller.hide(android.view.WindowInsets.Type.navigationBars());
-                controller.setSystemBarsBehavior(
-                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                controller.show(android.view.WindowInsets.Type.navigationBars());
             }
         } else {
+            // Lay out edge-to-edge behind the bar, but keep the bar visible:
+            // no HIDE_NAVIGATION / IMMERSIVE_STICKY flags.
             getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         }
-    }
-
-    private void setupBottomNav() {
-        bottomNav = findViewById(R.id.bottom_nav);
-
-        bottomNav.setOnItemSelectedListener(item -> {
-            Fragment fragment = fragmentFor(item.getItemId());
-            if (fragment != null) {
-                loadFragment(fragment);
-            }
-            return true;
-        });
-    }
-
-    /** Dashboard links call this. Social Account opens as a standalone screen. */
-    public void navigateToTab(int itemId) {
-        if (itemId == R.id.nav_social_account) {
-            startActivity(new Intent(this, SocialAccountActivity.class));
-            return;
-        }
-        Fragment fragment = fragmentFor(itemId);
-        if (fragment == null) {
-            return;
-        }
-        if (bottomNav != null) {
-            bottomNav.setSelectedItemId(itemId);
-        } else {
-            loadFragment(fragment);
-        }
-    }
-
-    private Fragment fragmentFor(int id) {
-        if (id == R.id.nav_home) {
-            return new DashboardFragment();
-        }
-        return null;
     }
 
     private void loadFragment(Fragment fragment) {

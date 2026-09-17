@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.akin.wallet.MainActivity;
 import com.akin.wallet.R;
 import com.akin.wallet.adapter.DashboardCardAdapter;
 import com.akin.wallet.adapter.DashboardIdCardAdapter;
@@ -25,6 +24,7 @@ import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.BankCardFormActivity;
 import com.akin.wallet.GovermentIDFormActivity;
+import com.akin.wallet.SocialAccountActivity;
 import com.akin.wallet.SocialAccountFormActivity;
 import com.akin.wallet.model.IdCardItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -89,9 +89,10 @@ public class DashboardFragment extends Fragment {
         refreshDashboard();
     }
 
+    /** Social Account lives outside the single-screen host: open it directly. */
     private void goTo(int navId) {
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).navigateToTab(navId);
+        if (navId == R.id.nav_social_account) {
+            startActivity(new Intent(requireContext(), SocialAccountActivity.class));
         }
     }
 

@@ -14,7 +14,9 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_dashboard_root">
 
-        <!-- Fixed dashboard content (not scrollable); FAB floats over it, no reserved gap -->
+        <!-- Fixed dashboard content (not scrollable); FAB floats over it, no reserved gap.
+             The screen header (wordmark + tagline + bell) lives here in-content;
+             the host theme is NoActionBar so there is exactly one header. -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -24,7 +26,7 @@
             android:paddingTop="16dp"
             android:paddingBottom="16dp">
 
-        <!-- Akin Wallet header: app wordmark + trust tagline.
+        <!-- Dashboard header: app wordmark + trust tagline + notification bell.
              Transparent so the dashboard navy theme shows through (no banner card). -->
         <LinearLayout
             android:id="@+id/header_home"
