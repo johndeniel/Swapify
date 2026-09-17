@@ -43,6 +43,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     public static final String EXTRA_PASSWORD = "extra_password";
     public static final String EXTRA_PIN = "extra_pin";
     public static final String EXTRA_ICON_RES = "extra_icon_res";
+    public static final String EXTRA_CREATED_AT = "extra_created_at";
+    public static final String EXTRA_UPDATED_AT = "extra_updated_at";
 
     /** Default pick for a fresh form (also the icon fallback for legacy rows). */
     public static final String DEFAULT_PLATFORM_NAME = "Google";
@@ -60,6 +62,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         edit.putExtra(EXTRA_PASSWORD, item.getPassword());
         edit.putExtra(EXTRA_PIN, item.getPin());
         edit.putExtra(EXTRA_ICON_RES, item.getIconRes());
+        edit.putExtra(EXTRA_CREATED_AT, item.getCreatedAt());
+        edit.putExtra(EXTRA_UPDATED_AT, item.getUpdatedAt());
         return edit;
     }
 
@@ -142,7 +146,9 @@ public class SocialAccountFormActivity extends AppCompatActivity {
                     getIntent().getStringExtra(EXTRA_PASSWORD),
                     getIntent().getStringExtra(EXTRA_PIN),
                     getIntent().getIntExtra(EXTRA_ICON_RES,
-                            PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME)));
+                            PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME)),
+                    getIntent().getLongExtra(EXTRA_CREATED_AT, 0),
+                    getIntent().getLongExtra(EXTRA_UPDATED_AT, 0));
             bindEditForm(item);
         }
     }
@@ -331,7 +337,10 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
             dbHelper.deleteLogin(item.getId());
 
-            CredentialItem updated = new CredentialItem(selectedName, username, password, pin, selectedIcon);
+            // Edit is delete+reinsert (new row id): carry createdAt across so
+            // history survives; updatedAt=0 tells insert to stamp now.
+            CredentialItem updated = new CredentialItem(selectedName, username, password, pin,
+                    selectedIcon, item.getCreatedAt(), 0);
             long newId = dbHelper.insertLogin(updated);
 
             for (CredentialItem linked : linkedItems) {

@@ -1,5 +1,7 @@
 package com.akin.wallet;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -42,6 +44,19 @@ public class GovermentIDFormActivity extends AppCompatActivity {
     public static final String EXTRA_TYPE = "extra_type";
     public static final String EXTRA_FIELDS_JSON = "extra_fields_json";
     public static final String EXTRA_DESIGN = "extra_design";
+
+    /**
+     * Intent that opens this form to edit an existing ID. Mirrors the bank and
+     * social factories: one packing site per form.
+     */
+    public static Intent editIntent(@NonNull Context context, @NonNull IdCardItem item) {
+        Intent edit = new Intent(context, GovermentIDFormActivity.class);
+        edit.putExtra(EXTRA_ID, item.getId());
+        edit.putExtra(EXTRA_TYPE, item.getIdType());
+        edit.putExtra(EXTRA_FIELDS_JSON, item.getFieldsJson());
+        edit.putExtra(EXTRA_DESIGN, item.getDesign());
+        return edit;
+    }
 
     private AppDatabaseHelper dbHelper;
 

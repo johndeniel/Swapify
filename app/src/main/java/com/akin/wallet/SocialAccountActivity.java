@@ -39,6 +39,9 @@ public class SocialAccountActivity extends AppCompatActivity {
         adapter.setOnCredentialActionListener(new SocialAccountAdapter.OnCredentialActionListener() {
             @Override
             public void onEdit(CredentialItem item) {
+                // Open recency: bump first so the account sorts newest-first
+                // on return, even if the edit is cancelled.
+                dbHelper.touchLoginUpdatedAt(item.getId());
                 startActivity(SocialAccountFormActivity.editIntent(
                         SocialAccountActivity.this, item));
             }

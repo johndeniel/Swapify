@@ -1,5 +1,7 @@
 package com.akin.wallet;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
@@ -38,6 +40,27 @@ public class BankCardFormActivity extends AppCompatActivity {
     public static final String EXTRA_DESIGN = "extra_design";
     public static final String EXTRA_CREATED_AT = "extra_created_at";
     public static final String EXTRA_UPDATED_AT = "extra_updated_at";
+
+    /**
+     * Intent that opens this form to edit an existing card. Single packing
+     * site so callers can't drift (a missed extra silently becomes a default).
+     */
+    public static Intent editIntent(@NonNull Context context, @NonNull BankCardItem item) {
+        Intent edit = new Intent(context, BankCardFormActivity.class);
+        edit.putExtra(EXTRA_ID, item.getId());
+        edit.putExtra(EXTRA_TYPE, item.getCardType());
+        edit.putExtra(EXTRA_NETWORK, item.getCardNetwork());
+        edit.putExtra(EXTRA_BANK, item.getBankName());
+        edit.putExtra(EXTRA_HOLDER, item.getHolderName());
+        edit.putExtra(EXTRA_NUMBER, item.getCardNumber());
+        edit.putExtra(EXTRA_EXPIRY, item.getExpiry());
+        edit.putExtra(EXTRA_CVV, item.getCvv());
+        edit.putExtra(EXTRA_PIN, item.getPin());
+        edit.putExtra(EXTRA_DESIGN, item.getDesign());
+        edit.putExtra(EXTRA_CREATED_AT, item.getCreatedAt());
+        edit.putExtra(EXTRA_UPDATED_AT, item.getUpdatedAt());
+        return edit;
+    }
 
     // Fixed option sets. Order doubles as the persisted design/type index, so
     // never reorder without a DB migration.
@@ -219,7 +242,7 @@ public class BankCardFormActivity extends AppCompatActivity {
         recyclerDesign.setLayoutManager(designLayoutManager);
         recyclerDesign.setAdapter(designAdapter);
 
-        // Same 12dp inter-card gap as DashboardFragment so spacing matches.
+        // Same 12dp inter-card gap as the dashboard carousel.
         recyclerDesign.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override
             public void getItemOffsets(@NonNull Rect outRect, @NonNull View child,

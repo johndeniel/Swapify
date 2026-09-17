@@ -15,7 +15,7 @@ import java.util.List;
 public class AppDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "akin_wallet.db";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
 
     private static final String TABLE_LOGINS = "logins";
     private static final String COL_ID = "id";
@@ -62,7 +62,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_USERNAME + " TEXT, "
                 + COL_PASSWORD + " TEXT, "
                 + COL_PIN + " TEXT, "
-                + COL_ICON_RES + " INTEGER)");
+                + COL_ICON_RES + " INTEGER, "
+                + COL_CREATED_AT + " INTEGER DEFAULT 0, "
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ASSOCIATIONS + " ("
                 + COL_LOGIN_ID + " INTEGER, "
                 + COL_ASSOCIATED_ID + " INTEGER, "
@@ -100,7 +102,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_USERNAME + " TEXT, "
                 + COL_PASSWORD + " TEXT, "
                 + COL_PIN + " TEXT, "
-                + COL_ICON_RES + " INTEGER)");
+                + COL_ICON_RES + " INTEGER, "
+                + COL_CREATED_AT + " INTEGER DEFAULT 0, "
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ASSOCIATIONS + " ("
                 + COL_LOGIN_ID + " INTEGER, "
                 + COL_ASSOCIATED_ID + " INTEGER, "
@@ -134,6 +138,19 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                     + " SET " + COL_UPDATED_AT + "=? WHERE " + COL_UPDATED_AT + " IS NULL OR "
                     + COL_UPDATED_AT + "=0", new Object[]{now});
         }
+
+        // v6: same timestamp columns on logins (social accounts), newest-first.
+        if (oldVersion < 6) {
+            addColumnIfMissing(db, TABLE_LOGINS, COL_CREATED_AT);
+            addColumnIfMissing(db, TABLE_LOGINS, COL_UPDATED_AT);
+            long now = System.currentTimeMillis();
+            db.execSQL("UPDATE " + TABLE_LOGINS
+                    + " SET " + COL_CREATED_AT + "=? WHERE " + COL_CREATED_AT + " IS NULL OR "
+                    + COL_CREATED_AT + "=0", new Object[]{now});
+            db.execSQL("UPDATE " + TABLE_LOGINS
+                    + " SET " + COL_UPDATED_AT + "=? WHERE " + COL_UPDATED_AT + " IS NULL OR "
+                    + COL_UPDATED_AT + "=0", new Object[]{now});
+        }
     }
 
     /** Idempotent ADD COLUMN: SQLite throws if the column exists, so probe first. */
@@ -161,6 +178,11 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_PASSWORD, item.getPassword());
         cv.put(COL_PIN, item.getPin());
         cv.put(COL_ICON_RES, item.getIconRes());
+        // Functional timestamps: a fresh row is both created and updated now.
+        // Honour caller-supplied values (edit reinsert) when present.
+        long now = System.currentTimeMillis();
+        cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
+        cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
         long id = db.insert(TABLE_LOGINS, null, cv);
         db.close();
         return id;
@@ -169,8 +191,14 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     public List<CredentialItem> getAllLogins() {
         List<CredentialItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_LOGINS, null);
+        // Newest-first by recency; id breaks ties (equal stamps, legacy rows).
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_LOGINS
+                + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_ID + " DESC", null);
         if (cursor.moveToFirst()) {
+            // New columns may be absent on a DB that hasn't run the v6 upgrade
+            // in a test harness; fall back to 0 instead of crashing.
+            int createdIdx = cursor.getColumnIndex(COL_CREATED_AT);
+            int updatedIdx = cursor.getColumnIndex(COL_UPDATED_AT);
             do {
                 list.add(new CredentialItem(
                         cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
@@ -178,7 +206,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_USERNAME)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_PASSWORD)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_PIN)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ICON_RES))
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ICON_RES)),
+                        createdIdx != -1 ? cursor.getLong(createdIdx) : 0,
+                        updatedIdx != -1 ? cursor.getLong(updatedIdx) : 0
                 ));
             } while (cursor.moveToNext());
         }
@@ -192,6 +222,21 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_ASSOCIATIONS, COL_LOGIN_ID + "=? OR " + COL_ASSOCIATED_ID + "=?",
                 new String[]{String.valueOf(id), String.valueOf(id)});
         int rows = db.delete(TABLE_LOGINS, COL_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
+        return rows;
+    }
+
+    /**
+     * Marks an account as recently used without touching its data: bumps only
+     * updated_at to now so newest-first ordering picks it up. Called when the
+     * account is opened for editing; the list re-sorts on the next refresh.
+     */
+    public int touchLoginUpdatedAt(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_UPDATED_AT, System.currentTimeMillis());
+        int rows = db.update(TABLE_LOGINS, cv, COL_ID + "=?",
+                new String[]{String.valueOf(id)});
         db.close();
         return rows;
     }
@@ -230,7 +275,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     public List<BankCardItem> getAllBankCards() {
         List<BankCardItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS, null);
+        // Newest-first by recency; id breaks ties (equal stamps, legacy rows).
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS
+                + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_CARD_ID + " DESC", null);
         if (cursor.moveToFirst()) {
             // New columns may be absent on a DB that hasn't run the v5 upgrade
             // in a test harness; fall back to 0 instead of crashing.
@@ -283,6 +330,21 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     public int deleteBankCard(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         int rows = db.delete(TABLE_BANK_CARDS, COL_CARD_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
+        return rows;
+    }
+
+    /**
+     * Marks a card as recently used without touching its data: bumps only
+     * updated_at to now so newest-first ordering picks it up. Called on
+     * dashboard tap; the list re-sorts on the next refresh.
+     */
+    public int touchBankCardUpdatedAt(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_UPDATED_AT, System.currentTimeMillis());
+        int rows = db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
+                new String[]{String.valueOf(id)});
         db.close();
         return rows;
     }
