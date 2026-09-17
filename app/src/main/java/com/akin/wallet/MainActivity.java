@@ -219,8 +219,14 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(this, GovermentIDFormActivity.class));
     }
 
-    /** Opens an ID edit form directly (dashboard is the editor). */
+    /**
+     * Opens an ID edit form directly (dashboard is the editor). The tap itself
+     * is a recency signal: updated_at is bumped first so the ID sorts
+     * newest-first on return — mirroring the bank-card and login open paths.
+     * No immediate refresh here; onResume re-queries after the editor closes.
+     */
     private void openIdEditor(IdCardItem item) {
+        dbHelper.touchIdCardUpdatedAt(item.getId());
         startActivity(GovermentIDFormActivity.editIntent(this, item));
     }
 

@@ -49,9 +49,20 @@ public final class IdTypeSpec {
         public final String[] options; // non-null => dropdown instead of free text
         public final int inputType;
         public final int maxLength; // 0 = no limit
+        // Explicit row pairing: when true, this field shares its form row
+        // with the next field regardless of their types. Used for custom rows
+        // the generic rules can't infer (e.g. two full-width text fields).
+        // Generic pairs (date/date, short-field/picker) need no flag.
+        public final boolean pairWithNext;
 
         public IdField(String key, String label, String hint, boolean required,
                        boolean sensitive, String[] options, int inputType, int maxLength) {
+            this(key, label, hint, required, sensitive, options, inputType, maxLength, false);
+        }
+
+        public IdField(String key, String label, String hint, boolean required,
+                       boolean sensitive, String[] options, int inputType, int maxLength,
+                       boolean pairWithNext) {
             this.key = key;
             this.label = label;
             this.hint = hint;
@@ -60,6 +71,17 @@ public final class IdTypeSpec {
             this.options = options;
             this.inputType = inputType;
             this.maxLength = maxLength;
+            this.pairWithNext = pairWithNext;
+        }
+
+        /**
+         * Copy of this field that shares its form row with the next field.
+         * The flag is consumed in spec order by the form builder; a flagged
+         * last field is simply ignored.
+         */
+        public IdField pairedWithNext() {
+            return new IdField(key, label, hint, required, sensitive, options,
+                    inputType, maxLength, true);
         }
 
         public boolean isDropdown() {
@@ -76,6 +98,18 @@ public final class IdTypeSpec {
                                      boolean required, boolean sensitive, int maxLength) {
             return new IdField(key, label, hint, required, sensitive, null,
                     InputType.TYPE_CLASS_NUMBER, maxLength);
+        }
+
+        /**
+         * Date entry with a date-optimized keyboard (numeric with separators).
+         * No picker is imposed; the 8-digit shape (YYYYMMDD) is enforced in
+         * form validation. Callers cap length at 8 so dashes can't be typed.
+         */
+        public static IdField date(String key, String label, String hint,
+                                   boolean required, int maxLength) {
+            return new IdField(key, label, hint, required, false, null,
+                    InputType.TYPE_CLASS_DATETIME | InputType.TYPE_DATETIME_VARIATION_DATE,
+                    maxLength);
         }
 
         public static IdField dropdown(String key, String label,
@@ -103,15 +137,23 @@ public final class IdTypeSpec {
     static {
         List<IdType> list = new ArrayList<>();
 
+        // National ID layout: PSN, then paired rows (name + sex, birth +
+        // issue, blood type + marital status, birthplace + address). The
+        // date/date and picker/picker rows pair by generic rule; name + sex
+        // and birthplace + address pair by explicit flag since two full-width
+        // text-led rows can't be inferred. Every field required. The PSN is
+        // exactly 16 digits capped at 16 chars and regrouped 4-4-4-4 on the
+        // face; both dates are exactly 8 digits (YYYYMMDD) capped at 8 chars.
         list.add(new IdType(TYPE_NATIONAL_ID, "psn", Arrays.asList(
-                IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
-                IdField.number("psn", "PSN (PhilSys Number)", "1234 5678 9012 3456", true, true, 19),
-                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
-                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
-                IdField.dropdown("blood_type", "Blood Type", false, BLOOD_OPTIONS),
-                IdField.text("place_of_birth", "Place of Birth", "Manila, PH", false, false, 80),
-                IdField.text("present_address", "Present Address", "Street, City", false, false, 120),
-                IdField.dropdown("marital_status", "Marital Status", false, CIVIL_STATUS_OPTIONS)
+                IdField.number("psn", "PSN (PhilSys Number)", "1234567890123456", true, true, 16),
+                IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80).pairedWithNext(),
+                IdField.dropdown("sex", "Sex", true, SEX_OPTIONS),
+                IdField.date("birth_date", "Date of Birth", "YYYYMMDD", true, 8),
+                IdField.date("issue_date", "Date of Issue", "YYYYMMDD", true, 8),
+                IdField.dropdown("blood_type", "Blood Type", true, BLOOD_OPTIONS),
+                IdField.dropdown("marital_status", "Marital Status", true, CIVIL_STATUS_OPTIONS),
+                IdField.text("place_of_birth", "Place of Birth", "Manila, PH", true, false, 80).pairedWithNext(),
+                IdField.text("present_address", "Present Address", "Street, City", true, false, 120)
         )));
 
         list.add(new IdType(TYPE_DRIVERS_LICENSE, "license_no", Arrays.asList(
@@ -150,22 +192,30 @@ public final class IdTypeSpec {
                 IdField.text("mobile_no", "Mobile No.", "09XX XXX XXXX", false, false, 20)
         )));
 
+        // PhilHealth field contract: every field required; the short
+        // identifiers share the top row (PhilHealth No. + Membership), then
+        // full name with address directly below it, then the birth + sex row.
+        // The number is exactly 12 digits capped at 12 chars and regrouped
+        // 111-111-111-111 on the face; birth is exactly 8 digits (YYYYMMDD).
         list.add(new IdType(TYPE_PHILHEALTH, "philhealth_no", Arrays.asList(
-                IdField.text("philhealth_no", "PhilHealth No.", "01-2345678-9", true, true, 16),
-                IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
-                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
-                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
-                IdField.text("address", "Address", "Street, City", false, false, 120),
-                IdField.dropdown("membership_type", "Membership Type", false, PHILHEALTH_MEMBER_OPTIONS)
+                IdField.number("philhealth_no", "PhilHealth No.", "123456789012", true, true, 12),
+                IdField.dropdown("membership", "Membership", true, PHILHEALTH_MEMBER_OPTIONS),
+                IdField.text("fullName", "Full Name", "Juan Dela Cruz", true, false, 80),
+                IdField.text("address", "Address", "Street, City", true, false, 120),
+                IdField.date("dateOfBirth", "Date of Birth", "YYYYMMDD", true, 8),
+                IdField.dropdown("sex", "Sex", true, SEX_OPTIONS)
         )));
 
-        list.add(new IdType(TYPE_TIN, "tin", Arrays.asList(
-                IdField.text("tin", "TIN", "123-456-789-000", true, true, 15),
-                IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
-                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
-                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
-                IdField.text("address", "Address", "Street, City", false, false, 120),
-                IdField.text("employer_name", "Employer Name", "Company Inc.", false, false, 80)
+        // TIN field contract: every field required, 12-digit numeric TIN capped
+        // at 12 chars, dates as exactly 8 digits (YYYYMMDD) capped at 8 chars.
+        // The face regroups the bare digits as 111-111-111-111 and dashes
+        // plain-digit dates for display.
+        list.add(new IdType(TYPE_TIN, "tinNumber", Arrays.asList(
+                IdField.number("tinNumber", "TIN", "123456789012", true, true, 12),
+                IdField.text("fullname", "Full Name", "Juan Dela Cruz", true, false, 80),
+                IdField.text("address", "Address", "Street, City", true, false, 120),
+                IdField.date("dateOfBirth", "Date of Birth", "YYYYMMDD", true, 8),
+                IdField.date("dateOfIssue", "Date of Issue", "YYYYMMDD", true, 8)
         )));
 
         TYPES = Collections.unmodifiableList(list);
@@ -284,7 +334,7 @@ public final class IdTypeSpec {
         if ("philhealth_no".equalsIgnoreCase(key)) {
             return "PHILHEALTH NO.";
         }
-        if ("tin".equalsIgnoreCase(key)) {
+        if ("tinNumber".equalsIgnoreCase(key)) {
             return "TIN";
         }
         if ("id_number".equalsIgnoreCase(key)) {
@@ -396,6 +446,19 @@ public final class IdTypeSpec {
 
     public static FaceExtra faceExtra(String typeName, Map<String, String> fields) {
         Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
+        // TIN and National ID have no sex slot: their compact faces pair birth
+        // with issue, matching their side-by-side date rows. Key varies by
+        // type ("dateOfIssue" vs "issue_date"); first non-blank wins.
+        if (typeName != null && (typeName.trim().equalsIgnoreCase(TYPE_TIN)
+                || typeName.trim().equalsIgnoreCase(TYPE_NATIONAL_ID))) {
+            return new FaceExtra("DATE OF ISSUE", displayDate(
+                    firstNonEmpty(safe.get("dateOfIssue"), safe.get("issue_date"))));
+        }
+        // PhilHealth shows membership beside birth (no sex slot on its face),
+        // matching the form's PhilHealth No. + Membership top row.
+        if (typeName != null && typeName.trim().equalsIgnoreCase(TYPE_PHILHEALTH)) {
+            return new FaceExtra("MEMBERSHIP", orDash(safe.get("membership")));
+        }
         return new FaceExtra("SEX", orDash(safe.get("sex")));
     }
 
@@ -409,7 +472,9 @@ public final class IdTypeSpec {
     /** Card-face holder line: full name, or Given + Surname for passports. */
     public static String displayName(IdType type, Map<String, String> fields) {
         Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
-        String full = safe.get("full_name");
+        // Name key varies by type: PhilHealth "fullName", TIN "fullname",
+        // everything else "full_name". First non-blank wins.
+        String full = firstNonEmpty(safe.get("fullName"), safe.get("fullname"), safe.get("full_name"));
         if (nonEmpty(full)) {
             return full.trim().toUpperCase();
         }
@@ -419,8 +484,102 @@ public final class IdTypeSpec {
         return combined.isEmpty() ? "FULL NAME" : combined.toUpperCase();
     }
 
+    /**
+     * Card-face primary number. 12-digit numbers (TIN, PhilHealth No.) regroup
+     * as 111-111-111-111 and the 16-digit PSN as 1111-1111-1111-1111;
+     * everything else renders as stored.
+     */
+    public static String displayNumber(IdType spec, Map<String, String> fields) {
+        Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
+        String numberKey = spec != null ? spec.numberKey : "";
+        String primary = safe.get(numberKey);
+        if (!nonEmpty(primary)) {
+            return "—";
+        }
+        if (spec != null && usesGrouped12Display(spec.name)) {
+            return formatGrouped12(primary);
+        }
+        if (spec != null && usesGrouped16Display(spec.name)) {
+            return formatGrouped16(primary);
+        }
+        return primary.trim();
+    }
+
+    /** 12-digit document numbers (TIN, PhilHealth No.) group 3-3-3-3 on the face. */
+    private static boolean usesGrouped12Display(String typeName) {
+        return TYPE_TIN.equalsIgnoreCase(typeName)
+                || TYPE_PHILHEALTH.equalsIgnoreCase(typeName);
+    }
+
+    /** The 16-digit PSN groups 4-4-4-4 on the face. */
+    private static boolean usesGrouped16Display(String typeName) {
+        return TYPE_NATIONAL_ID.equalsIgnoreCase(typeName);
+    }
+
+    /**
+     * Face grouping for 12-digit numbers: 111-111-111-111. Storage holds the
+     * bare 12 digits (the field caps at 12, validation counts digits), so
+     * grouping is presentational only. Anything else passes through untouched;
+     * validation guards new input.
+     */
+    public static String formatGrouped12(String raw) {
+        String digits = raw != null ? raw.replaceAll("\\D", "") : "";
+        if (digits.length() == 12) {
+            return digits.substring(0, 3) + "-" + digits.substring(3, 6)
+                    + "-" + digits.substring(6, 9) + "-" + digits.substring(9, 12);
+        }
+        return raw != null && !raw.trim().isEmpty() ? raw.trim() : "—";
+    }
+
+    /**
+     * Face grouping for the 16-digit PSN: 1111-1111-1111-1111. Same contract
+     * as the 12-digit grouping — storage holds bare digits, grouping is
+     * presentational only, anything else passes through for validation to flag.
+     */
+    public static String formatGrouped16(String raw) {
+        String digits = raw != null ? raw.replaceAll("\\D", "") : "";
+        if (digits.length() == 16) {
+            return digits.substring(0, 4) + "-" + digits.substring(4, 8)
+                    + "-" + digits.substring(8, 12) + "-" + digits.substring(12, 16);
+        }
+        return raw != null && !raw.trim().isEmpty() ? raw.trim() : "—";
+    }
+
+    /**
+     * Face date normalization: always renders YYYY-MM-DD. Plain 8-digit input
+     * (YYYYMMDD, accepted for hyphen-less keyboards) is dashed here; empty
+     * renders as a dash. Anything else passes through as stored.
+     */
+    public static String displayDate(String raw) {
+        String v = raw != null ? raw.trim() : "";
+        if (v.isEmpty()) {
+            return "—";
+        }
+        String digits = v.replaceAll("\\D", "");
+        if (digits.length() == 8) {
+            return digits.substring(0, 4) + "-" + digits.substring(4, 6)
+                    + "-" + digits.substring(6, 8);
+        }
+        return v;
+    }
+
     private static boolean nonEmpty(String s) {
         return s != null && !s.trim().isEmpty();
+    }
+
+    /**
+     * First non-blank candidate, in preference order. Used where a value lives
+     * under different keys per type (e.g. dateOfBirth vs birth_date).
+     */
+    private static String firstNonEmpty(String... candidates) {
+        if (candidates != null) {
+            for (String c : candidates) {
+                if (c != null && !c.trim().isEmpty()) {
+                    return c;
+                }
+            }
+        }
+        return "";
     }
 
     private static String toLabel(String key) {

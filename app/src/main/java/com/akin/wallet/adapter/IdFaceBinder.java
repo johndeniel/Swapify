@@ -90,7 +90,9 @@ public final class IdFaceBinder {
         IdTypeSpec.FaceScheme scheme = IdTypeSpec.faceScheme(typeName);
         f.cardRoot.setBackgroundResource(scheme.backgroundRes);
 
-        String number = fields.get(spec.numberKey);
+        // Primary number resolves through the spec so the face stays free of
+        // per-type key branches.
+        String number = IdTypeSpec.displayNumber(spec, fields);
         f.eyebrow.setTextColor(colorOf(f, scheme.subtitleColorRes));
         f.title.setText(title.toUpperCase());
         f.title.setTextColor(colorOf(f, scheme.titleColorRes));
@@ -112,7 +114,10 @@ public final class IdFaceBinder {
             f.barcode.setBarColor(colorOf(f, scheme.numberColorRes));
         }
 
-        String birth = fields.get("birth_date");
+        // Birth key varies by type ("dateOfBirth" on TIN/PhilHealth,
+        // "birth_date" elsewhere); first non-blank wins, always YYYY-MM-DD.
+        String birth = IdTypeSpec.displayDate(
+                firstNonEmpty(fields.get("dateOfBirth"), fields.get("birth_date")));
         if (f.dob != null) {
             f.dob.setText(birth != null && !birth.trim().isEmpty() ? birth.trim() : "—");
             f.dob.setTextColor(colorOf(f, scheme.numberColorRes));
@@ -230,5 +235,20 @@ public final class IdFaceBinder {
 
     private static int colorOf(@NonNull FaceViews f, int res) {
         return f.res.getColor(res, null);
+    }
+
+    /**
+     * First non-blank candidate in preference order. Used where a value lives
+     * under different keys per type, without per-type branches.
+     */
+    private static String firstNonEmpty(String... candidates) {
+        if (candidates != null) {
+            for (String c : candidates) {
+                if (c != null && !c.trim().isEmpty()) {
+                    return c;
+                }
+            }
+        }
+        return "";
     }
 }

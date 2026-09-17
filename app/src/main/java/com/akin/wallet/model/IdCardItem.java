@@ -11,22 +11,51 @@ import java.util.Map;
  * Government ID entry. Variable per-type fields are stored as a JSON object
  * in SQLite (fields_json column) so National ID, Driver's License, Passport,
  * SSS, GSIS, etc. all share one table and one card UI.
+ *
+ * <p>Audit timestamps ({@code createdAt}/{@code updatedAt}) are first-class
+ * columns sibling to {@code id} — never keys inside {@code fields_json}.
+ * Keeping them out of the JSON preserves the per-type field contract (TIN,
+ * SSS, etc. carry only their own document data) and lets recency ordering
+ * reuse the same {@code updated_at DESC, id DESC} pattern as bank cards and
+ * logins.
  */
 public class IdCardItem {
     private final int id;
     private final String idType;
     private final Map<String, String> fields;
     private final int design;
+    // Epoch millis (UTC). 0 = unset (unsaved drafts); the DB fills real
+    // values on insert.
+    private final long createdAt;
+    private final long updatedAt;
 
     public IdCardItem(String idType, Map<String, String> fields, int design) {
-        this(-1, idType, fields, design);
+        this(-1, idType, fields, design, 0, 0);
     }
 
     public IdCardItem(int id, String idType, Map<String, String> fields, int design) {
+        this(id, idType, fields, design, 0, 0);
+    }
+
+    /**
+     * Full constructor carrying audit timestamps alongside the row identity.
+     * Callers creating a new entry pass {@code 0, 0} and let the DB stamp
+     * {@code now}; callers updating preserve {@code createdAt} and pass
+     * {@code 0} for {@code updatedAt} so the DB bumps recency.
+     */
+    public IdCardItem(String idType, Map<String, String> fields, int design,
+                      long createdAt, long updatedAt) {
+        this(-1, idType, fields, design, createdAt, updatedAt);
+    }
+
+    public IdCardItem(int id, String idType, Map<String, String> fields, int design,
+                      long createdAt, long updatedAt) {
         this.id = id;
         this.idType = idType != null ? idType : "";
         this.fields = fields != null ? new LinkedHashMap<>(fields) : new LinkedHashMap<>();
         this.design = design;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public int getId() {
@@ -46,7 +75,20 @@ public class IdCardItem {
         return design;
     }
 
-    /** Serialize fields map to JSON string for SQLite storage. */
+    /** Row creation time, epoch millis. 0 when unset. */
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    /** Last recency bump, epoch millis. Drives newest-first ordering. */
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    /**
+     * Serialize fields map to JSON string for SQLite storage.
+     * Timestamps are deliberately excluded: they live in their own columns.
+     */
     public String getFieldsJson() {
         JSONObject obj = new JSONObject();
         for (Map.Entry<String, String> e : fields.entrySet()) {

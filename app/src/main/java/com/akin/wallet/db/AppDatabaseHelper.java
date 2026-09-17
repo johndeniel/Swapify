@@ -15,7 +15,9 @@ import java.util.List;
 public class AppDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "akin_wallet.db";
-    private static final int DATABASE_VERSION = 6;
+    // v7 adds audit timestamps to id_cards (created_at/updated_at), mirroring
+    // bank_cards (v5) and logins (v6), so Government IDs sort newest-first.
+    private static final int DATABASE_VERSION = 7;
 
     private static final String TABLE_LOGINS = "logins";
     private static final String COL_ID = "id";
@@ -86,11 +88,15 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     }
 
     private static String getCreateIdCardsSql() {
+        // Audit columns live beside the row identity (id), never inside
+        // fields_json — the JSON blob carries only per-type document data.
         return "CREATE TABLE IF NOT EXISTS " + TABLE_ID_CARDS + " ("
                 + COL_ID_CARD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_ID_TYPE + " TEXT, "
                 + COL_ID_FIELDS_JSON + " TEXT, "
-                + COL_ID_DESIGN + " INTEGER)";
+                + COL_ID_DESIGN + " INTEGER, "
+                + COL_CREATED_AT + " INTEGER DEFAULT 0, "
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0)";
     }
 
     @Override
@@ -148,6 +154,21 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                     + " SET " + COL_CREATED_AT + "=? WHERE " + COL_CREATED_AT + " IS NULL OR "
                     + COL_CREATED_AT + "=0", new Object[]{now});
             db.execSQL("UPDATE " + TABLE_LOGINS
+                    + " SET " + COL_UPDATED_AT + "=? WHERE " + COL_UPDATED_AT + " IS NULL OR "
+                    + COL_UPDATED_AT + "=0", new Object[]{now});
+        }
+
+        // v7: audit timestamps on id_cards. ALTER is idempotent via
+        // addColumnIfMissing; backfill keeps legacy IDs sortable instead of
+        // sinking to the bottom with 0 stamps.
+        if (oldVersion < 7) {
+            addColumnIfMissing(db, TABLE_ID_CARDS, COL_CREATED_AT);
+            addColumnIfMissing(db, TABLE_ID_CARDS, COL_UPDATED_AT);
+            long now = System.currentTimeMillis();
+            db.execSQL("UPDATE " + TABLE_ID_CARDS
+                    + " SET " + COL_CREATED_AT + "=? WHERE " + COL_CREATED_AT + " IS NULL OR "
+                    + COL_CREATED_AT + "=0", new Object[]{now});
+            db.execSQL("UPDATE " + TABLE_ID_CARDS
                     + " SET " + COL_UPDATED_AT + "=? WHERE " + COL_UPDATED_AT + " IS NULL OR "
                     + COL_UPDATED_AT + "=0", new Object[]{now});
         }
@@ -355,6 +376,12 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_ID_TYPE, item.getIdType());
         cv.put(COL_ID_FIELDS_JSON, item.getFieldsJson());
         cv.put(COL_ID_DESIGN, item.getDesign());
+        // Functional timestamps: a fresh row is both created and updated now.
+        // Honour caller-supplied values (e.g. imports) when present. The JSON
+        // blob is untouched — stamps live in their own columns.
+        long now = System.currentTimeMillis();
+        cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
+        cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
         long id = db.insert(TABLE_ID_CARDS, null, cv);
         db.close();
         return id;
@@ -363,15 +390,24 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     public List<IdCardItem> getAllIdCards() {
         List<IdCardItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS, null);
+        // Newest-first by recency, matching bank cards and logins; id breaks
+        // ties (equal stamps, legacy rows).
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS
+                + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_ID_CARD_ID + " DESC", null);
         if (cursor.moveToFirst()) {
+            // New columns may be absent on a DB that hasn't run the v7 upgrade
+            // in a test harness; fall back to 0 instead of crashing.
+            int createdIdx = cursor.getColumnIndex(COL_CREATED_AT);
+            int updatedIdx = cursor.getColumnIndex(COL_UPDATED_AT);
             do {
                 list.add(new IdCardItem(
                         cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_CARD_ID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_TYPE)),
                         IdCardItem.parseFieldsJson(
                                 cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_FIELDS_JSON))),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_DESIGN))
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_DESIGN)),
+                        createdIdx != -1 ? cursor.getLong(createdIdx) : 0,
+                        updatedIdx != -1 ? cursor.getLong(updatedIdx) : 0
                 ));
             } while (cursor.moveToNext());
         }
@@ -386,8 +422,28 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_ID_TYPE, item.getIdType());
         cv.put(COL_ID_FIELDS_JSON, item.getFieldsJson());
         cv.put(COL_ID_DESIGN, item.getDesign());
+        // created_at is immutable: never overwritten, so creation order is kept.
+        // Every edit bumps updated_at; honour an explicit value if the caller set one.
+        cv.put(COL_UPDATED_AT,
+                item.getUpdatedAt() > 0 ? item.getUpdatedAt() : System.currentTimeMillis());
         int rows = db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
                 new String[]{String.valueOf(item.getId())});
+        db.close();
+        return rows;
+    }
+
+    /**
+     * Marks an ID as recently used without touching its data: bumps only
+     * updated_at to now so newest-first ordering picks it up. Called on
+     * dashboard tap, mirroring the bank-card and login touch helpers; the
+     * list re-sorts on the next refresh.
+     */
+    public int touchIdCardUpdatedAt(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_UPDATED_AT, System.currentTimeMillis());
+        int rows = db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
+                new String[]{String.valueOf(id)});
         db.close();
         return rows;
     }

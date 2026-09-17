@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -31,6 +32,7 @@ import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.IdTypeSpec;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,10 +47,14 @@ public class GovermentIDFormActivity extends AppCompatActivity {
     public static final String EXTRA_TYPE = "extra_type";
     public static final String EXTRA_FIELDS_JSON = "extra_fields_json";
     public static final String EXTRA_DESIGN = "extra_design";
+    public static final String EXTRA_CREATED_AT = "extra_created_at";
+    public static final String EXTRA_UPDATED_AT = "extra_updated_at";
 
     /**
      * Intent that opens this form to edit an existing ID. Mirrors the bank and
-     * social factories: one packing site per form.
+     * social factories: one packing site per form. Audit timestamps ride as
+     * top-level extras (never inside fields_json) so the edit round-trip
+     * preserves creation order.
      */
     public static Intent editIntent(@NonNull Context context, @NonNull IdCardItem item) {
         Intent edit = new Intent(context, GovermentIDFormActivity.class);
@@ -56,6 +62,8 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         edit.putExtra(EXTRA_TYPE, item.getIdType());
         edit.putExtra(EXTRA_FIELDS_JSON, item.getFieldsJson());
         edit.putExtra(EXTRA_DESIGN, item.getDesign());
+        edit.putExtra(EXTRA_CREATED_AT, item.getCreatedAt());
+        edit.putExtra(EXTRA_UPDATED_AT, item.getUpdatedAt());
         return edit;
     }
 
@@ -68,6 +76,9 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
         dbHelper = new AppDatabaseHelper(this);
 
+        // Back chevron, same as the bank card form: plain finish, no save.
+        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id == -1) {
             bindForm(null);
@@ -76,11 +87,15 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             Map<String, String> fields = json != null
                     ? IdCardItem.parseFieldsJson(json)
                     : new LinkedHashMap<>();
+            // Timestamps arrive as sibling extras (same level as id), never
+            // parsed from the JSON blob; 0 is the default when absent.
             bindForm(new IdCardItem(
                     id,
                     getIntent().getStringExtra(EXTRA_TYPE),
                     fields,
-                    getIntent().getIntExtra(EXTRA_DESIGN, 0)));
+                    getIntent().getIntExtra(EXTRA_DESIGN, 0),
+                    getIntent().getLongExtra(EXTRA_CREATED_AT, 0),
+                    getIntent().getLongExtra(EXTRA_UPDATED_AT, 0)));
         }
     }
 
@@ -89,8 +104,10 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
 
         LinearLayout formContainer = findViewById(R.id.form_container);
-        TextView btnSave = findViewById(R.id.btn_save);
-        TextView dialogTitle = findViewById(R.id.dialog_title);
+        // Action row mirrors the bank card form: btn_save is the outline
+        // container, text_save_label carries the Save/Update caption.
+        View btnSave = findViewById(R.id.btn_save);
+        TextView textSaveLabel = findViewById(R.id.text_save_label);
 
         // Draft holds EVERY typed value (even for hidden types) so switching
         // ID type back and forth never loses input; save filters to active spec.
@@ -99,6 +116,9 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             draftValues.putAll(existing.getFields());
         }
         final Map<String, EditText> textInputs = new LinkedHashMap<>();
+        // Dropdown value texts, registered for setError like text inputs so a
+        // failed save flags the value itself — same behavior as Date of Birth.
+        final Map<String, TextView> dropdownValues = new LinkedHashMap<>();
 
         final int[] selectedType = {0};
         // Fixed authentic design per ID type — no color picker. Column kept as 0.
@@ -106,13 +126,22 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         final boolean[] knownType = {true};
 
         if (isEdit) {
-            btnSave.setText("Update");
+            textSaveLabel.setText("Update");
             if (IdTypeSpec.isKnownType(existing.getIdType())) {
                 selectedType[0] = IdTypeSpec.indexOf(existing.getIdType());
             } else {
                 knownType[0] = false;
                 selectedType[0] = 0;
             }
+        } else {
+            // Add mode keeps a single full-width Save button, same as the bank
+            // form. The delete view is GONE, so its row margin is dropped to
+            // avoid a trailing 8dp gap.
+            textSaveLabel.setText(R.string.action_save);
+            LinearLayout.LayoutParams saveParams =
+                    (LinearLayout.LayoutParams) btnSave.getLayoutParams();
+            saveParams.setMarginEnd(0);
+            btnSave.setLayoutParams(saveParams);
         }
 
         final IdCardDesignAdapter[] adapterRef = new IdCardDesignAdapter[1];
@@ -135,8 +164,9 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                 return;
             }
             if (pos != selectedType[0]) {
-                applyIdTypeSelection(pos, dialogTitle, isEdit, formContainer, draftValues,
-                        textInputs, refreshPreview, dotsContainer, adapterRef[0], selectedType);
+                applyIdTypeSelection(pos, formContainer, draftValues,
+                        textInputs, dropdownValues, refreshPreview, dotsContainer, adapterRef[0],
+                        selectedType);
             } else if (carouselRef[0] != null) {
                 carouselRef[0].smoothScrollToPosition(pos);
             }
@@ -186,8 +216,8 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                 if (snapView != null) {
                     int pos = layoutManager.getPosition(snapView);
                     if (pos != RecyclerView.NO_POSITION && pos != selectedType[0]) {
-                        applyIdTypeSelection(pos, dialogTitle, isEdit, formContainer, draftValues,
-                                textInputs, refreshPreview, dotsContainer, adapterRef[0],
+                        applyIdTypeSelection(pos, formContainer, draftValues,
+                                textInputs, dropdownValues, refreshPreview, dotsContainer, adapterRef[0],
                                 selectedType);
                     }
                 }
@@ -195,11 +225,11 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         });
         final int scrollTo = selectedType[0];
 
-        // Initial title + form.
-        updateDialogTitle(dialogTitle, isEdit, isEdit ? existing.getIdType()
-                : IdTypeSpec.getTypeNames()[selectedType[0]]);
+        // Initial form for the selected (or edited) type. The header title is
+        // gone by design — the carousel page itself names the type.
         rebuildForm(formContainer, currentSpec(selectedType[0], knownType[0],
-                isEdit ? existing : null, draftValues), draftValues, textInputs, refreshPreview);
+                isEdit ? existing : null, draftValues), draftValues, textInputs, dropdownValues,
+                refreshPreview);
         refreshPreview.run();
 
         // Position the carousel on the edited type, then enable callbacks.
@@ -223,16 +253,20 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             }
             Map<String, String> filtered = filteredDraft(typeName, draftValues);
 
-            if (!validate(spec, filtered, textInputs)) {
+            if (!validate(spec, filtered, textInputs, dropdownValues)) {
                 return;
             }
 
             if (isEdit) {
+                // createdAt rides along untouched (creation order is immutable);
+                // updatedAt=0 tells the DB helper to stamp now on write.
                 IdCardItem updated = new IdCardItem(
-                        existing.getId(), existing.getIdType(), filtered, fixedDesign);
+                        existing.getId(), existing.getIdType(), filtered, fixedDesign,
+                        existing.getCreatedAt(), 0);
                 // Known types may have been switched via selector; use the new name.
                 if (knownType[0]) {
-                    updated = new IdCardItem(existing.getId(), typeName, filtered, fixedDesign);
+                    updated = new IdCardItem(existing.getId(), typeName, filtered, fixedDesign,
+                            existing.getCreatedAt(), 0);
                 }
                 dbHelper.updateIdCard(updated);
                 Toast.makeText(GovermentIDFormActivity.this, "Updated Successfully", Toast.LENGTH_SHORT).show();
@@ -245,8 +279,10 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             finish();
         });
 
-        // The IDs tab is gone: delete lives here, visible in edit mode only.
-        TextView btnDelete = findViewById(R.id.btn_delete);
+        // Delete lives on this screen (no IDs tab), shown in-row in edit mode
+        // only — same placement and outline-red style as the bank card form.
+        // Dialog copy and toasts stay ID-specific; only the design is shared.
+        View btnDelete = findViewById(R.id.btn_delete);
         if (isEdit) {
             btnDelete.setVisibility(View.VISIBLE);
             btnDelete.setOnClickListener(v -> new AlertDialog.Builder(GovermentIDFormActivity.this)
@@ -305,19 +341,94 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
     private void rebuildForm(LinearLayout container, IdTypeSpec.IdType spec,
                              Map<String, String> draft, Map<String, EditText> textInputs,
-                             Runnable onChanged) {
+                             Map<String, TextView> dropdownValues, Runnable onChanged) {
         container.removeAllViews();
         textInputs.clear();
-        for (IdTypeSpec.IdField field : spec.fields) {
-            if (!draft.containsKey(field.key)) {
-                draft.put(field.key, "");
-            }
-            if (field.isDropdown()) {
-                container.addView(buildDropdownField(field, draft, onChanged));
+        dropdownValues.clear();
+        List<IdTypeSpec.IdField> fields = spec.fields;
+        for (int i = 0; i < fields.size(); i++) {
+            IdTypeSpec.IdField field = fields.get(i);
+            ensureDraftValue(draft, field);
+            // Row pairing, greedy left-to-right: generic short-field pairs
+            // ((date, date), or a date/number/picker followed by a picker)
+            // plus any explicit pairWithNext flag from the spec (custom rows
+            // the generic rules can't infer, e.g. two text fields). A flagged
+            // last field has no next and simply stands alone.
+            IdTypeSpec.IdField second = i + 1 < fields.size() ? fields.get(i + 1) : null;
+            boolean datePair = second != null && isDateField(field) && isDateField(second);
+            boolean shortPair = second != null && second.isDropdown()
+                    && (isDateField(field) || isNumberField(field) || field.isDropdown());
+            boolean flaggedPair = second != null && field.pairWithNext;
+            if (datePair || shortPair || flaggedPair) {
+                ensureDraftValue(draft, second);
+                container.addView(buildPairRow(field, second, draft, textInputs, dropdownValues, onChanged));
+                i++;
             } else {
-                container.addView(buildTextField(field, draft, textInputs, onChanged));
+                container.addView(buildFieldView(field, draft, textInputs, dropdownValues, onChanged));
             }
         }
+    }
+
+    /** Guarantees a draft slot so switching types never loses typed input. */
+    private static void ensureDraftValue(Map<String, String> draft, IdTypeSpec.IdField field) {
+        if (!draft.containsKey(field.key)) {
+            draft.put(field.key, "");
+        }
+    }
+
+    /** Dispatches to the dropdown or free-text builder for one field. */
+    private View buildFieldView(IdTypeSpec.IdField field, Map<String, String> draft,
+                                Map<String, EditText> textInputs, Map<String, TextView> dropdownValues,
+                                Runnable onChanged) {
+        if (field.isDropdown()) {
+            return buildDropdownField(field, draft, dropdownValues, onChanged);
+        }
+        return buildTextField(field, draft, textInputs, onChanged);
+    }
+
+    /** Date fields carry the datetime input class (see IdField.date). */
+    private static boolean isDateField(IdTypeSpec.IdField field) {
+        return field != null
+                && (field.inputType & InputType.TYPE_MASK_CLASS) == InputType.TYPE_CLASS_DATETIME;
+    }
+
+    /** Number fields carry the number input class (see IdField.number). */
+    private static boolean isNumberField(IdTypeSpec.IdField field) {
+        return field != null
+                && (field.inputType & InputType.TYPE_MASK_CLASS) == InputType.TYPE_CLASS_NUMBER;
+    }
+
+    /**
+     * Two short fields side by side with equal weight and the bank form's 6dp
+     * middle gap. Reuses the standard field builders, then swaps their
+     * full-width params for weighted row params (replacing, not adding to,
+     * the 16dp top margin the builders set).
+     */
+    private View buildPairRow(IdTypeSpec.IdField first, IdTypeSpec.IdField second,
+                              Map<String, String> draft, Map<String, EditText> textInputs,
+                              Map<String, TextView> dropdownValues, Runnable onChanged) {
+        LinearLayout row = new LinearLayout(GovermentIDFormActivity.this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        rowParams.topMargin = dp(16);
+        row.setLayoutParams(rowParams);
+
+        View left = buildFieldView(first, draft, textInputs, dropdownValues, onChanged);
+        LinearLayout.LayoutParams leftParams = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        leftParams.setMarginEnd(dp(6));
+        left.setLayoutParams(leftParams);
+
+        View right = buildFieldView(second, draft, textInputs, dropdownValues, onChanged);
+        LinearLayout.LayoutParams rightParams = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        rightParams.setMarginStart(dp(6));
+        right.setLayoutParams(rightParams);
+
+        row.addView(left);
+        row.addView(right);
+        return row;
     }
 
     private View buildTextField(IdTypeSpec.IdField field, Map<String, String> draft,
@@ -379,7 +490,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
     }
 
     private View buildDropdownField(IdTypeSpec.IdField field, Map<String, String> draft,
-                                    Runnable onChanged) {
+                                    Map<String, TextView> dropdownValues, Runnable onChanged) {
         LinearLayout wrap = new LinearLayout(GovermentIDFormActivity.this);
         wrap.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(
@@ -414,6 +525,11 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         valueView.setSingleLine(true);
         valueView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         valueView.setTextColor(getResources().getColor(R.color.text_primary, null));
+        // Focusable so a failed save can show the same setError popup a text
+        // field shows — dropdown errors behave exactly like date-of-birth
+        // errors, with no extra label below the field.
+        valueView.setFocusable(true);
+        valueView.setFocusableInTouchMode(true);
 
         String current = draft.get(field.key);
         if (current == null) {
@@ -445,6 +561,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                         draft.put(field.key, picked);
                         valueView.setText(picked);
                         valueView.setAlpha(1f);
+                        hideFieldError(dropdownValues, field.key);
                         onChanged.run();
                         d.dismiss();
                     })
@@ -453,17 +570,39 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                         draft.put(field.key, "");
                         valueView.setText("Select");
                         valueView.setAlpha(0.4f);
+                        hideFieldError(dropdownValues, field.key);
                         onChanged.run();
                     })
                     .show();
         });
 
         wrap.addView(row);
+
+        // Registered for setError like a text input — a failed save flags the
+        // value text itself, never a label below the field.
+        dropdownValues.put(field.key, valueView);
         return wrap;
     }
 
     private boolean validate(IdTypeSpec.IdType spec, Map<String, String> values,
-                             Map<String, EditText> textInputs) {
+                             Map<String, EditText> textInputs, Map<String, TextView> dropdownValues) {
+        // Document-specific contracts run before the generic pass so the user
+        // sees the document rule first: exactly-12-digit numeric TIN / PIN and
+        // numeric date shapes (presence itself is covered by the generic
+        // required check below).
+        if (spec != null && IdTypeSpec.TYPE_TIN.equalsIgnoreCase(spec.name)) {
+            if (!validateTinFields(values, textInputs, dropdownValues)) {
+                return false;
+            }
+        } else if (spec != null && IdTypeSpec.TYPE_PHILHEALTH.equalsIgnoreCase(spec.name)) {
+            if (!validatePhilHealthFields(values, textInputs, dropdownValues)) {
+                return false;
+            }
+        } else if (spec != null && IdTypeSpec.TYPE_NATIONAL_ID.equalsIgnoreCase(spec.name)) {
+            if (!validateNationalIdFields(values, textInputs, dropdownValues)) {
+                return false;
+            }
+        }
         for (IdTypeSpec.IdField f : spec.fields) {
             String v = values.get(f.key);
             if (v == null) {
@@ -471,27 +610,158 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             }
             v = v.trim();
             if (f.required && v.isEmpty()) {
-                EditText input = textInputs.get(f.key);
-                if (input != null) {
-                    input.setError(f.label + " is required");
-                    input.requestFocus();
-                } else {
-                    Toast.makeText(GovermentIDFormActivity.this, f.label + " is required", Toast.LENGTH_SHORT).show();
-                }
-                return false;
+                return failField(textInputs, dropdownValues, f.key, f.label + " is required");
             }
             if (f.sensitive && !v.isEmpty() && v.replaceAll("[^A-Za-z0-9]", "").length() < 4) {
-                EditText input = textInputs.get(f.key);
-                if (input != null) {
-                    input.setError(f.label + " looks too short");
-                    input.requestFocus();
-                } else {
-                    Toast.makeText(GovermentIDFormActivity.this, f.label + " looks too short", Toast.LENGTH_SHORT).show();
-                }
-                return false;
+                return failField(textInputs, dropdownValues, f.key, f.label + " looks too short");
             }
         }
         return true;
+    }
+
+    /**
+     * TIN-specific document rules. Fail-fast in field order (TIN, birth, issue)
+     * so the first offender gets focus, matching the generic pass behavior.
+     *
+     * <p>BIR TINs are exactly 12 digits with no alphabet (digit count is what
+     * matters). Dates are exactly 8 digits (YYYYMMDD) — no calendar computation.
+     */
+    private boolean validateTinFields(Map<String, String> values,
+                                      Map<String, EditText> textInputs,
+                                      Map<String, TextView> dropdownValues) {
+        String tinError = exactDigitNumberError("TIN", values.get("tinNumber"), 12);
+        if (tinError != null) {
+            return failField(textInputs, dropdownValues, "tinNumber", tinError);
+        }
+
+        String dobError = numericDateError("Date of Birth", values.get("dateOfBirth"));
+        if (dobError != null) {
+            return failField(textInputs, dropdownValues, "dateOfBirth", dobError);
+        }
+        String issueError = numericDateError("Date of Issue", values.get("dateOfIssue"));
+        if (issueError != null) {
+            return failField(textInputs, dropdownValues, "dateOfIssue", issueError);
+        }
+        return true;
+    }
+
+    /**
+     * PhilHealth document rules: 12-digit PhilHealth No. (grouped 3-3-3-3 on
+     * the face, same presentational rule as the TIN) plus the shared numeric
+     * date shape for birth. Fail-fast in field order, matching the TIN pass.
+     */
+    private boolean validatePhilHealthFields(Map<String, String> values,
+                                             Map<String, EditText> textInputs,
+                                             Map<String, TextView> dropdownValues) {
+        String pinError = exactDigitNumberError("PhilHealth No.", values.get("philhealth_no"), 12);
+        if (pinError != null) {
+            return failField(textInputs, dropdownValues, "philhealth_no", pinError);
+        }
+
+        String dobError = numericDateError("Date of Birth", values.get("dateOfBirth"));
+        if (dobError != null) {
+            return failField(textInputs, dropdownValues, "dateOfBirth", dobError);
+        }
+        return true;
+    }
+
+    /**
+     * National ID document rules: 16-digit numeric PSN (grouped 4-4-4-4 on
+     * the face) plus the shared 8-digit shapes for birth and issue. Fail-fast
+     * in field order, matching the other passes.
+     */
+    private boolean validateNationalIdFields(Map<String, String> values,
+                                             Map<String, EditText> textInputs,
+                                             Map<String, TextView> dropdownValues) {
+        String psnError = exactDigitNumberError("PSN", values.get("psn"), 16);
+        if (psnError != null) {
+            return failField(textInputs, dropdownValues, "psn", psnError);
+        }
+
+        String dobError = numericDateError("Date of Birth", values.get("birth_date"));
+        if (dobError != null) {
+            return failField(textInputs, dropdownValues, "birth_date", dobError);
+        }
+        String issueError = numericDateError("Date of Issue", values.get("issue_date"));
+        if (issueError != null) {
+            return failField(textInputs, dropdownValues, "issue_date", issueError);
+        }
+        return true;
+    }
+
+    /**
+     * Shared exact-length document-number rule (16-digit PSN, 12-digit TIN /
+     * PhilHealth No.): no alphabet, exactly the expected digit count. Returns
+     * the error message, or null when the value is acceptable.
+     */
+    private static String exactDigitNumberError(String label, String rawValue, int digits) {
+        String raw = trimmed(rawValue);
+        if (raw.isEmpty()) {
+            return label + " is required";
+        }
+        if (raw.matches(".*[A-Za-z].*")) {
+            return label + " must contain numbers only (no letters)";
+        }
+        if (raw.replaceAll("\\D", "").length() != digits) {
+            return label + " must be exactly " + digits + " digits";
+        }
+        return null;
+    }
+
+    /**
+     * Numeric date-shape check: exactly 8 digits (YYYYMMDD) — the field caps
+     * at 8 chars so dashes can't be typed. Empty is valid here — presence is
+     * governed by the field's required flag, not format. No calendar math is
+     * computed. Returns the error message, or null when acceptable.
+     */
+    private static String numericDateError(String label, String rawValue) {
+        String raw = rawValue != null ? rawValue.trim() : "";
+        if (raw.isEmpty()) {
+            return null;
+        }
+        // Exactly 8 digits, nothing else. This single check rejects alphabet,
+        // month names, dashes, and wrong lengths with one message.
+        if (!raw.matches("\\d{8}")) {
+            return label + " must be 8 digits (YYYYMMDD)";
+        }
+        return null;
+    }
+
+    /**
+     * Flags one field invalid and returns false. Text inputs and dropdown
+     * values both use setError plus focus, so every field — including Blood
+     * Type — behaves exactly like Date of Birth. The toast survives only as a
+     * last resort for a key bound to neither, which should never happen while
+     * builders register every field.
+     */
+    private boolean failField(Map<String, EditText> textInputs, Map<String, TextView> dropdownValues,
+                              String key, String message) {
+        EditText input = textInputs.get(key);
+        if (input != null) {
+            input.setError(message);
+            input.requestFocus();
+            return false;
+        }
+        TextView value = dropdownValues != null ? dropdownValues.get(key) : null;
+        if (value != null) {
+            value.setError(message);
+            value.requestFocus();
+            return false;
+        }
+        Toast.makeText(GovermentIDFormActivity.this, message, Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    /** Clears a dropdown's setError once the user picks or clears a value. */
+    private static void hideFieldError(Map<String, TextView> dropdownValues, String key) {
+        TextView value = dropdownValues != null ? dropdownValues.get(key) : null;
+        if (value != null) {
+            value.setError(null);
+        }
+    }
+
+    private static String trimmed(String value) {
+        return value != null ? value.trim() : "";
     }
 
     private static int indexOfOption(String[] options, String value) {
@@ -506,30 +776,22 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         return -1;
     }
 
-    private void applyIdTypeSelection(int pos, TextView dialogTitle, boolean isEdit,
+    private void applyIdTypeSelection(int pos,
                                       LinearLayout formContainer,
                                       Map<String, String> draft, Map<String, EditText> textInputs,
+                                      Map<String, TextView> dropdownValues,
                                       Runnable refreshPreview, LinearLayout dotsContainer,
                                       IdCardDesignAdapter designAdapter, int[] selectedType) {
         if (pos < 0 || pos >= IdTypeSpec.getTypeNames().length) {
             return;
         }
         selectedType[0] = pos;
-        updateDialogTitle(dialogTitle, isEdit, IdTypeSpec.getTypeNames()[pos]);
         rebuildForm(formContainer, currentSpec(pos, true, null, draft),
-                draft, textInputs, refreshPreview);
+                draft, textInputs, dropdownValues, refreshPreview);
         if (dotsContainer != null && designAdapter != null) {
             setupDots(dotsContainer, designAdapter.getTypeCount(), pos);
         }
         refreshPreview.run();
-    }
-
-    private void updateDialogTitle(TextView dialogTitle, boolean isEdit, String typeName) {
-        if (isEdit) {
-            dialogTitle.setText("Edit " + typeName);
-        } else {
-            dialogTitle.setText(typeName);
-        }
     }
 
     private void setupDots(LinearLayout container, int count, int selected) {
