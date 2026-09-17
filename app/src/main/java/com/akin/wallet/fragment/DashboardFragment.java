@@ -172,14 +172,7 @@ public class DashboardFragment extends Fragment {
 
     /** Opens a social edit form directly (only View All opens the account screen). */
     private void openSocialEditor(CredentialItem item) {
-        Intent edit = new Intent(requireContext(), SocialAccountFormActivity.class);
-        edit.putExtra(SocialAccountFormActivity.EXTRA_LOGIN_ID, (long) item.getId());
-        edit.putExtra(SocialAccountFormActivity.EXTRA_PLATFORM, item.getPlatform());
-        edit.putExtra(SocialAccountFormActivity.EXTRA_USERNAME, item.getUsername());
-        edit.putExtra(SocialAccountFormActivity.EXTRA_PASSWORD, item.getPassword());
-        edit.putExtra(SocialAccountFormActivity.EXTRA_PIN, item.getPin());
-        edit.putExtra(SocialAccountFormActivity.EXTRA_ICON_RES, item.getIconRes());
-        startActivity(edit);
+        startActivity(SocialAccountFormActivity.editIntent(requireContext(), item));
     }
 
     /** Opens the ID creation form directly (IDs tab is gone; FAB is the only entry). */

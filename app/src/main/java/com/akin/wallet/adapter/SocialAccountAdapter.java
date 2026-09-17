@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import com.akin.wallet.R;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.CredentialItem;
+import com.akin.wallet.model.PlatformIcons;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
@@ -76,7 +77,7 @@ public class SocialAccountAdapter extends RecyclerView.Adapter<SocialAccountAdap
         CredentialItem item = loginItems.get(position);
         holder.serviceName.setText(item.getPlatform());
         holder.username.setText(item.getUsername());
-        holder.iconService.setImageResource(item.getIconRes());
+        PlatformIcons.bindIcon(holder.iconService, item.getPlatform(), item.getIconRes());
 
         boolean isExpanded = position == expandedPosition;
         holder.expandedSection.setVisibility(isExpanded ? View.VISIBLE : View.GONE);

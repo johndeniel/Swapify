@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.akin.wallet.adapter.LinkedAccountAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.CredentialItem;
+import com.akin.wallet.model.PlatformIcons;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +44,28 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     public static final String EXTRA_PIN = "extra_pin";
     public static final String EXTRA_ICON_RES = "extra_icon_res";
 
+    /** Default pick for a fresh form (also the icon fallback for legacy rows). */
+    public static final String DEFAULT_PLATFORM_NAME = "Google";
+
+    /**
+     * Intent that opens this form to edit an existing credential. Single
+     * packing site so Dashboard and View All can't drift apart.
+     */
+    public static Intent editIntent(@NonNull Context context,
+                                    @NonNull CredentialItem item) {
+        Intent edit = new Intent(context, SocialAccountFormActivity.class);
+        edit.putExtra(EXTRA_LOGIN_ID, (long) item.getId());
+        edit.putExtra(EXTRA_PLATFORM, item.getPlatform());
+        edit.putExtra(EXTRA_USERNAME, item.getUsername());
+        edit.putExtra(EXTRA_PASSWORD, item.getPassword());
+        edit.putExtra(EXTRA_PIN, item.getPin());
+        edit.putExtra(EXTRA_ICON_RES, item.getIconRes());
+        return edit;
+    }
+
     private AppDatabaseHelper dbHelper;
-    private int selectedIcon = R.drawable.google;
-    private String selectedName = "Google";
+    private int selectedIcon = PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME);
+    private String selectedName = DEFAULT_PLATFORM_NAME;
     private ImageView platformIcon;
     private TextView platformName;
     private LinearLayout associateSection;
@@ -121,14 +141,15 @@ public class SocialAccountFormActivity extends AppCompatActivity {
                     getIntent().getStringExtra(EXTRA_USERNAME),
                     getIntent().getStringExtra(EXTRA_PASSWORD),
                     getIntent().getStringExtra(EXTRA_PIN),
-                    getIntent().getIntExtra(EXTRA_ICON_RES, R.drawable.google));
+                    getIntent().getIntExtra(EXTRA_ICON_RES,
+                            PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME)));
             bindEditForm(item);
         }
     }
 
     private void bindAddForm() {
-        selectedIcon = R.drawable.google;
-        selectedName = "Google";
+        selectedIcon = PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME);
+        selectedName = DEFAULT_PLATFORM_NAME;
         final Context context = this;
 
         platformIcon = findViewById(R.id.platform_icon);
@@ -267,9 +288,9 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
         btnSave.setText("Update");
 
-        selectedIcon = item.getIconRes();
+        selectedIcon = PlatformIcons.iconFor(item.getPlatform(), item.getIconRes());
         selectedName = item.getPlatform();
-        platformIcon.setImageResource(item.getIconRes());
+        platformIcon.setImageResource(selectedIcon);
         platformName.setText(item.getPlatform());
         inputUsername.setText(item.getUsername());
         inputPassword.setText(item.getPassword());

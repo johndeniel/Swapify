@@ -1,7 +1,6 @@
 package com.akin.wallet;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -40,15 +39,8 @@ public class SocialAccountActivity extends AppCompatActivity {
         adapter.setOnCredentialActionListener(new SocialAccountAdapter.OnCredentialActionListener() {
             @Override
             public void onEdit(CredentialItem item) {
-                Intent edit = new Intent(SocialAccountActivity.this,
-                        SocialAccountFormActivity.class);
-                edit.putExtra(SocialAccountFormActivity.EXTRA_LOGIN_ID, (long) item.getId());
-                edit.putExtra(SocialAccountFormActivity.EXTRA_PLATFORM, item.getPlatform());
-                edit.putExtra(SocialAccountFormActivity.EXTRA_USERNAME, item.getUsername());
-                edit.putExtra(SocialAccountFormActivity.EXTRA_PASSWORD, item.getPassword());
-                edit.putExtra(SocialAccountFormActivity.EXTRA_PIN, item.getPin());
-                edit.putExtra(SocialAccountFormActivity.EXTRA_ICON_RES, item.getIconRes());
-                startActivity(edit);
+                startActivity(SocialAccountFormActivity.editIntent(
+                        SocialAccountActivity.this, item));
             }
 
             @Override

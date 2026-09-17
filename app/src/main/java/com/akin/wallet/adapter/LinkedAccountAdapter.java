@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 import com.akin.wallet.model.CredentialItem;
+import com.akin.wallet.model.PlatformIcons;
 
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
         CredentialItem item = items.get(position);
         holder.name.setText(item.getPlatform());
         holder.email.setText(item.getUsername());
-        holder.icon.setImageResource(item.getIconRes());
+        PlatformIcons.bindIcon(holder.icon, item.getPlatform(), item.getIconRes());
 
         if (showRemove) {
             holder.action.setImageResource(R.drawable.ic_remove_circle);

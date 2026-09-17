@@ -2,7 +2,7 @@ package com.akin.wallet.adapter;
 
 import android.view.LayoutInflater;
 import com.akin.wallet.R;
-import com.akin.wallet.model.PlatformOption;
+import com.akin.wallet.model.PlatformIcons;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -23,11 +23,11 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
         void onPlatformSelected(int iconRes, String name, String url);
     }
 
-    private final List<PlatformOption> platforms;
-    private final List<PlatformOption> platformsFull;
+    private final List<PlatformIcons.Option> platforms;
+    private final List<PlatformIcons.Option> platformsFull;
     private final OnPlatformSelectedListener listener;
 
-    public PlatformSelectionAdapter(List<PlatformOption> platforms, OnPlatformSelectedListener listener) {
+    public PlatformSelectionAdapter(List<PlatformIcons.Option> platforms, OnPlatformSelectedListener listener) {
         this.platforms = platforms;
         this.platformsFull = new ArrayList<>(platforms);
         this.listener = listener;
@@ -42,7 +42,7 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
 
     @Override
     public void onBindViewHolder(@NonNull PlatformViewHolder holder, int position) {
-        PlatformOption item = platforms.get(position);
+        PlatformIcons.Option item = platforms.get(position);
         holder.icon.setImageResource(item.getIconRes());
         holder.name.setText(item.getName());
         holder.url.setText(item.getUrl());
@@ -63,12 +63,12 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
     private final Filter platformFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-            List<PlatformOption> filtered = new ArrayList<>();
+            List<PlatformIcons.Option> filtered = new ArrayList<>();
             if (constraint == null || constraint.length() == 0) {
                 filtered.addAll(platformsFull);
             } else {
                 String filterPattern = constraint.toString().toLowerCase().trim();
-                for (PlatformOption item : platformsFull) {
+                for (PlatformIcons.Option item : platformsFull) {
                     if (item.getName().toLowerCase().contains(filterPattern)
                             || item.getUrl().toLowerCase().contains(filterPattern)) {
                         filtered.add(item);
@@ -84,7 +84,7 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
         @SuppressWarnings("unchecked")
         protected void publishResults(CharSequence constraint, FilterResults results) {
             platforms.clear();
-            platforms.addAll((List<PlatformOption>) results.values);
+            platforms.addAll((List<PlatformIcons.Option>) results.values);
             notifyDataSetChanged();
         }
     };

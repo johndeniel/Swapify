@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 import com.akin.wallet.model.CredentialItem;
+import com.akin.wallet.model.PlatformIcons;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,15 +57,7 @@ public class DashboardSocialAccountAdapter extends RecyclerView.Adapter<Dashboar
         String username = item.getUsername() != null ? item.getUsername().trim() : "";
         holder.title.setText(platform);
         holder.sub.setText(username.isEmpty() ? "Social Login" : username);
-        try {
-            if (item.getIconRes() != 0) {
-                holder.icon.setImageResource(item.getIconRes());
-            } else {
-                holder.icon.setImageResource(R.drawable.ic_social);
-            }
-        } catch (Exception e) {
-            holder.icon.setImageResource(R.drawable.ic_social);
-        }
+        PlatformIcons.bindIcon(holder.icon, item.getPlatform(), item.getIconRes());
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onAccountClick(item);
