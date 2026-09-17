@@ -12,7 +12,9 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:adjustViewBounds="true"
+        android:background="@drawable/bg_dashboard_icon_white"
         android:scaleType="fitCenter"
+        android:padding="6dp"
         android:contentDescription="@null" />
 
     <LinearLayout

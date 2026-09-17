@@ -55,7 +55,9 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:adjustViewBounds="true"
+            android:background="@drawable/bg_dashboard_icon_white"
             android:scaleType="fitCenter"
+            android:padding="7dp"
             android:contentDescription="@null" />
 
         <TextView

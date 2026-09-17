@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_card"
+    android:background="@drawable/bg_dashboard_card"
     android:orientation="vertical"
     android:padding="14dp"
     android:layout_marginBottom="10dp">
@@ -20,7 +20,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:adjustViewBounds="true"
+            android:background="@drawable/bg_dashboard_icon_white"
             android:scaleType="fitCenter"
+            android:padding="8dp"
             android:contentDescription="@null" />
 
         <LinearLayout
@@ -42,7 +44,7 @@
                 android:id="@+id/username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/dashboard_muted"
                 android:textSize="13sp"
                 android:layout_marginTop="1dp" />
 
@@ -71,7 +73,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/section_account_info"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/dashboard_muted"
             android:textSize="13sp"
             android:layout_marginBottom="10dp" />
 
@@ -103,7 +105,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/field_username"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/dashboard_muted"
                     android:textSize="12sp" />
 
                 <TextView
@@ -156,7 +158,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/field_password"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/dashboard_muted"
                     android:textSize="12sp" />
 
                 <TextView
@@ -218,7 +220,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/field_pin"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/dashboard_muted"
                     android:textSize="12sp" />
 
                 <TextView
@@ -267,7 +269,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/section_associated_accounts"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/dashboard_muted"
                 android:textSize="13sp"
                 android:layout_marginBottom="6dp" />
 
