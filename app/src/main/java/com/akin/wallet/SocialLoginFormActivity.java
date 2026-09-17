@@ -1,10 +1,8 @@
-package com.akin.wallet.fragment;
+package com.akin.wallet;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
-
-import com.akin.wallet.R;
 import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -18,14 +16,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.adapter.LinkedAccountAdapter;
 import com.akin.wallet.adapter.PlatformSelectionAdapter;
-import com.akin.wallet.adapter.SocialLoginAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.PlatformOption;
@@ -34,97 +30,68 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SocialLoginsFragment extends Fragment {
+/**
+ * Social login creation/edit form as a full screen (replaces the old bottom
+ * sheets). Add mode when no login id is passed; edit mode otherwise. The
+ * platform and link pickers stay as nested bottom sheets. Callers refresh in
+ * onResume; RESULT_OK is set on successful save.
+ */
+public class SocialLoginFormActivity extends AppCompatActivity {
 
-    private SocialLoginAdapter adapter;
+    public static final String EXTRA_LOGIN_ID = "extra_login_id";
+    public static final String EXTRA_PLATFORM = "extra_platform";
+    public static final String EXTRA_USERNAME = "extra_username";
+    public static final String EXTRA_PASSWORD = "extra_password";
+    public static final String EXTRA_PIN = "extra_pin";
+    public static final String EXTRA_ICON_RES = "extra_icon_res";
+
     private AppDatabaseHelper dbHelper;
-    private Runnable sheetSavedListener;
     private int selectedIcon = R.drawable.google;
     private String selectedName = "Google";
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        // No UI: sheets only. Plain view keeps the fragment contract intact.
-        return new View(requireContext());
-    }
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_social_login_form);
 
-    /**
-     * Headless sheet host: lets the dashboard open the creation sheet without
-     * navigating to this tab. Attach via FragmentManager first, then call.
-     */
-    public void initSheetHost(@NonNull Context context, @Nullable Runnable onSaved) {
-        dbHelper = new AppDatabaseHelper(context);
-        adapter = new SocialLoginAdapter(new ArrayList<>(), dbHelper);
-        sheetSavedListener = onSaved;
-    }
+        dbHelper = new AppDatabaseHelper(this);
 
-    /** Opens the creation sheet directly (no navigation). */
-    public void openAddSheet() {
-        showAddLoginDialog();
-    }
-
-    /** Opens the edit sheet for an existing account directly (no navigation). */
-    public void openEditSheet(@NonNull CredentialItem item) {
-        showEditLoginDialog(item);
-    }
-
-    private void notifySheetSaved() {
-        if (sheetSavedListener != null) {
-            sheetSavedListener.run();
+        long id = getIntent().getLongExtra(EXTRA_LOGIN_ID, -1);
+        if (id == -1) {
+            bindAddForm();
+        } else {
+            CredentialItem item = new CredentialItem(
+                    (int) id,
+                    getIntent().getStringExtra(EXTRA_PLATFORM),
+                    getIntent().getStringExtra(EXTRA_USERNAME),
+                    getIntent().getStringExtra(EXTRA_PASSWORD),
+                    getIntent().getStringExtra(EXTRA_PIN),
+                    getIntent().getIntExtra(EXTRA_ICON_RES, R.drawable.google));
+            bindEditForm(item);
         }
     }
 
-    private void showEditLoginDialog(CredentialItem item) {
-        BottomSheetDialog dialog = new BottomSheetDialog(requireContext(),
-                com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_social_account, null);
-        dialog.setContentView(dialogView);
+    private void bindAddForm() {
+        selectedIcon = R.drawable.google;
+        selectedName = "Google";
+        final Context context = this;
 
-        dialog.setOnShowListener(dialogInterface -> {
-            if (dialog.getWindow() != null) {
-                dialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
-            }
-            com.google.android.material.bottomsheet.BottomSheetDialog dialog2 =
-                    (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
-            View bottomSheet = dialog2.findViewById(com.google.android.material.R.id.design_bottom_sheet);
-            bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-            bottomSheet.requestLayout();
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setHideable(false);
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setDraggable(false);
-        });
 
-        ImageView platformIcon = dialogView.findViewById(R.id.platform_icon);
-        TextView platformName = dialogView.findViewById(R.id.platform_name);
-        TextView btnSave = dialogView.findViewById(R.id.btn_save);
-        EditText inputUsername = dialogView.findViewById(R.id.input_username);
-        EditText inputPassword = dialogView.findViewById(R.id.input_password);
-        EditText inputPin = dialogView.findViewById(R.id.input_pin);
+        ImageView platformIcon = findViewById(R.id.platform_icon);
+        TextView platformName = findViewById(R.id.platform_name);
 
-        btnSave.setText("Update");
+        platformIcon.setImageResource(selectedIcon);
+        platformName.setText(selectedName);
 
-        selectedIcon = item.getIconRes();
-        selectedName = item.getPlatform();
-        platformIcon.setImageResource(item.getIconRes());
-        platformName.setText(item.getPlatform());
-        inputUsername.setText(item.getUsername());
-        inputPassword.setText(item.getPassword());
-        inputPin.setText(item.getPin());
-
-        dialogView.findViewById(R.id.platform_selector).setOnClickListener(v -> {
-            BottomSheetDialog pickerDialog = new BottomSheetDialog(requireContext(),
+        findViewById(R.id.platform_selector).setOnClickListener(v -> {
+            BottomSheetDialog pickerDialog = new BottomSheetDialog(context,
                     com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-            View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_select_social_platform, null);
+            View pickerView = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_select_social_platform, null);
             pickerDialog.setContentView(pickerView);
 
             pickerDialog.setOnShowListener(dialogInterface -> {
                 if (pickerDialog.getWindow() != null) {
-                    pickerDialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
+                    pickerDialog.getWindow().setStatusBarColor(context.getColor(R.color.dark_bg));
                 }
                 com.google.android.material.bottomsheet.BottomSheetDialog dialog3 =
                         (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -140,8 +107,8 @@ public class SocialLoginsFragment extends Fragment {
             });
 
             RecyclerView recyclerPlatforms = pickerView.findViewById(R.id.recycler_platforms);
-            recyclerPlatforms.setLayoutManager(new LinearLayoutManager(requireContext()));
-            PlatformSelectionAdapter platformAdapter = new PlatformSelectionAdapter(getPlatforms(),
+            recyclerPlatforms.setLayoutManager(new LinearLayoutManager(context));
+            PlatformSelectionAdapter platformAdapter2 = new PlatformSelectionAdapter(getPlatforms(),
                     (iconRes, name, url) -> {
                         selectedIcon = iconRes;
                         selectedName = name;
@@ -149,13 +116,13 @@ public class SocialLoginsFragment extends Fragment {
                         platformName.setText(name);
                         pickerDialog.dismiss();
                     });
-            recyclerPlatforms.setAdapter(platformAdapter);
+            recyclerPlatforms.setAdapter(platformAdapter2);
 
-            EditText searchPlatform = pickerView.findViewById(R.id.search_platform);
-            searchPlatform.addTextChangedListener(new android.text.TextWatcher() {
+            EditText searchPlatform2 = pickerView.findViewById(R.id.search_platform);
+            searchPlatform2.addTextChangedListener(new android.text.TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    platformAdapter.getFilter().filter(s);
+                    platformAdapter2.getFilter().filter(s);
                 }
                 @Override public void afterTextChanged(android.text.Editable s) {}
             });
@@ -163,7 +130,8 @@ public class SocialLoginsFragment extends Fragment {
             pickerDialog.show();
         });
 
-        dialogView.findViewById(R.id.btn_toggle_password).setOnClickListener(v -> {
+        EditText inputPassword = findViewById(R.id.input_password);
+        findViewById(R.id.btn_toggle_password).setOnClickListener(v -> {
             if (inputPassword.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
                 inputPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
             } else {
@@ -172,7 +140,8 @@ public class SocialLoginsFragment extends Fragment {
             inputPassword.setSelection(inputPassword.getText().length());
         });
 
-        dialogView.findViewById(R.id.btn_toggle_pin).setOnClickListener(v -> {
+        EditText inputPin = findViewById(R.id.input_pin);
+        findViewById(R.id.btn_toggle_pin).setOnClickListener(v -> {
             if (inputPin.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
                 inputPin.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
             } else {
@@ -182,19 +151,9 @@ public class SocialLoginsFragment extends Fragment {
         });
 
         List<CredentialItem> existingLogins = dbHelper.getAllLogins();
-        LinearLayout associateSection = dialogView.findViewById(R.id.associate_section);
-        RecyclerView recyclerLinked = dialogView.findViewById(R.id.recycler_linked);
+        LinearLayout associateSection = findViewById(R.id.associate_section);
+        RecyclerView recyclerLinked = findViewById(R.id.recycler_linked);
         List<CredentialItem> linkedItems = new ArrayList<>();
-
-        List<Integer> currentAssocIds = dbHelper.getAssociations(item.getId());
-        for (CredentialItem login : existingLogins) {
-            for (int assocId : currentAssocIds) {
-                if (login.getId() == assocId) {
-                    linkedItems.add(login);
-                    break;
-                }
-            }
-        }
 
         if (existingLogins.isEmpty()) {
             associateSection.setVisibility(View.GONE);
@@ -206,13 +165,12 @@ public class SocialLoginsFragment extends Fragment {
                     associateSection.setVisibility(View.GONE);
                 }
             });
-            recyclerLinked.setLayoutManager(new LinearLayoutManager(requireContext()));
+            recyclerLinked.setLayoutManager(new LinearLayoutManager(context));
             recyclerLinked.setAdapter(linkedAdapter);
 
-            dialogView.findViewById(R.id.btn_add_associate).setOnClickListener(v -> {
+            findViewById(R.id.btn_add_associate).setOnClickListener(v -> {
                 List<CredentialItem> available = new ArrayList<>();
                 for (CredentialItem existing : existingLogins) {
-                    if (existing.getId() == item.getId()) continue;
                     boolean alreadyLinked = false;
                     for (CredentialItem linked : linkedItems) {
                         if (linked.getId() == existing.getId()) {
@@ -226,18 +184,18 @@ public class SocialLoginsFragment extends Fragment {
                 }
 
                 if (available.isEmpty()) {
-                    Toast.makeText(requireContext(), "All accounts already linked", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "All accounts already linked", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                BottomSheetDialog pickerDialog = new BottomSheetDialog(requireContext(),
+                BottomSheetDialog pickerDialog = new BottomSheetDialog(context,
                         com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-                View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_link_social_account, null);
+                View pickerView = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_link_social_account, null);
                 pickerDialog.setContentView(pickerView);
 
                 pickerDialog.setOnShowListener(dialogInterface -> {
                     if (pickerDialog.getWindow() != null) {
-                        pickerDialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
+                        pickerDialog.getWindow().setStatusBarColor(context.getColor(R.color.dark_bg));
                     }
                     com.google.android.material.bottomsheet.BottomSheetDialog d =
                             (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -253,8 +211,8 @@ public class SocialLoginsFragment extends Fragment {
                 });
 
                 RecyclerView recyclerAccounts = pickerView.findViewById(R.id.recycler_accounts);
-                recyclerAccounts.setLayoutManager(new LinearLayoutManager(requireContext()));
-                recyclerAccounts.setAdapter(new LinkedAccountAdapter(available, false, ( pickedItem, isRemove) -> {
+                recyclerAccounts.setLayoutManager(new LinearLayoutManager(context));
+                recyclerAccounts.setAdapter(new LinkedAccountAdapter(available, false, (pickedItem, isRemove) -> {
                     linkedItems.add(pickedItem);
                     linkedAdapter.notifyItemInserted(linkedItems.size() - 1);
                     pickerDialog.dismiss();
@@ -264,7 +222,8 @@ public class SocialLoginsFragment extends Fragment {
             });
         }
 
-        dialogView.findViewById(R.id.btn_save).setOnClickListener(v -> {
+        findViewById(R.id.btn_save).setOnClickListener(v -> {
+            EditText inputUsername = findViewById(R.id.input_username);
             String username = inputUsername.getText().toString().trim();
             String password = inputPassword.getText().toString().trim();
             String pin = inputPin.getText().toString().trim();
@@ -274,24 +233,22 @@ public class SocialLoginsFragment extends Fragment {
                 return;
             }
 
-            dbHelper.deleteLogin(item.getId());
+                CredentialItem newitem = new CredentialItem(selectedName, username, password, pin, selectedIcon);
+                long newId = dbHelper.insertLogin(newitem);
 
-            CredentialItem updated = new CredentialItem(selectedName, username, password, pin, selectedIcon);
-            long newId = dbHelper.insertLogin(updated);
+                for (CredentialItem linked : linkedItems) {
+                    dbHelper.insertAssociation(newId, linked.getId());
+                }
 
-            for (CredentialItem linked : linkedItems) {
-                dbHelper.insertAssociation(newId, linked.getId());
-            }
-
-            adapter.updateData(dbHelper.getAllLogins());
-            dialog.dismiss();
-            Toast.makeText(requireContext(), "Updated Successfully", Toast.LENGTH_SHORT).show();
+            setResult(RESULT_OK);
+            finish();
+            Toast.makeText(context, "Account Saved", Toast.LENGTH_SHORT).show();
         });
 
-        dialog.show();
+
     }
 
-    private List<PlatformOption> getPlatforms() {
+    private static List<PlatformOption> getPlatforms() {
         List<PlatformOption> platforms = new ArrayList<>();
         platforms.add(new PlatformOption(R.drawable.binance, "Binance", "binance.com"));
         platforms.add(new PlatformOption(R.drawable.bdo, "BDO", "bdo.com.ph"));
@@ -339,44 +296,36 @@ public class SocialLoginsFragment extends Fragment {
         return platforms;
     }
 
-    private void showAddLoginDialog() {
-        BottomSheetDialog dialog = new BottomSheetDialog(requireContext(),
-                com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_social_account, null);
-        dialog.setContentView(dialogView);
+    private void bindEditForm(@NonNull CredentialItem item) {
+        final Context context = this;
 
-        dialog.setOnShowListener(dialogInterface -> {
-            if (dialog.getWindow() != null) {
-                dialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
-            }
-            com.google.android.material.bottomsheet.BottomSheetDialog dialog2 =
-                    (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
-            View bottomSheet = dialog2.findViewById(com.google.android.material.R.id.design_bottom_sheet);
-            bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-            bottomSheet.requestLayout();
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setHideable(false);
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setDraggable(false);
-        });
 
-        ImageView platformIcon = dialogView.findViewById(R.id.platform_icon);
-        TextView platformName = dialogView.findViewById(R.id.platform_name);
+        ImageView platformIcon = findViewById(R.id.platform_icon);
+        TextView platformName = findViewById(R.id.platform_name);
+        TextView btnSave = findViewById(R.id.btn_save);
+        EditText inputUsername = findViewById(R.id.input_username);
+        EditText inputPassword = findViewById(R.id.input_password);
+        EditText inputPin = findViewById(R.id.input_pin);
 
-        platformIcon.setImageResource(selectedIcon);
-        platformName.setText(selectedName);
+        btnSave.setText("Update");
 
-        dialogView.findViewById(R.id.platform_selector).setOnClickListener(v -> {
-            BottomSheetDialog pickerDialog = new BottomSheetDialog(requireContext(),
+        selectedIcon = item.getIconRes();
+        selectedName = item.getPlatform();
+        platformIcon.setImageResource(item.getIconRes());
+        platformName.setText(item.getPlatform());
+        inputUsername.setText(item.getUsername());
+        inputPassword.setText(item.getPassword());
+        inputPin.setText(item.getPin());
+
+        findViewById(R.id.platform_selector).setOnClickListener(v -> {
+            BottomSheetDialog pickerDialog = new BottomSheetDialog(context,
                     com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-            View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_select_social_platform, null);
+            View pickerView = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_select_social_platform, null);
             pickerDialog.setContentView(pickerView);
 
             pickerDialog.setOnShowListener(dialogInterface -> {
                 if (pickerDialog.getWindow() != null) {
-                    pickerDialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
+                    pickerDialog.getWindow().setStatusBarColor(context.getColor(R.color.dark_bg));
                 }
                 com.google.android.material.bottomsheet.BottomSheetDialog dialog3 =
                         (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -392,8 +341,8 @@ public class SocialLoginsFragment extends Fragment {
             });
 
             RecyclerView recyclerPlatforms = pickerView.findViewById(R.id.recycler_platforms);
-            recyclerPlatforms.setLayoutManager(new LinearLayoutManager(requireContext()));
-            PlatformSelectionAdapter platformAdapter2 = new PlatformSelectionAdapter(getPlatforms(),
+            recyclerPlatforms.setLayoutManager(new LinearLayoutManager(context));
+            PlatformSelectionAdapter platformAdapter = new PlatformSelectionAdapter(getPlatforms(),
                     (iconRes, name, url) -> {
                         selectedIcon = iconRes;
                         selectedName = name;
@@ -401,13 +350,13 @@ public class SocialLoginsFragment extends Fragment {
                         platformName.setText(name);
                         pickerDialog.dismiss();
                     });
-            recyclerPlatforms.setAdapter(platformAdapter2);
+            recyclerPlatforms.setAdapter(platformAdapter);
 
-            EditText searchPlatform2 = pickerView.findViewById(R.id.search_platform);
-            searchPlatform2.addTextChangedListener(new android.text.TextWatcher() {
+            EditText searchPlatform = pickerView.findViewById(R.id.search_platform);
+            searchPlatform.addTextChangedListener(new android.text.TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    platformAdapter2.getFilter().filter(s);
+                    platformAdapter.getFilter().filter(s);
                 }
                 @Override public void afterTextChanged(android.text.Editable s) {}
             });
@@ -415,8 +364,7 @@ public class SocialLoginsFragment extends Fragment {
             pickerDialog.show();
         });
 
-        EditText inputPassword = dialogView.findViewById(R.id.input_password);
-        dialogView.findViewById(R.id.btn_toggle_password).setOnClickListener(v -> {
+        findViewById(R.id.btn_toggle_password).setOnClickListener(v -> {
             if (inputPassword.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
                 inputPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
             } else {
@@ -425,8 +373,7 @@ public class SocialLoginsFragment extends Fragment {
             inputPassword.setSelection(inputPassword.getText().length());
         });
 
-        EditText inputPin = dialogView.findViewById(R.id.input_pin);
-        dialogView.findViewById(R.id.btn_toggle_pin).setOnClickListener(v -> {
+        findViewById(R.id.btn_toggle_pin).setOnClickListener(v -> {
             if (inputPin.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
                 inputPin.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
             } else {
@@ -436,9 +383,19 @@ public class SocialLoginsFragment extends Fragment {
         });
 
         List<CredentialItem> existingLogins = dbHelper.getAllLogins();
-        LinearLayout associateSection = dialogView.findViewById(R.id.associate_section);
-        RecyclerView recyclerLinked = dialogView.findViewById(R.id.recycler_linked);
+        LinearLayout associateSection = findViewById(R.id.associate_section);
+        RecyclerView recyclerLinked = findViewById(R.id.recycler_linked);
         List<CredentialItem> linkedItems = new ArrayList<>();
+
+        List<Integer> currentAssocIds = dbHelper.getAssociations(item.getId());
+        for (CredentialItem login : existingLogins) {
+            for (int assocId : currentAssocIds) {
+                if (login.getId() == assocId) {
+                    linkedItems.add(login);
+                    break;
+                }
+            }
+        }
 
         if (existingLogins.isEmpty()) {
             associateSection.setVisibility(View.GONE);
@@ -450,12 +407,13 @@ public class SocialLoginsFragment extends Fragment {
                     associateSection.setVisibility(View.GONE);
                 }
             });
-            recyclerLinked.setLayoutManager(new LinearLayoutManager(requireContext()));
+            recyclerLinked.setLayoutManager(new LinearLayoutManager(context));
             recyclerLinked.setAdapter(linkedAdapter);
 
-            dialogView.findViewById(R.id.btn_add_associate).setOnClickListener(v -> {
+            findViewById(R.id.btn_add_associate).setOnClickListener(v -> {
                 List<CredentialItem> available = new ArrayList<>();
                 for (CredentialItem existing : existingLogins) {
+                    if (existing.getId() == item.getId()) continue;
                     boolean alreadyLinked = false;
                     for (CredentialItem linked : linkedItems) {
                         if (linked.getId() == existing.getId()) {
@@ -469,18 +427,18 @@ public class SocialLoginsFragment extends Fragment {
                 }
 
                 if (available.isEmpty()) {
-                    Toast.makeText(requireContext(), "All accounts already linked", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "All accounts already linked", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                BottomSheetDialog pickerDialog = new BottomSheetDialog(requireContext(),
+                BottomSheetDialog pickerDialog = new BottomSheetDialog(context,
                         com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-                View pickerView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_link_social_account, null);
+                View pickerView = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_link_social_account, null);
                 pickerDialog.setContentView(pickerView);
 
                 pickerDialog.setOnShowListener(dialogInterface -> {
                     if (pickerDialog.getWindow() != null) {
-                        pickerDialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
+                        pickerDialog.getWindow().setStatusBarColor(context.getColor(R.color.dark_bg));
                     }
                     com.google.android.material.bottomsheet.BottomSheetDialog d =
                             (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
@@ -496,8 +454,8 @@ public class SocialLoginsFragment extends Fragment {
                 });
 
                 RecyclerView recyclerAccounts = pickerView.findViewById(R.id.recycler_accounts);
-                recyclerAccounts.setLayoutManager(new LinearLayoutManager(requireContext()));
-                recyclerAccounts.setAdapter(new LinkedAccountAdapter(available, false, (pickedItem, isRemove) -> {
+                recyclerAccounts.setLayoutManager(new LinearLayoutManager(context));
+                recyclerAccounts.setAdapter(new LinkedAccountAdapter(available, false, ( pickedItem, isRemove) -> {
                     linkedItems.add(pickedItem);
                     linkedAdapter.notifyItemInserted(linkedItems.size() - 1);
                     pickerDialog.dismiss();
@@ -507,8 +465,7 @@ public class SocialLoginsFragment extends Fragment {
             });
         }
 
-        dialogView.findViewById(R.id.btn_save).setOnClickListener(v -> {
-            EditText inputUsername = dialogView.findViewById(R.id.input_username);
+        findViewById(R.id.btn_save).setOnClickListener(v -> {
             String username = inputUsername.getText().toString().trim();
             String password = inputPassword.getText().toString().trim();
             String pin = inputPin.getText().toString().trim();
@@ -518,19 +475,20 @@ public class SocialLoginsFragment extends Fragment {
                 return;
             }
 
-                CredentialItem newitem = new CredentialItem(selectedName, username, password, pin, selectedIcon);
-                long newId = dbHelper.insertLogin(newitem);
+            dbHelper.deleteLogin(item.getId());
 
-                for (CredentialItem linked : linkedItems) {
-                    dbHelper.insertAssociation(newId, linked.getId());
-                }
+            CredentialItem updated = new CredentialItem(selectedName, username, password, pin, selectedIcon);
+            long newId = dbHelper.insertLogin(updated);
 
-            adapter.updateData(dbHelper.getAllLogins());
-            notifySheetSaved();
-            dialog.dismiss();
-            Toast.makeText(requireContext(), "Account Saved", Toast.LENGTH_SHORT).show();
+            for (CredentialItem linked : linkedItems) {
+                dbHelper.insertAssociation(newId, linked.getId());
+            }
+
+            setResult(RESULT_OK);
+            finish();
+            Toast.makeText(context, "Updated Successfully", Toast.LENGTH_SHORT).show();
         });
 
-        dialog.show();
+
     }
 }

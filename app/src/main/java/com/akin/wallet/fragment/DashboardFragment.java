@@ -1,5 +1,6 @@
 package com.akin.wallet.fragment;
 
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -22,6 +23,7 @@ import com.akin.wallet.adapter.DashboardLoginAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
+import com.akin.wallet.SocialLoginFormActivity;
 import com.akin.wallet.model.IdCardItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -239,29 +241,15 @@ public class DashboardFragment extends Fragment {
     }
 
     /**
-     * Opens a creation sheet directly over the dashboard — no navigation, so
-     * the destination tab is never shown. The tab fragment is attached
-     * headless purely as the sheet owner; dashboard refreshes on save.
+     * Opens the login creation form directly (full screen, no navigation).
      * (Bank/ID creation moved to openBankCreator/openIdCreator.)
      */
     private void addNew(int navId) {
         if (isFabMenuOpen) {
             toggleAddMenu();
         }
-        if (sheetHost != null) {
-            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
-            sheetHost = null;
-        }
         if (navId == R.id.nav_login) {
-            SocialLoginsFragment host = new SocialLoginsFragment();
-            getChildFragmentManager().beginTransaction().add(host, null).commitNow();
-            sheetHost = host;
-            host.initSheetHost(requireContext(), () -> {
-                if (isAdded()) {
-                    refreshDashboard();
-                }
-            });
-            host.openAddSheet();
+            startActivity(new Intent(requireContext(), SocialLoginFormActivity.class));
         }
     }
 
