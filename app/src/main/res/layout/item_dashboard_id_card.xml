@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Dashboard ID carousel page. Reuses the same authentic ID face
      as the IDs tab (true 1.586:1 ratio) so added IDs look identical
-     here and in Government IDs. Sized exactly like the bank-card
+     here and in Government ID. Sized exactly like the bank-card
      pages (width set to 84% of the viewport in code). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"

@@ -36,7 +36,7 @@ import java.util.Map;
  * carousel lives in the form content; dropdowns stay alert dialogs. Callers
  * refresh in onResume; RESULT_OK is set on save.
  */
-public class IdCardFormActivity extends AppCompatActivity {
+public class GovermentIDFormActivity extends AppCompatActivity {
 
     public static final String EXTRA_ID = "extra_id";
     public static final String EXTRA_TYPE = "extra_type";
@@ -48,7 +48,7 @@ public class IdCardFormActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_government_id_form);
+        setContentView(R.layout.activity_goverment_id_form);
 
         dbHelper = new AppDatabaseHelper(this);
 
@@ -114,7 +114,7 @@ public class IdCardFormActivity extends AppCompatActivity {
         // Swiping (or tapping) a page selects that type and rebuilds the form.
         IdCardDesignAdapter designAdapter = new IdCardDesignAdapter(pos -> {
             if (isEdit && !knownType[0]) {
-                Toast.makeText(IdCardFormActivity.this,
+                Toast.makeText(GovermentIDFormActivity.this,
                         "ID type is fixed for entries from a newer version", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -129,7 +129,7 @@ public class IdCardFormActivity extends AppCompatActivity {
         RecyclerView recyclerDesign = findViewById(R.id.recycler_card_design);
         carouselRef[0] = recyclerDesign;
         LinearLayoutManager layoutManager =
-                new LinearLayoutManager(IdCardFormActivity.this, LinearLayoutManager.HORIZONTAL, false);
+                new LinearLayoutManager(GovermentIDFormActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerDesign.setLayoutManager(layoutManager);
         recyclerDesign.setAdapter(designAdapter);
         PagerSnapHelper snapHelper = new PagerSnapHelper();
@@ -204,11 +204,11 @@ public class IdCardFormActivity extends AppCompatActivity {
                     updated = new IdCardItem(existing.getId(), typeName, filtered, fixedDesign);
                 }
                 dbHelper.updateIdCard(updated);
-                Toast.makeText(IdCardFormActivity.this, "Updated Successfully", Toast.LENGTH_SHORT).show();
+                Toast.makeText(GovermentIDFormActivity.this, "Updated Successfully", Toast.LENGTH_SHORT).show();
             } else {
                 IdCardItem newCard = new IdCardItem(typeName, filtered, fixedDesign);
                 dbHelper.insertIdCard(newCard);
-                Toast.makeText(IdCardFormActivity.this, "ID Saved", Toast.LENGTH_SHORT).show();
+                Toast.makeText(GovermentIDFormActivity.this, "ID Saved", Toast.LENGTH_SHORT).show();
             }
             setResult(RESULT_OK);
             finish();
@@ -218,7 +218,7 @@ public class IdCardFormActivity extends AppCompatActivity {
         TextView btnDelete = findViewById(R.id.btn_delete);
         if (isEdit) {
             btnDelete.setVisibility(View.VISIBLE);
-            btnDelete.setOnClickListener(v -> new AlertDialog.Builder(IdCardFormActivity.this)
+            btnDelete.setOnClickListener(v -> new AlertDialog.Builder(GovermentIDFormActivity.this)
                     .setTitle("Delete ID")
                     .setMessage("Are you sure you want to delete this "
                             + existing.getIdType() + "?")
@@ -226,7 +226,7 @@ public class IdCardFormActivity extends AppCompatActivity {
                         dbHelper.deleteIdCard(existing.getId());
                         setResult(RESULT_OK);
                         finish();
-                        Toast.makeText(IdCardFormActivity.this,
+                        Toast.makeText(GovermentIDFormActivity.this,
                                 "Deleted Successfully", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("Cancel", null)
@@ -291,20 +291,20 @@ public class IdCardFormActivity extends AppCompatActivity {
 
     private View buildTextField(IdTypeSpec.IdField field, Map<String, String> draft,
                                 Map<String, EditText> textInputs, Runnable onChanged) {
-        LinearLayout wrap = new LinearLayout(IdCardFormActivity.this);
+        LinearLayout wrap = new LinearLayout(GovermentIDFormActivity.this);
         wrap.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         wrapParams.topMargin = dp(16);
         wrap.setLayoutParams(wrapParams);
 
-        TextView label = new TextView(IdCardFormActivity.this);
+        TextView label = new TextView(GovermentIDFormActivity.this);
         label.setText(field.required ? field.label + " *" : field.label);
         label.setTextColor(getResources().getColor(R.color.text_secondary, null));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         wrap.addView(label);
 
-        EditText input = new EditText(IdCardFormActivity.this);
+        EditText input = new EditText(GovermentIDFormActivity.this);
         LinearLayout.LayoutParams inputParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         inputParams.topMargin = dp(8);
@@ -349,20 +349,20 @@ public class IdCardFormActivity extends AppCompatActivity {
 
     private View buildDropdownField(IdTypeSpec.IdField field, Map<String, String> draft,
                                     Runnable onChanged) {
-        LinearLayout wrap = new LinearLayout(IdCardFormActivity.this);
+        LinearLayout wrap = new LinearLayout(GovermentIDFormActivity.this);
         wrap.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         wrapParams.topMargin = dp(16);
         wrap.setLayoutParams(wrapParams);
 
-        TextView label = new TextView(IdCardFormActivity.this);
+        TextView label = new TextView(GovermentIDFormActivity.this);
         label.setText(field.required ? field.label + " *" : field.label);
         label.setTextColor(getResources().getColor(R.color.text_secondary, null));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         wrap.addView(label);
 
-        LinearLayout row = new LinearLayout(IdCardFormActivity.this);
+        LinearLayout row = new LinearLayout(GovermentIDFormActivity.this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
@@ -376,7 +376,7 @@ public class IdCardFormActivity extends AppCompatActivity {
         row.setClickable(true);
         row.setFocusable(true);
 
-        TextView valueView = new TextView(IdCardFormActivity.this);
+        TextView valueView = new TextView(GovermentIDFormActivity.this);
         LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         valueView.setLayoutParams(valueParams);
@@ -396,7 +396,7 @@ public class IdCardFormActivity extends AppCompatActivity {
             valueView.setAlpha(1f);
         }
 
-        ImageView chevron = new ImageView(IdCardFormActivity.this);
+        ImageView chevron = new ImageView(GovermentIDFormActivity.this);
         chevron.setImageResource(R.drawable.ic_dropdown);
         LinearLayout.LayoutParams chevParams = new LinearLayout.LayoutParams(dp(20), dp(20));
         chevron.setLayoutParams(chevParams);
@@ -407,7 +407,7 @@ public class IdCardFormActivity extends AppCompatActivity {
 
         row.setOnClickListener(v -> {
             int checked = indexOfOption(field.options, draft.get(field.key));
-            new AlertDialog.Builder(IdCardFormActivity.this)
+            new AlertDialog.Builder(GovermentIDFormActivity.this)
                     .setTitle(field.label)
                     .setSingleChoiceItems(field.options, checked, (d, which) -> {
                         String picked = field.options[which];
@@ -445,7 +445,7 @@ public class IdCardFormActivity extends AppCompatActivity {
                     input.setError(f.label + " is required");
                     input.requestFocus();
                 } else {
-                    Toast.makeText(IdCardFormActivity.this, f.label + " is required", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GovermentIDFormActivity.this, f.label + " is required", Toast.LENGTH_SHORT).show();
                 }
                 return false;
             }
@@ -455,7 +455,7 @@ public class IdCardFormActivity extends AppCompatActivity {
                     input.setError(f.label + " looks too short");
                     input.requestFocus();
                 } else {
-                    Toast.makeText(IdCardFormActivity.this, f.label + " looks too short", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GovermentIDFormActivity.this, f.label + " looks too short", Toast.LENGTH_SHORT).show();
                 }
                 return false;
             }
@@ -507,7 +507,7 @@ public class IdCardFormActivity extends AppCompatActivity {
         int size = (int) (8 * density);
         int margin = (int) (4 * density);
         for (int i = 0; i < count; i++) {
-            View dot = new View(IdCardFormActivity.this);
+            View dot = new View(GovermentIDFormActivity.this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
             params.setMargins(margin, 0, margin, 0);
             dot.setLayoutParams(params);

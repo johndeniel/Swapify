@@ -22,11 +22,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SocialLoginsActivity"
+            android:name=".SocialAccountActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".SocialLoginFormActivity"
+            android:name=".SocialAccountFormActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
@@ -34,7 +34,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".IdCardFormActivity"
+            android:name=".GovermentIDFormActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity

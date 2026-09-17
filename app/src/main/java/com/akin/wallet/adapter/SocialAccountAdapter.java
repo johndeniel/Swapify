@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SocialLoginAdapter extends RecyclerView.Adapter<SocialLoginAdapter.LoginViewHolder> implements Filterable {
+public class SocialAccountAdapter extends RecyclerView.Adapter<SocialAccountAdapter.LoginViewHolder> implements Filterable {
 
     public interface OnCredentialActionListener {
         void onEdit(CredentialItem item);
@@ -38,7 +38,7 @@ public class SocialLoginAdapter extends RecyclerView.Adapter<SocialLoginAdapter.
     private OnCredentialActionListener listener;
     private int expandedPosition = -1;
 
-    public SocialLoginAdapter(List<CredentialItem> loginItems, AppDatabaseHelper dbHelper) {
+    public SocialAccountAdapter(List<CredentialItem> loginItems, AppDatabaseHelper dbHelper) {
         this.loginItems = loginItems;
         this.loginItemsFull = new ArrayList<>(loginItems);
         this.dbHelper = dbHelper;

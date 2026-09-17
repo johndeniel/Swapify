@@ -22,7 +22,7 @@ import java.util.Map;
  * Dashboard ID carousel — renders the user's real government IDs with the
  * same authentic face as the IDs tab (background ramp, ink, photo well).
  * Pages are sized exactly like the bank-card carousel. Tapping a card
- * opens Government IDs.
+ * opens Government ID.
  */
 public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCardAdapter.IdViewHolder> {
 

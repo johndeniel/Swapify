@@ -2,7 +2,7 @@
 
     <!-- ============================================================
          Akin Wallet — user-facing text.
-         The app has 1 wallet component plus government IDs
+         The app has 1 wallet component plus government ID
          (created from the dashboard, shown on the dashboard):
            1. Social → social-media credentials (username + password)
          Shared text lives under action_ / field_ / cd_ (content
@@ -22,8 +22,8 @@
     <string name="tab_home">Home</string>
 
     <!-- Section headers -->
-    <!-- 1. Social accounts -->
-    <string name="title_social">Social Accounts</string>
+    <!-- 1. Social account -->
+    <string name="title_social">Social Account</string>
     <string name="desc_social">Usernames and passwords, organized</string>
 
     <!-- Shared actions (also reused as content descriptions) -->

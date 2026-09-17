@@ -110,7 +110,7 @@
 
         </LinearLayout>
 
-        <!-- Government ID carousel (live: renders IDs created in Government IDs) -->
+        <!-- Government ID carousel (live: renders IDs created in Government ID) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_ids_carousel"
             android:layout_width="match_parent"
@@ -141,7 +141,7 @@
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:background="@drawable/bg_dashboard_tile_blue"
-                android:contentDescription="Government IDs"
+                android:contentDescription="Government ID"
                 android:padding="12dp"
                 app:tint="@color/white"
                 android:src="@drawable/ic_id" />
@@ -156,7 +156,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="No government IDs yet"
+                    android:text="No government ID yet"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -165,7 +165,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="IDs you add will appear here"
+                    android:text="An ID you add will appear here"
                     android:textColor="@color/dashboard_muted"
                     android:textSize="12sp" />
 
@@ -179,7 +179,7 @@
 
         </LinearLayout>
 
-        <!-- Bank Cards section header -->
+        <!-- Bank Card section header -->
         <!-- Bank Card section header (no tab: View All removed) -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -198,7 +198,7 @@
 
         </LinearLayout>
 
-        <!-- Bank card carousel (live: renders cards created in Bank Cards) -->
+        <!-- Bank card carousel (live: renders cards created in Bank Card) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_cards_carousel"
             android:layout_width="match_parent"
@@ -229,7 +229,7 @@
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:background="@drawable/bg_dashboard_tile_green"
-                android:contentDescription="Bank Cards"
+                android:contentDescription="Bank Card"
                 android:padding="12dp"
                 app:tint="@color/white"
                 android:src="@drawable/ic_bank" />
@@ -244,7 +244,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="No bank cards yet"
+                    android:text="No bank card yet"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -253,7 +253,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="Cards you add will appear here"
+                    android:text="A card you add will appear here"
                     android:textColor="@color/dashboard_muted"
                     android:textSize="12sp" />
 
@@ -342,7 +342,7 @@
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:background="@drawable/bg_dashboard_tile_purple"
-                android:contentDescription="Social Logins"
+                android:contentDescription="Social Account"
                 android:padding="12dp"
                 app:tint="@color/white"
                 android:src="@drawable/ic_social" />
@@ -357,7 +357,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="No logins yet"
+                    android:text="No social account yet"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -366,7 +366,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="Accounts you add will appear here"
+                    android:text="An account you add will appear here"
                     android:textColor="@color/dashboard_muted"
                     android:textSize="12sp" />
 

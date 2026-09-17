@@ -34,7 +34,7 @@ import java.util.List;
  * platform and link pickers stay as nested bottom sheets. Callers refresh in
  * onResume; RESULT_OK is set on successful save.
  */
-public class SocialLoginFormActivity extends AppCompatActivity {
+public class SocialAccountFormActivity extends AppCompatActivity {
 
     public static final String EXTRA_LOGIN_ID = "extra_login_id";
     public static final String EXTRA_PLATFORM = "extra_platform";
@@ -107,7 +107,7 @@ public class SocialLoginFormActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_social_login_form);
+        setContentView(R.layout.activity_social_account_form);
 
         dbHelper = new AppDatabaseHelper(this);
 

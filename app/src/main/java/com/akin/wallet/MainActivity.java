@@ -71,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
 
     /** Dashboard links call this. Logins opens as a standalone screen. */
     public void navigateToTab(int itemId) {
-        if (itemId == R.id.nav_login) {
-            startActivity(new Intent(this, SocialLoginsActivity.class));
+        if (itemId == R.id.nav_social_account) {
+            startActivity(new Intent(this, SocialAccountActivity.class));
             return;
         }
         Fragment fragment = fragmentFor(itemId);

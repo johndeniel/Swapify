@@ -24,8 +24,8 @@ import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.BankCardFormActivity;
-import com.akin.wallet.IdCardFormActivity;
-import com.akin.wallet.SocialLoginFormActivity;
+import com.akin.wallet.GovermentIDFormActivity;
+import com.akin.wallet.SocialAccountFormActivity;
 import com.akin.wallet.model.IdCardItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -74,7 +74,7 @@ public class DashboardFragment extends Fragment {
         setupRecentLogins(view);
         setupAddMenu(view);
 
-        view.findViewById(R.id.btn_view_all_logins).setOnClickListener(v -> goTo(R.id.nav_login));
+        view.findViewById(R.id.btn_view_all_logins).setOnClickListener(v -> goTo(R.id.nav_social_account));
 
         refreshDashboard();
     }
@@ -109,7 +109,7 @@ public class DashboardFragment extends Fragment {
         }
         view.findViewById(R.id.fab_option_id).setOnClickListener(v -> openIdCreator());
         view.findViewById(R.id.fab_option_card).setOnClickListener(v -> openBankCreator());
-        view.findViewById(R.id.fab_option_login).setOnClickListener(v -> addNew(R.id.nav_login));
+        view.findViewById(R.id.fab_option_login).setOnClickListener(v -> addNew(R.id.nav_social_account));
     }
 
     private void toggleAddMenu() {
@@ -170,16 +170,16 @@ public class DashboardFragment extends Fragment {
         if (isFabMenuOpen) {
             toggleAddMenu();
         }
-        startActivity(new Intent(requireContext(), IdCardFormActivity.class));
+        startActivity(new Intent(requireContext(), GovermentIDFormActivity.class));
     }
 
     /** Opens an ID edit form directly (IDs tab is gone; dashboard is the editor). */
     private void openIdEditor(IdCardItem item) {
-        Intent edit = new Intent(requireContext(), IdCardFormActivity.class);
-        edit.putExtra(IdCardFormActivity.EXTRA_ID, item.getId());
-        edit.putExtra(IdCardFormActivity.EXTRA_TYPE, item.getIdType());
-        edit.putExtra(IdCardFormActivity.EXTRA_FIELDS_JSON, item.getFieldsJson());
-        edit.putExtra(IdCardFormActivity.EXTRA_DESIGN, item.getDesign());
+        Intent edit = new Intent(requireContext(), GovermentIDFormActivity.class);
+        edit.putExtra(GovermentIDFormActivity.EXTRA_ID, item.getId());
+        edit.putExtra(GovermentIDFormActivity.EXTRA_TYPE, item.getIdType());
+        edit.putExtra(GovermentIDFormActivity.EXTRA_FIELDS_JSON, item.getFieldsJson());
+        edit.putExtra(GovermentIDFormActivity.EXTRA_DESIGN, item.getDesign());
         startActivity(edit);
     }
 
@@ -215,8 +215,8 @@ public class DashboardFragment extends Fragment {
         if (isFabMenuOpen) {
             toggleAddMenu();
         }
-        if (navId == R.id.nav_login) {
-            startActivity(new Intent(requireContext(), SocialLoginFormActivity.class));
+        if (navId == R.id.nav_social_account) {
+            startActivity(new Intent(requireContext(), SocialAccountFormActivity.class));
         }
     }
 
@@ -309,12 +309,12 @@ public class DashboardFragment extends Fragment {
         recyclerRecentLogins = view.findViewById(R.id.recycler_recent_logins);
         emptyLogins = view.findViewById(R.id.empty_logins);
 
-        loginAdapter = new DashboardLoginAdapter(item -> goTo(R.id.nav_login));
+        loginAdapter = new DashboardLoginAdapter(item -> goTo(R.id.nav_social_account));
         recyclerRecentLogins.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerRecentLogins.setAdapter(loginAdapter);
 
         if (emptyLogins != null) {
-            emptyLogins.setOnClickListener(v -> goTo(R.id.nav_login));
+            emptyLogins.setOnClickListener(v -> goTo(R.id.nav_social_account));
         }
     }
 
