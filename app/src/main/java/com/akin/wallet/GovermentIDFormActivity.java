@@ -2,6 +2,7 @@ package com.akin.wallet;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -147,6 +148,21 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                 new LinearLayoutManager(GovermentIDFormActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerDesign.setLayoutManager(layoutManager);
         recyclerDesign.setAdapter(designAdapter);
+        // Same 12dp inter-card gap as the dashboard carousel so the form
+        // picker spaces pages exactly like Home.
+        recyclerDesign.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View child,
+                                       @NonNull RecyclerView parent,
+                                       @NonNull RecyclerView.State state) {
+                int position = parent.getChildAdapterPosition(child);
+                if (position != RecyclerView.NO_POSITION
+                        && position < state.getItemCount() - 1) {
+                    float density = parent.getResources().getDisplayMetrics().density;
+                    outRect.right = (int) (12 * density);
+                }
+            }
+        });
         PagerSnapHelper snapHelper = new PagerSnapHelper();
         snapHelper.attachToRecyclerView(recyclerDesign);
 

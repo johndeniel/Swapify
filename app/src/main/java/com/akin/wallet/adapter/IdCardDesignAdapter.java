@@ -3,8 +3,6 @@ package com.akin.wallet.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,11 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Bank-style picker carousel for the ID bottom sheet — but here each page
- * is an ID TYPE's authentic face (National ID navy/gold, Driver's License
- * pearl/purple), all rendered through the SAME central reusable layout.
- * Swiping pages (or the ID Type row) selects the type; typing updates every
- * page live from the shared draft.
+ * Type-picker carousel for the Government ID form — each page is an ID type
+ * rendered with the single shared dashboard item (item_dashboard_id_card)
+ * and face metrics, driven by the shared draft. Same 0.68 page width, 12dp
+ * gap and snap as Home. Swiping pages selects the type; typing updates live.
  */
 public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapter.CardViewHolder> {
 
@@ -56,17 +53,26 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
     @NonNull
     @Override
     public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Single shared face: same XML + same 0.68 page-width ratio as the
+        // dashboard carousel so the form picker looks identical to Home.
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_government_id_preview, parent, false);
+                .inflate(R.layout.item_dashboard_id_card, parent, false);
+        ViewGroup.LayoutParams lp = view.getLayoutParams();
+        int parentWidth = parent.getMeasuredWidth();
+        if (parentWidth <= 0) {
+            parentWidth = parent.getResources().getDisplayMetrics().widthPixels;
+        }
+        if (lp != null && parentWidth > 0) {
+            lp.width = (int) (parentWidth * DashboardCardAdapter.PAGE_WIDTH_RATIO);
+            view.setLayoutParams(lp);
+        }
         return new CardViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
-        BankCardDesignAdapter.applyCardOutline(holder.cardRoot);
         String pageType = getTypeAt(position);
         IdTypeSpec.IdType spec = IdTypeSpec.forName(pageType);
-        IdTypeSpec.FaceScheme scheme = IdTypeSpec.faceScheme(pageType);
 
         // Each page shows its own type's values from the shared draft so the
         // user can compare faces while typing (common keys carry over).
@@ -75,53 +81,9 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
             String v = fields.get(f.key);
             pageFields.put(f.key, v != null ? v : "");
         }
-        String number = pageFields.get(spec.numberKey);
+        IdFaceBinder.render(holder.face, spec, pageType, pageType, pageFields);
 
-        holder.cardRoot.setBackgroundResource(scheme.backgroundRes);
-        holder.eyebrow.setTextColor(colorOf(holder, scheme.subtitleColorRes));
-        holder.idType.setText(pageType.toUpperCase());
-        holder.idType.setTextColor(colorOf(holder, scheme.titleColorRes));
-        holder.subtitle.setText(IdTypeSpec.previewSubtitle(pageType));
-        holder.subtitle.setTextColor(colorOf(holder, scheme.subtitleColorRes));
-        holder.rule.setBackgroundColor(colorOf(holder, scheme.ruleColorRes));
-        holder.holderLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
-        holder.holder.setText(IdTypeSpec.displayName(spec, pageFields));
-        holder.holder.setTextColor(colorOf(holder, scheme.holderColorRes));
-        holder.numberLabel.setText(IdTypeSpec.numberLabel(pageType));
-        holder.numberLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
-        holder.number.setText(number != null && !number.trim().isEmpty()
-                ? number.trim() : "—");
-        holder.number.setTextColor(colorOf(holder, scheme.numberColorRes));
-        if (holder.barcode != null) {
-            holder.barcode.setBarColor(colorOf(holder, scheme.numberColorRes));
-        }
-        String birth = pageFields.get("birth_date");
-        if (holder.dob != null) {
-            holder.dob.setText(birth != null && !birth.trim().isEmpty() ? birth.trim() : "—");
-            holder.dob.setTextColor(colorOf(holder, scheme.numberColorRes));
-        }
-        if (holder.dobLabel != null) {
-            holder.dobLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
-        }
-        IdTypeSpec.FaceExtra extra = IdTypeSpec.faceExtra(pageType, pageFields);
-        if (holder.expiryLabel != null) {
-            holder.expiryLabel.setText(extra.label);
-            holder.expiryLabel.setTextColor(colorOf(holder, scheme.numberLabelColorRes));
-        }
-        if (holder.expiry != null) {
-            holder.expiry.setText(extra.value);
-            holder.expiry.setTextColor(colorOf(holder, scheme.numberColorRes));
-        }
-
-        // Square photo well adopts the card: tinted fill + border + icon.
-        android.graphics.drawable.GradientDrawable photoBg =
-                (android.graphics.drawable.GradientDrawable) holder.photoBox.getBackground().mutate();
-        photoBg.setColor(colorOf(holder, scheme.photoBgRes));
-        float density = holder.cardRoot.getResources().getDisplayMetrics().density;
-        photoBg.setStroke((int) (1 * density + 0.5f), colorOf(holder, scheme.photoBorderRes));
-        holder.photoIcon.setColorFilter(colorOf(holder, scheme.photoIconRes));
-
-        holder.cardRoot.setOnClickListener(v -> {
+        holder.face.cardRoot.setOnClickListener(v -> {
             int adapterPosition = holder.getAdapterPosition();
             if (adapterPosition != RecyclerView.NO_POSITION && listener != null) {
                 listener.onTypePageSelected(adapterPosition);
@@ -134,46 +96,12 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         return types.size();
     }
 
-    private static int colorOf(CardViewHolder holder, int colorRes) {
-        return holder.cardRoot.getResources().getColor(colorRes, null);
-    }
-
     static class CardViewHolder extends RecyclerView.ViewHolder {
-        View cardRoot;
-        TextView eyebrow;
-        TextView idType;
-        TextView subtitle;
-        View rule;
-        TextView holderLabel;
-        TextView holder;
-        TextView numberLabel;
-        TextView number;
-        com.akin.wallet.widget.BarcodeView barcode;
-        TextView dob;
-        TextView dobLabel;
-        TextView expiry;
-        TextView expiryLabel;
-        View photoBox;
-        ImageView photoIcon;
+        final IdFaceBinder.FaceViews face;
 
         CardViewHolder(@NonNull View itemView) {
             super(itemView);
-            cardRoot = itemView.findViewById(R.id.card_root);
-            eyebrow = itemView.findViewById(R.id.preview_eyebrow);
-            idType = itemView.findViewById(R.id.preview_id_type);
-            subtitle = itemView.findViewById(R.id.preview_subtitle);
-            rule = itemView.findViewById(R.id.preview_rule);
-            holderLabel = itemView.findViewById(R.id.preview_holder_label);
-            holder = itemView.findViewById(R.id.preview_holder);
-            numberLabel = itemView.findViewById(R.id.preview_number_label);
-            number = itemView.findViewById(R.id.preview_number);
-            barcode = itemView.findViewById(R.id.preview_barcode);
-            dob = itemView.findViewById(R.id.preview_dob);
-            dobLabel = itemView.findViewById(R.id.preview_dob_label);
-            expiry = itemView.findViewById(R.id.preview_expiry);
-            expiryLabel = itemView.findViewById(R.id.preview_expiry_label);
-            photoBox = itemView.findViewById(R.id.preview_photo_box);
-            photoIcon = itemView.findViewById(R.id.preview_photo_icon);
+            face = IdFaceBinder.FaceViews.bind(itemView);
         }
     }
 }

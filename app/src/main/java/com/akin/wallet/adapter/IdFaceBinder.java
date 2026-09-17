@@ -1,0 +1,234 @@
+package com.akin.wallet.adapter;
+
+import android.content.res.Resources;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+
+import com.akin.wallet.R;
+import com.akin.wallet.model.IdTypeSpec;
+
+import java.util.Map;
+
+/**
+ * Single owner of government-ID face painting.
+ *
+ * <p>There is exactly ONE ID layout: {@code item_dashboard_id_card}. The
+ * dashboard carousel and the Government ID form picker both inflate it and
+ * render it here with identical metrics, so look and feel can never drift
+ * between the two screens again.
+ */
+public final class IdFaceBinder {
+
+    private IdFaceBinder() {
+    }
+
+    /** Cached face views — bound once per ViewHolder, never per bind. */
+    public static final class FaceViews {
+        public final View cardRoot;
+        public final TextView eyebrow;
+        public final TextView title;
+        public final TextView subtitle;
+        public final View rule;
+        public final TextView holderLabel;
+        public final TextView holder;
+        public final TextView numberLabel;
+        public final TextView number;
+        public final com.akin.wallet.widget.BarcodeView barcode;
+        public final TextView dob;
+        public final TextView dobLabel;
+        public final TextView expiry;
+        public final TextView expiryLabel;
+        public final View photoBox;
+        public final ImageView photoIcon;
+        public final Resources res;
+        public final float density;
+
+        private FaceViews(@NonNull View root) {
+            cardRoot = root.findViewById(R.id.card_root);
+            eyebrow = root.findViewById(R.id.preview_eyebrow);
+            title = root.findViewById(R.id.preview_id_type);
+            subtitle = root.findViewById(R.id.preview_subtitle);
+            rule = root.findViewById(R.id.preview_rule);
+            holderLabel = root.findViewById(R.id.preview_holder_label);
+            holder = root.findViewById(R.id.preview_holder);
+            numberLabel = root.findViewById(R.id.preview_number_label);
+            number = root.findViewById(R.id.preview_number);
+            barcode = root.findViewById(R.id.preview_barcode);
+            dob = root.findViewById(R.id.preview_dob);
+            dobLabel = root.findViewById(R.id.preview_dob_label);
+            expiry = root.findViewById(R.id.preview_expiry);
+            expiryLabel = root.findViewById(R.id.preview_expiry_label);
+            photoBox = root.findViewById(R.id.preview_photo_box);
+            photoIcon = root.findViewById(R.id.preview_photo_icon);
+            res = root.getResources();
+            density = res.getDisplayMetrics().density;
+        }
+
+        public static FaceViews bind(@NonNull View root) {
+            return new FaceViews(root);
+        }
+    }
+
+    /**
+     * Paints one ID face with the single unified metrics.
+     *
+     * @param f       cached face views
+     * @param spec    resolved type spec (sizing + field keys)
+     * @param typeName raw type name for scheme/subtitle/number lookups
+     * @param title   header title (uppercased here)
+     * @param fields  field values to render
+     */
+    public static void render(@NonNull FaceViews f, @NonNull IdTypeSpec.IdType spec,
+                              @NonNull String typeName, @NonNull String title,
+                              @NonNull Map<String, String> fields) {
+        BankCardDesignAdapter.applyCardOutline(f.cardRoot);
+        IdTypeSpec.FaceScheme scheme = IdTypeSpec.faceScheme(typeName);
+        f.cardRoot.setBackgroundResource(scheme.backgroundRes);
+
+        String number = fields.get(spec.numberKey);
+        f.eyebrow.setTextColor(colorOf(f, scheme.subtitleColorRes));
+        f.title.setText(title.toUpperCase());
+        f.title.setTextColor(colorOf(f, scheme.titleColorRes));
+        f.title.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
+        f.subtitle.setText(IdTypeSpec.previewSubtitle(typeName));
+        f.subtitle.setTextColor(colorOf(f, scheme.subtitleColorRes));
+        f.subtitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
+        f.rule.setBackgroundColor(colorOf(f, scheme.ruleColorRes));
+        f.holderLabel.setTextColor(colorOf(f, scheme.numberLabelColorRes));
+        f.holder.setText(IdTypeSpec.displayName(spec, fields));
+        f.holder.setTextColor(colorOf(f, scheme.holderColorRes));
+        f.holder.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10);
+        f.numberLabel.setText(IdTypeSpec.numberLabel(typeName));
+        f.numberLabel.setTextColor(colorOf(f, scheme.numberLabelColorRes));
+        f.number.setText(number != null && !number.trim().isEmpty() ? number.trim() : "—");
+        f.number.setTextColor(colorOf(f, scheme.numberColorRes));
+        f.number.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9);
+        if (f.barcode != null) {
+            f.barcode.setBarColor(colorOf(f, scheme.numberColorRes));
+        }
+
+        String birth = fields.get("birth_date");
+        if (f.dob != null) {
+            f.dob.setText(birth != null && !birth.trim().isEmpty() ? birth.trim() : "—");
+            f.dob.setTextColor(colorOf(f, scheme.numberColorRes));
+            f.dob.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9);
+        }
+        if (f.dobLabel != null) {
+            f.dobLabel.setTextColor(colorOf(f, scheme.numberLabelColorRes));
+        }
+        IdTypeSpec.FaceExtra extra = IdTypeSpec.faceExtra(typeName, fields);
+        if (f.expiryLabel != null) {
+            f.expiryLabel.setText(extra.label);
+            f.expiryLabel.setTextColor(colorOf(f, scheme.numberLabelColorRes));
+        }
+        if (f.expiry != null) {
+            f.expiry.setText(extra.value);
+            f.expiry.setTextColor(colorOf(f, scheme.numberColorRes));
+            f.expiry.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9);
+        }
+
+        // Square photo well adopts the card: tinted fill + border + icon.
+        android.graphics.drawable.GradientDrawable photoBg =
+                (android.graphics.drawable.GradientDrawable) f.photoBox.getBackground().mutate();
+        photoBg.setColor(colorOf(f, scheme.photoBgRes));
+        photoBg.setStroke((int) (1 * f.density + 0.5f), colorOf(f, scheme.photoBorderRes));
+        f.photoIcon.setColorFilter(colorOf(f, scheme.photoIconRes));
+
+        applyFaceMetrics(f, scheme);
+    }
+
+    /** Face micro-metrics: smaller type, tighter rhythm, smaller well. */
+    private static void applyFaceMetrics(@NonNull FaceViews f,
+                                            @NonNull IdTypeSpec.FaceScheme scheme) {
+        microLabel(f, f.holderLabel, scheme.numberLabelColorRes);
+        microLabel(f, f.numberLabel, scheme.numberLabelColorRes);
+        microLabel(f, f.dobLabel, scheme.numberLabelColorRes);
+        microLabel(f, f.expiryLabel, scheme.numberLabelColorRes);
+
+        // Less space above the header so the face shifts up.
+        View faceContent = (View) f.title.getParent();
+        if (faceContent != null) {
+            faceContent.setPadding(
+                    faceContent.getPaddingStart(),
+                    (int) (6 * f.density),
+                    faceContent.getPaddingEnd(),
+                    (int) (6 * f.density));
+        }
+        // Tighter title -> description -> rule stack.
+        setTopMargin(f.subtitle, 1, f.density);
+        setTopMargin(f.rule, 4, f.density);
+
+        android.graphics.drawable.GradientDrawable photoBg =
+                (android.graphics.drawable.GradientDrawable) f.photoBox.getBackground();
+        photoBg.setCornerRadius(6 * f.density);
+
+        // Smaller avatar well.
+        ViewGroup.LayoutParams photoLp = f.photoBox.getLayoutParams();
+        if (photoLp != null) {
+            int well = (int) (32 * f.density);
+            photoLp.width = well;
+            photoLp.height = well;
+            f.photoBox.setLayoutParams(photoLp);
+        }
+        ViewGroup.LayoutParams iconLp = f.photoIcon.getLayoutParams();
+        if (iconLp != null) {
+            int icon = (int) (24 * f.density);
+            iconLp.width = icon;
+            iconLp.height = icon;
+            f.photoIcon.setLayoutParams(iconLp);
+        }
+        // Tighter gap above the avatar row; top-align avatar and name column.
+        View photoCol = (View) f.photoBox.getParent();
+        View photoRow = photoCol != null ? (View) photoCol.getParent() : null;
+        if (photoRow != null) {
+            ViewGroup.LayoutParams rowLp = photoRow.getLayoutParams();
+            if (rowLp instanceof android.view.ViewGroup.MarginLayoutParams) {
+                ((android.view.ViewGroup.MarginLayoutParams) rowLp).topMargin =
+                        (int) (2 * f.density);
+                photoRow.setLayoutParams(rowLp);
+            }
+            if (photoRow instanceof LinearLayout) {
+                ((LinearLayout) photoRow).setGravity(android.view.Gravity.TOP);
+            }
+        }
+    }
+
+    /** Compact micro-label: 6sp, tight gap, face-muted ink. */
+    private static void microLabel(@NonNull FaceViews f, TextView label, int colorRes) {
+        if (label == null) {
+            return;
+        }
+        label.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 6);
+        label.setTextColor(colorOf(f, colorRes));
+        android.view.ViewGroup.LayoutParams lp = label.getLayoutParams();
+        if (lp instanceof android.view.ViewGroup.MarginLayoutParams) {
+            android.view.ViewGroup.MarginLayoutParams mlp =
+                    (android.view.ViewGroup.MarginLayoutParams) lp;
+            if (mlp.topMargin > 0) {
+                mlp.topMargin = (int) (3 * f.density);
+                label.setLayoutParams(lp);
+            }
+        }
+    }
+
+    private static void setTopMargin(View view, int topMarginDp, float density) {
+        if (view == null) {
+            return;
+        }
+        android.view.ViewGroup.LayoutParams lp = view.getLayoutParams();
+        if (lp instanceof android.view.ViewGroup.MarginLayoutParams) {
+            ((android.view.ViewGroup.MarginLayoutParams) lp).topMargin =
+                    (int) (topMarginDp * density);
+            view.setLayoutParams(lp);
+        }
+    }
+
+    private static int colorOf(@NonNull FaceViews f, int res) {
+        return f.res.getColor(res, null);
+    }
+}
