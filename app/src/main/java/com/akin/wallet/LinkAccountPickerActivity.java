@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Full-screen account picker for associating logins (replaces the old bottom
+ * Full-screen account picker for associating accounts (replaces the old bottom
  * sheet). Shows only the IDs passed in; returns the picked account id.
  */
 public class LinkAccountPickerActivity extends AppCompatActivity {

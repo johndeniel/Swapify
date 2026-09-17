@@ -189,8 +189,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
 
     /** Shared associate-accounts section for add (selfId -1) and edit modes. */
-    private void setupAssociateSection(List<CredentialItem> existingLogins, int selfId) {
-        linkPool = existingLogins;
+    private void setupAssociateSection(List<CredentialItem> existingAccounts, int selfId) {
+        linkPool = existingAccounts;
         linkSelfId = selfId;
         linkedItems = new ArrayList<>();
         associateSection = findViewById(R.id.associate_section);

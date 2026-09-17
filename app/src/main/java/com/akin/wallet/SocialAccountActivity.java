@@ -33,7 +33,7 @@ public class SocialAccountActivity extends AppCompatActivity {
 
         dbHelper = new AppDatabaseHelper(this);
 
-        RecyclerView recycler = findViewById(R.id.recycler_logins);
+        RecyclerView recycler = findViewById(R.id.recycler_accounts);
         recycler.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new SocialAccountAdapter(dbHelper.getAllLogins(), dbHelper);
@@ -58,7 +58,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         });
         recycler.setAdapter(adapter);
 
-        EditText searchInput = findViewById(R.id.search_login);
+        EditText searchInput = findViewById(R.id.search_accounts);
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

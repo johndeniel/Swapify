@@ -19,7 +19,7 @@ import com.akin.wallet.MainActivity;
 import com.akin.wallet.R;
 import com.akin.wallet.adapter.DashboardCardAdapter;
 import com.akin.wallet.adapter.DashboardIdCardAdapter;
-import com.akin.wallet.adapter.DashboardLoginAdapter;
+import com.akin.wallet.adapter.DashboardSocialAccountAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
@@ -33,8 +33,8 @@ import java.util.List;
 
 /**
  * Dashboard (Home) — overhaul screen matching the MyKey reference.
- * Shows live item counts from SQLite; Recent Access lists only the
- * user's created social logins.
+ * Shows live item counts from SQLite; Social Account lists only the
+ * user's created social accounts.
  */
 public class DashboardFragment extends Fragment {
 
@@ -49,9 +49,13 @@ public class DashboardFragment extends Fragment {
     private LinearLayoutManager idsLayoutManager;
     private PagerSnapHelper idsSnapHelper;
     private View emptyIds;
-    private DashboardLoginAdapter loginAdapter;
-    private RecyclerView recyclerRecentLogins;
-    private View emptyLogins;
+    private DashboardSocialAccountAdapter socialAdapter;
+    private View cardSocialAccounts;
+    private RecyclerView recyclerSocialAccounts;
+    private View emptySocialAccounts;
+
+    /** Credit-card ratio shared with the carousel faces (width : height). */
+    private static final float CARD_ASPECT_RATIO = 1.586f;
     private FloatingActionButton fabAdd;
     private View fabAddMenu;
     private View fabScrim;
@@ -71,10 +75,10 @@ public class DashboardFragment extends Fragment {
 
         setupCardCarousel(view);
         setupIdsCarousel(view);
-        setupRecentLogins(view);
+        setupSocialAccounts(view);
         setupAddMenu(view);
 
-        view.findViewById(R.id.btn_view_all_logins).setOnClickListener(v -> goTo(R.id.nav_social_account));
+        view.findViewById(R.id.btn_view_all_social).setOnClickListener(v -> goTo(R.id.nav_social_account));
 
         refreshDashboard();
     }
@@ -163,6 +167,18 @@ public class DashboardFragment extends Fragment {
             child.setAlpha(1f);
             child.setTranslationY(0f);
         }
+    }
+
+    /** Opens a social edit form directly (only View All opens the account screen). */
+    private void openSocialEditor(CredentialItem item) {
+        Intent edit = new Intent(requireContext(), SocialAccountFormActivity.class);
+        edit.putExtra(SocialAccountFormActivity.EXTRA_LOGIN_ID, (long) item.getId());
+        edit.putExtra(SocialAccountFormActivity.EXTRA_PLATFORM, item.getPlatform());
+        edit.putExtra(SocialAccountFormActivity.EXTRA_USERNAME, item.getUsername());
+        edit.putExtra(SocialAccountFormActivity.EXTRA_PASSWORD, item.getPassword());
+        edit.putExtra(SocialAccountFormActivity.EXTRA_PIN, item.getPin());
+        edit.putExtra(SocialAccountFormActivity.EXTRA_ICON_RES, item.getIconRes());
+        startActivity(edit);
     }
 
     /** Opens the ID creation form directly (IDs tab is gone; FAB is the only entry). */
@@ -259,7 +275,36 @@ public class DashboardFragment extends Fragment {
         recyclerCarousel.setVisibility(hasCards ? View.VISIBLE : View.GONE);
         if (emptyCards != null) {
             emptyCards.setVisibility(hasCards ? View.GONE : View.VISIBLE);
+            if (!hasCards) {
+                matchEmptyHeightToCards(recyclerCarousel, emptyCards);
+            }
         }
+    }
+
+    /**
+     * Sizes an empty-state card exactly like one carousel page (0.68 viewport
+     * width at 1.586:1) so the section keeps its height with no data.
+     * Measures the visible empty card itself — the carousel is GONE here and
+     * always measures zero.
+     */
+    private void matchEmptyHeightToCards(@NonNull RecyclerView carousel, @NonNull View empty) {
+        empty.post(() -> {
+            int contentWidth = empty.getWidth();
+            if (contentWidth <= 0) {
+                return;
+            }
+            int viewport = contentWidth
+                    - carousel.getPaddingStart() - carousel.getPaddingEnd();
+            if (viewport <= 0) {
+                return;
+            }
+            int pageHeight = (int) ((viewport * DashboardCardAdapter.PAGE_WIDTH_RATIO - dp(8))
+                    / CARD_ASPECT_RATIO);
+            if (pageHeight > 0 && empty.getLayoutParams().height != pageHeight) {
+                empty.getLayoutParams().height = pageHeight;
+                empty.requestLayout();
+            }
+        });
     }
 
     /** Horizontal snap carousel rendering the user's real government IDs. */
@@ -301,32 +346,39 @@ public class DashboardFragment extends Fragment {
         recyclerIdsCarousel.setVisibility(hasIds ? View.VISIBLE : View.GONE);
         if (emptyIds != null) {
             emptyIds.setVisibility(hasIds ? View.GONE : View.VISIBLE);
+            if (!hasIds) {
+                matchEmptyHeightToCards(recyclerIdsCarousel, emptyIds);
+            }
         }
     }
 
-    /** Recent Access — vertical list of created social logins only. */
-    private void setupRecentLogins(@NonNull View view) {
-        recyclerRecentLogins = view.findViewById(R.id.recycler_recent_logins);
-        emptyLogins = view.findViewById(R.id.empty_logins);
+    /** Social Account — vertical list of created social accounts only. */
+    private void setupSocialAccounts(@NonNull View view) {
+        cardSocialAccounts = view.findViewById(R.id.card_social_accounts);
+        recyclerSocialAccounts = view.findViewById(R.id.recycler_social_accounts);
+        emptySocialAccounts = view.findViewById(R.id.empty_social_accounts);
 
-        loginAdapter = new DashboardLoginAdapter(item -> goTo(R.id.nav_social_account));
-        recyclerRecentLogins.setLayoutManager(new LinearLayoutManager(requireContext()));
-        recyclerRecentLogins.setAdapter(loginAdapter);
+        // Row taps intentionally do nothing for now (edit flow to be decided later).
+        socialAdapter = new DashboardSocialAccountAdapter(item -> { });
+        recyclerSocialAccounts.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerSocialAccounts.setAdapter(socialAdapter);
 
-        if (emptyLogins != null) {
-            emptyLogins.setOnClickListener(v -> goTo(R.id.nav_social_account));
+        if (emptySocialAccounts != null) {
+            emptySocialAccounts.setOnClickListener(v -> addNew(R.id.nav_social_account));
         }
     }
 
-    private void refreshRecentLogins(List<CredentialItem> logins) {
-        if (loginAdapter == null || recyclerRecentLogins == null) {
+    private void refreshSocialAccounts(List<CredentialItem> accounts) {
+        if (socialAdapter == null || recyclerSocialAccounts == null) {
             return;
         }
-        loginAdapter.updateData(logins);
-        boolean hasLogins = logins != null && !logins.isEmpty();
-        recyclerRecentLogins.setVisibility(hasLogins ? View.VISIBLE : View.GONE);
-        if (emptyLogins != null) {
-            emptyLogins.setVisibility(hasLogins ? View.GONE : View.VISIBLE);
+        socialAdapter.updateData(accounts);
+        boolean hasAccounts = accounts != null && !accounts.isEmpty();
+        if (cardSocialAccounts != null) {
+            cardSocialAccounts.setVisibility(hasAccounts ? View.VISIBLE : View.GONE);
+        }
+        if (emptySocialAccounts != null) {
+            emptySocialAccounts.setVisibility(hasAccounts ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -336,11 +388,11 @@ public class DashboardFragment extends Fragment {
         }
         List<IdCardItem> ids = dbHelper.getAllIdCards();
         List<BankCardItem> cards = dbHelper.getAllBankCards();
-        List<CredentialItem> logins = dbHelper.getAllLogins();
+        List<CredentialItem> accounts = dbHelper.getAllLogins();
 
         refreshCardCarousel(cards);
         refreshIdsCarousel(ids);
-        refreshRecentLogins(logins);
+        refreshSocialAccounts(accounts);
     }
 
     private int dp(int value) {

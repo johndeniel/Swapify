@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /** Dashboard links call this. Logins opens as a standalone screen. */
+    /** Dashboard links call this. Social Account opens as a standalone screen. */
     public void navigateToTab(int itemId) {
         if (itemId == R.id.nav_social_account) {
             startActivity(new Intent(this, SocialAccountActivity.class));

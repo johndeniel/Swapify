@@ -2,7 +2,7 @@
 <!-- ============================================================
      Akin Wallet — Dashboard (Home).
       New overhaul layout matching the MyKey reference:
-       professional header, Recent Access,
+       professional header, Social Account,
       Your Wallet gradient rows, circular quick-add FAB. Loaded by DashboardFragment,
      hosted in MainActivity's fragment_container.
      activity_main.xml is untouched in structure (kept).
@@ -120,7 +120,7 @@
             android:orientation="horizontal"
             android:paddingEnd="36dp" />
 
-        <!-- Empty state: shown when no government IDs exist yet -->
+        <!-- Empty state: shown when no government ID exists yet -->
         <LinearLayout
             android:id="@+id/empty_ids"
             android:layout_width="match_parent"
@@ -129,57 +129,34 @@
             android:background="@drawable/bg_dashboard_card"
             android:clickable="true"
             android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
+            android:gravity="center"
+            android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingTop="16dp"
             android:paddingBottom="16dp"
             android:visibility="gone">
 
-            <ImageView
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:background="@drawable/bg_dashboard_tile_blue"
-                android:contentDescription="Government ID"
-                android:padding="12dp"
-                app:tint="@color/white"
-                android:src="@drawable/ic_id" />
-
-            <LinearLayout
-                android:layout_width="0dp"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:gravity="center"
+                android:text="No goverment"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="No government ID yet"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:text="An ID you add will appear here"
-                    android:textColor="@color/dashboard_muted"
-                    android:textSize="12sp" />
-
-            </LinearLayout>
-
-            <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:contentDescription="Add ID"
-                android:src="@drawable/ic_chevron_right" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="An ID you add will appear here"
+                android:textColor="@color/dashboard_muted"
+                android:textSize="12sp" />
 
         </LinearLayout>
 
-        <!-- Bank Card section header -->
         <!-- Bank Card section header (no tab: View All removed) -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -208,7 +185,7 @@
             android:orientation="horizontal"
             android:paddingEnd="36dp" />
 
-        <!-- Empty state: shown when no bank cards exist yet -->
+        <!-- Empty state: shown when no bank card exists yet -->
         <LinearLayout
             android:id="@+id/empty_cards"
             android:layout_width="match_parent"
@@ -217,57 +194,35 @@
             android:background="@drawable/bg_dashboard_card"
             android:clickable="true"
             android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
+            android:gravity="center"
+            android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingTop="16dp"
             android:paddingBottom="16dp"
             android:visibility="gone">
 
-            <ImageView
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:background="@drawable/bg_dashboard_tile_green"
-                android:contentDescription="Bank Card"
-                android:padding="12dp"
-                app:tint="@color/white"
-                android:src="@drawable/ic_bank" />
-
-            <LinearLayout
-                android:layout_width="0dp"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:gravity="center"
+                android:text="No bank card"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="No bank card yet"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:text="A card you add will appear here"
-                    android:textColor="@color/dashboard_muted"
-                    android:textSize="12sp" />
-
-            </LinearLayout>
-
-            <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:contentDescription="Add card"
-                android:src="@drawable/ic_chevron_right" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="A card you add will appear here"
+                android:textColor="@color/dashboard_muted"
+                android:textSize="12sp" />
 
         </LinearLayout>
 
-        <!-- Social Logins section header -->
+        <!-- Social Account section header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -289,7 +244,7 @@
                 android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/btn_view_all_logins"
+                android:id="@+id/btn_view_all_social"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="true"
@@ -300,8 +255,9 @@
 
         </LinearLayout>
 
-        <!-- Recent Access card (live: created social logins only) -->
+        <!-- Social Account card (live: created social accounts only) -->
         <LinearLayout
+            android:id="@+id/card_social_accounts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -313,7 +269,7 @@
             android:paddingBottom="4dp">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_recent_logins"
+                android:id="@+id/recycler_social_accounts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
@@ -321,62 +277,42 @@
 
         </LinearLayout>
 
-        <!-- Empty state: shown when no logins exist yet -->
+        <!-- Empty state: shown when no social account exists yet. Weight 1
+             stretches it to occupy the rest of the screen. -->
         <LinearLayout
-            android:id="@+id/empty_logins"
+            android:id="@+id/empty_social_accounts"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginTop="10dp"
+            android:layout_weight="1"
             android:background="@drawable/bg_dashboard_card"
             android:clickable="true"
             android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
+            android:gravity="center"
+            android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingTop="16dp"
             android:paddingBottom="16dp"
             android:visibility="gone">
 
-            <ImageView
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:background="@drawable/bg_dashboard_tile_purple"
-                android:contentDescription="Social Account"
-                android:padding="12dp"
-                app:tint="@color/white"
-                android:src="@drawable/ic_social" />
-
-            <LinearLayout
-                android:layout_width="0dp"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:gravity="center"
+                android:text="No social account yet"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="No social account yet"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:text="An account you add will appear here"
-                    android:textColor="@color/dashboard_muted"
-                    android:textSize="12sp" />
-
-            </LinearLayout>
-
-            <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:contentDescription="Add login"
-                android:src="@drawable/ic_chevron_right" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="An account you add will appear here"
+                android:textColor="@color/dashboard_muted"
+                android:textSize="12sp" />
 
         </LinearLayout>
 
