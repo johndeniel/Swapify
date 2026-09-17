@@ -30,11 +30,9 @@
     <color name="hint_text">#55FFFFFF</color>
 
     <!-- Text on light card faces (white with alpha steps) -->
-    <color name="text_muted_light">#99FFFFFF</color>
     <color name="text_faint_light">#8CFFFFFF</color>
     <color name="text_subtle_light">#B3FFFFFF</color>
     <color name="text_bright_light">#E6FFFFFF</color>
-    <color name="text_pale_blue">#FFE8EDF5</color>
     <color name="text_shadow">#80000000</color>
 
     <!-- Gloss & edge overlays drawn over card gradients -->
@@ -48,7 +46,6 @@
     <!-- Photo wells: each face tints the well with its own hue at
          photo-paper lightness (~90%), framed by the face mid-tone and
          stamped with the face ink — one monochromatic family per card. -->
-    <color name="photo_bg_neutral">#FFE9EEF3</color>
     <color name="photo_bg_national">#FFDCE6F2</color>
     <color name="photo_bg_dl">#FFD9DDF2</color>
     <color name="photo_bg_passport">#FFF0D9CE</color>
@@ -137,37 +134,17 @@
 
     <!-- Privacy banner gradient (sampled from reference:
          bright steel-blue left, royal mid, dark navy right) -->
-    <color name="dashboard_banner_start">#FF2057B8</color>
-    <color name="dashboard_banner_center">#FF14367F</color>
-    <color name="dashboard_banner_end">#FF0A1B3D</color>
-    <color name="dashboard_banner_border">#FF2B5BA6</color>
 
     <!-- Category icon tiles -->
     <color name="dashboard_tile_blue">#FF1A8CFF</color>
     <color name="dashboard_tile_green">#FF10B981</color>
     <color name="dashboard_tile_purple">#FF8B5CF6</color>
-    <color name="dashboard_tile_glass">#33FFFFFF</color>
 
     <!-- Wallet row gradients (one ramp per row) -->
-    <color name="dashboard_wallet_blue_start">#FF1E56D6</color>
-    <color name="dashboard_wallet_blue_end">#FF0A1E58</color>
-    <color name="dashboard_wallet_green_start">#FF0E9F6E</color>
-    <color name="dashboard_wallet_green_end">#FF04382B</color>
-    <color name="dashboard_wallet_purple_start">#FF7C3AED</color>
-    <color name="dashboard_wallet_purple_end">#FF2E165E</color>
 
     <!-- Category card gradients (dark navy ramps with a whisper of hue,
          sampled from the reference where the cards read near-flat dark
          and the icon tiles carry the color) -->
-    <color name="dashboard_cat_blue_start">#FF142743</color>
-    <color name="dashboard_cat_blue_end">#FF0A1526</color>
-    <color name="dashboard_cat_blue_border">#FF243C63</color>
-    <color name="dashboard_cat_green_start">#FF122A30</color>
-    <color name="dashboard_cat_green_end">#FF0A161D</color>
-    <color name="dashboard_cat_green_border">#FF1F4149</color>
-    <color name="dashboard_cat_purple_start">#FF1B2145</color>
-    <color name="dashboard_cat_purple_end">#FF0D1026</color>
-    <color name="dashboard_cat_purple_border">#FF303A6E</color>
 
     <!-- Header avatar / settings wells -->
     <color name="dashboard_well">#FF16305A</color>

@@ -96,15 +96,6 @@ public final class IdTypeSpec {
             this.numberKey = numberKey;
             this.fields = Collections.unmodifiableList(fields);
         }
-
-        public IdField findField(String key) {
-            for (IdField f : fields) {
-                if (f.key.equals(key)) {
-                    return f;
-                }
-            }
-            return null;
-        }
     }
 
     private static final List<IdType> TYPES;
@@ -392,20 +383,6 @@ public final class IdTypeSpec {
                 R.color.photo_bg_national, R.color.national_rule, R.color.national_ink);
     }
 
-    /** Card-face address line: street address, or place of birth for
-     *  types without one (Passport). Never null — "—" when unset. */
-    public static String faceAddress(Map<String, String> fields) {
-        Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
-        String[] keys = {"present_address", "address", "place_of_birth"};
-        for (String key : keys) {
-            String v = safe.get(key);
-            if (v != null && !v.trim().isEmpty()) {
-                return v.trim();
-            }
-        }
-        return "—";
-    }
-
     /** Fourth face slot: the holder's sex, beside date of birth. */
     public static class FaceExtra {
         public final String label;
@@ -429,23 +406,6 @@ public final class IdTypeSpec {
         return s.trim();
     }
 
-    /** Footer line for the collapsed preview, per type. Never null. */
-    public static String buildPreviewMeta(IdType type, Map<String, String> fields) {
-        Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
-        String birth = nonEmpty(safe.get("birth_date")) ? safe.get("birth_date").trim() : "";
-        String expiry = nonEmpty(safe.get("expiry_date")) ? safe.get("expiry_date").trim() : "";
-        if (!expiry.isEmpty()) {
-            return joinNonEmpty(
-                    birth.isEmpty() ? "" : "DOB " + birth,
-                    "EXP " + expiry);
-        }
-        // National ID, SSS, PhilHealth + default
-        String sex = nonEmpty(safe.get("sex")) ? safe.get("sex").trim() : "";
-        return joinNonEmpty(
-                birth.isEmpty() ? "" : "DOB " + birth,
-                sex);
-    }
-
     /** Card-face holder line: full name, or Given + Surname for passports. */
     public static String displayName(IdType type, Map<String, String> fields) {
         Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
@@ -459,39 +419,8 @@ public final class IdTypeSpec {
         return combined.isEmpty() ? "FULL NAME" : combined.toUpperCase();
     }
 
-    /** Ordered display map: spec fields first, then any unknown stored keys (forward-compat). */
-    public static Map<String, IdField> displayFields(IdType type, Map<String, String> stored) {
-        Map<String, IdField> ordered = new LinkedHashMap<>();
-        for (IdField f : type.fields) {
-            ordered.put(f.key, f);
-        }
-        if (stored != null) {
-            for (String key : stored.keySet()) {
-                if (!ordered.containsKey(key)) {
-                    ordered.put(key, IdField.text(key, toLabel(key), "", false, false, 0));
-                }
-            }
-        }
-        return ordered;
-    }
-
     private static boolean nonEmpty(String s) {
         return s != null && !s.trim().isEmpty();
-    }
-
-    private static String joinNonEmpty(String a, String b) {
-        boolean ea = a == null || a.isEmpty();
-        boolean eb = b == null || b.isEmpty();
-        if (ea && eb) {
-            return "";
-        }
-        if (ea) {
-            return b;
-        }
-        if (eb) {
-            return a;
-        }
-        return a + "   •   " + b;
     }
 
     private static String toLabel(String key) {

@@ -42,11 +42,6 @@ public class IdCardItem {
         return new LinkedHashMap<>(fields);
     }
 
-    public String getField(String key) {
-        String v = fields.get(key);
-        return v != null ? v : "";
-    }
-
     public int getDesign() {
         return design;
     }

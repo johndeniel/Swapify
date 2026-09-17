@@ -83,8 +83,6 @@
     <!-- Masked / empty placeholders -->
     <string name="mask_password">••••••••</string>
     <string name="mask_pin">••••</string>
-    <string name="mask_cvv">•••</string>
-    <string name="mask_card_number">•••• •••• •••• ••••</string>
     <string name="empty_value">—</string>
 
     <!-- Card faces (design-time placeholders, rebound at runtime) -->
@@ -97,13 +95,11 @@
     <string name="preview_expiry_value">MM/YY</string>
     <!-- Government ID -->
     <string name="preview_republic">REPUBLIC OF THE PHILIPPINES</string>
-    <string name="preview_philsys">PHILIPPINE IDENTIFICATION SYSTEM</string>
     <string name="preview_government_id">GOVERNMENT ID</string>
     <string name="preview_person_name">FULL NAME</string>
     <string name="preview_person_label">FULL NAME</string>
     <string name="preview_number_label">ID NUMBER</string>
     <!-- Generic detail-row default -->
-    <string name="detail_row_label">Label</string>
 
     <!-- Content descriptions (accessibility) -->
     <string name="cd_notifications">Notifications</string>
@@ -112,24 +108,14 @@
     <string name="cd_link_account">Link</string>
     <string name="cd_toggle_details">Toggle details</string>
     <string name="cd_toggle_visibility">Toggle visibility</string>
-    <string name="cd_toggle_number">Toggle number visibility</string>
-    <string name="cd_toggle_cvv">Toggle CVV visibility</string>
     <string name="cd_toggle_pin">Toggle PIN visibility</string>
     <string name="cd_toggle_password">Toggle password visibility</string>
     <string name="cd_select_platform">Select platform</string>
     <string name="cd_select_card_type">Select card type</string>
     <string name="cd_select_card_network">Select card network</string>
-    <string name="cd_copy_value">Copy value</string>
     <string name="cd_copy_username">Copy username</string>
     <string name="cd_copy_password">Copy password</string>
     <string name="cd_copy_pin">Copy PIN</string>
-    <string name="cd_copy_card_type">Copy card type</string>
-    <string name="cd_copy_card_network">Copy card network</string>
-    <string name="cd_copy_bank_name">Copy bank name</string>
-    <string name="cd_copy_holder_name">Copy cardholder name</string>
-    <string name="cd_copy_card_number">Copy card number</string>
-    <string name="cd_copy_expiry">Copy expiry</string>
-    <string name="cd_copy_cvv">Copy CVV</string>
     <string name="cd_card_network">Card network</string>
     <string name="cd_card_chip">Card chip</string>
     <string name="cd_id_photo">ID photo placeholder</string>
