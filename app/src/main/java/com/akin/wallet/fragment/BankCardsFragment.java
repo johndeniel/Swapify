@@ -24,12 +24,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 import com.akin.wallet.adapter.BankCardDesignAdapter;
-import com.akin.wallet.adapter.BankCardListAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-
-import java.util.ArrayList;
 
 public class BankCardsFragment extends Fragment {
 
@@ -37,22 +34,26 @@ public class BankCardsFragment extends Fragment {
     private static final String[] CARD_NETWORKS = {"Visa", "Mastercard"};
 
     private AppDatabaseHelper dbHelper;
-    private BankCardListAdapter cardAdapter;
     private Runnable sheetSavedListener;
 
     /**
-     * Headless sheet host: lets the dashboard open the creation sheet without
-     * navigating to this tab. Attach via FragmentManager first, then call.
+     * Sheet host: the bank tab is gone — the dashboard attaches this fragment
+     * headless and opens creation/edit sheets directly. Attach via
+     * FragmentManager first, then call.
      */
     public void initSheetHost(@NonNull Context context, @Nullable Runnable onSaved) {
         dbHelper = new AppDatabaseHelper(context);
-        cardAdapter = new BankCardListAdapter(new ArrayList<>(), null);
         sheetSavedListener = onSaved;
     }
 
     /** Opens the creation sheet directly (no navigation). */
     public void openAddSheet() {
         showCardDialog(null);
+    }
+
+    /** Opens the edit sheet for an existing card directly (no navigation). */
+    public void openEditSheet(@NonNull BankCardItem item) {
+        showCardDialog(item);
     }
 
     private void notifySheetSaved() {
@@ -65,50 +66,8 @@ public class BankCardsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_bank_cards, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        dbHelper = new AppDatabaseHelper(requireContext());
-
-        RecyclerView recyclerCards = view.findViewById(R.id.recycler_cards);
-        recyclerCards.setLayoutManager(new LinearLayoutManager(requireContext()));
-        cardAdapter = new BankCardListAdapter(dbHelper.getAllBankCards(),
-                new BankCardListAdapter.OnCardActionListener() {
-                    @Override
-                    public void onEdit(BankCardItem item) {
-                        showCardDialog(item);
-                    }
-
-                    @Override
-                    public void onDelete(BankCardItem item) {
-                        showDeleteConfirmation(item);
-                    }
-                });
-        recyclerCards.setAdapter(cardAdapter);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (cardAdapter != null && dbHelper != null) {
-            cardAdapter.updateData(dbHelper.getAllBankCards());
-        }
-    }
-
-    private void showDeleteConfirmation(BankCardItem item) {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Delete Card")
-                .setMessage("Are you sure you want to delete this card?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    dbHelper.deleteBankCard(item.getId());
-                    cardAdapter.updateData(dbHelper.getAllBankCards());
-                    Toast.makeText(requireContext(), "Deleted Successfully", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        // No tab UI: sheets only. Plain view keeps the fragment contract intact.
+        return new View(requireContext());
     }
 
     private void showCardDialog(@Nullable BankCardItem existing) {
@@ -364,7 +323,6 @@ public class BankCardsFragment extends Fragment {
                         pinDigits,
                         selectedDesign[0]);
                 dbHelper.updateBankCard(updated);
-                cardAdapter.updateData(dbHelper.getAllBankCards());
                 Toast.makeText(requireContext(), "Updated Successfully", Toast.LENGTH_SHORT).show();
             } else {
                 BankCardItem newCard = new BankCardItem(
@@ -378,12 +336,29 @@ public class BankCardsFragment extends Fragment {
                         pinDigits,
                         selectedDesign[0]);
                 dbHelper.insertBankCard(newCard);
-                cardAdapter.updateData(dbHelper.getAllBankCards());
                 Toast.makeText(requireContext(), "Card Saved", Toast.LENGTH_SHORT).show();
             }
             notifySheetSaved();
             dialog.dismiss();
         });
+
+        // The bank tab is gone: delete lives here, visible in edit mode only.
+        TextView btnDelete = dialogView.findViewById(R.id.btn_delete);
+        if (isEdit) {
+            btnDelete.setVisibility(View.VISIBLE);
+            btnDelete.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Card")
+                    .setMessage("Are you sure you want to delete this card?")
+                    .setPositiveButton("Delete", (d, which) -> {
+                        dbHelper.deleteBankCard(existing.getId());
+                        notifySheetSaved();
+                        dialog.dismiss();
+                        Toast.makeText(requireContext(),
+                                "Deleted Successfully", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show());
+        }
 
         dialog.show();
     }

@@ -4,16 +4,4 @@
         android:id="@+id/nav_home"
         android:icon="@drawable/ic_home"
         android:title="@string/tab_home" />
-    <item
-        android:id="@+id/nav_id"
-        android:icon="@drawable/ic_id"
-        android:title="@string/tab_ids" />
-    <item
-        android:id="@+id/nav_bank"
-        android:icon="@drawable/ic_bank"
-        android:title="@string/tab_cards" />
-    <item
-        android:id="@+id/nav_login"
-        android:icon="@drawable/ic_social"
-        android:title="@string/tab_social" />
 </menu>

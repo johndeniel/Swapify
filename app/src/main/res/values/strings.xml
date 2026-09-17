@@ -2,10 +2,9 @@
 
     <!-- ============================================================
          Akin Wallet — user-facing text.
-         The app has 3 wallet components, each with its own prefix:
-           1. IDs    → government IDs (National ID, Driver's License…)
-           2. Cards  → bank cards (debit / credit / prepaid)
-           3. Social → social-media credentials (username + password)
+         The app has 1 wallet component plus government IDs
+         (created from the dashboard, shown on the dashboard):
+           1. Social → social-media credentials (username + password)
          Shared text lives under action_ / field_ / cd_ (content
          description) so wording stays identical on every screen.
          ============================================================ -->
@@ -21,18 +20,9 @@
 
     <!-- Bottom navigation tabs (short labels) -->
     <string name="tab_home">Home</string>
-    <string name="tab_ids">IDs</string>
-    <string name="tab_cards">Cards</string>
-    <string name="tab_social">Logins</string>
 
     <!-- Section headers -->
-    <!-- 1. Government IDs -->
-    <string name="title_ids">Government IDs</string>
-    <string name="desc_ids">Your secure ID wallet</string>
-    <!-- 2. Bank cards -->
-    <string name="title_cards">Bank Cards</string>
-    <string name="desc_cards">Manage payment methods</string>
-    <!-- 3. Social accounts -->
+    <!-- 1. Social accounts -->
     <string name="title_social">Social Accounts</string>
     <string name="desc_social">Usernames and passwords, organized</string>
 

@@ -71,8 +71,6 @@ public class DashboardFragment extends Fragment {
         setupRecentLogins(view);
         setupAddMenu(view);
 
-        view.findViewById(R.id.btn_view_all_cards).setOnClickListener(v -> goTo(R.id.nav_bank));
-        view.findViewById(R.id.btn_view_all_ids).setOnClickListener(v -> goTo(R.id.nav_id));
         view.findViewById(R.id.btn_view_all_logins).setOnClickListener(v -> goTo(R.id.nav_login));
 
         refreshDashboard();
@@ -106,8 +104,8 @@ public class DashboardFragment extends Fragment {
                 }
             });
         }
-        view.findViewById(R.id.fab_option_id).setOnClickListener(v -> addNew(R.id.nav_id));
-        view.findViewById(R.id.fab_option_card).setOnClickListener(v -> addNew(R.id.nav_bank));
+        view.findViewById(R.id.fab_option_id).setOnClickListener(v -> openIdCreator());
+        view.findViewById(R.id.fab_option_card).setOnClickListener(v -> openBankCreator());
         view.findViewById(R.id.fab_option_login).setOnClickListener(v -> addNew(R.id.nav_login));
     }
 
@@ -164,10 +162,87 @@ public class DashboardFragment extends Fragment {
         }
     }
 
+    /** Opens the ID creation sheet directly (IDs tab is gone; FAB is the only entry). */
+    private void openIdCreator() {
+        if (sheetHost != null) {
+            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
+            sheetHost = null;
+        }
+        IdentificationFragment host = new IdentificationFragment();
+        getChildFragmentManager().beginTransaction().add(host, null).commitNow();
+        sheetHost = host;
+        host.initSheetHost(requireContext(), () -> {
+            if (isAdded()) {
+                refreshDashboard();
+            }
+        });
+        host.openAddSheet();
+    }
+
+    /** Opens an ID edit sheet directly (IDs tab is gone; dashboard is the editor). */
+    private void openIdEditor(IdCardItem item) {
+        if (sheetHost != null) {
+            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
+            sheetHost = null;
+        }
+        IdentificationFragment host = new IdentificationFragment();
+        getChildFragmentManager().beginTransaction().add(host, null).commitNow();
+        sheetHost = host;
+        host.initSheetHost(requireContext(), () -> {
+            if (isAdded()) {
+                refreshDashboard();
+            }
+        });
+        host.openEditSheet(item);
+    }
+
     /**
      * Opens a creation sheet directly over the dashboard — no navigation, so
      * the destination tab is never shown. The tab fragment is attached
      * headless purely as the sheet owner; dashboard refreshes on save.
+     */
+    /** Opens the bank creation sheet directly (bank tab is gone; FAB is the only entry). */
+    private void openBankCreator() {
+        if (isFabMenuOpen) {
+            toggleAddMenu();
+        }
+        if (sheetHost != null) {
+            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
+            sheetHost = null;
+        }
+        BankCardsFragment host = new BankCardsFragment();
+        getChildFragmentManager().beginTransaction().add(host, null).commitNow();
+        sheetHost = host;
+        host.initSheetHost(requireContext(), () -> {
+            if (isAdded()) {
+                refreshDashboard();
+            }
+        });
+        host.openAddSheet();
+    }
+
+    /** Opens a bank edit sheet directly (bank tab is gone; dashboard is the editor). */
+    private void openBankEditor(BankCardItem item) {
+        if (sheetHost != null) {
+            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
+            sheetHost = null;
+        }
+        BankCardsFragment host = new BankCardsFragment();
+        getChildFragmentManager().beginTransaction().add(host, null).commitNow();
+        sheetHost = host;
+        host.initSheetHost(requireContext(), () -> {
+            if (isAdded()) {
+                refreshDashboard();
+            }
+        });
+        host.openEditSheet(item);
+    }
+
+    /**
+     * Opens a creation sheet directly over the dashboard — no navigation, so
+     * the destination tab is never shown. The tab fragment is attached
+     * headless purely as the sheet owner; dashboard refreshes on save.
+     * (Bank/ID creation moved to openBankCreator/openIdCreator.)
      */
     private void addNew(int navId) {
         if (isFabMenuOpen) {
@@ -177,28 +252,15 @@ public class DashboardFragment extends Fragment {
             getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
             sheetHost = null;
         }
-        Runnable onSaved = () -> {
-            if (isAdded()) {
-                refreshDashboard();
-            }
-        };
-        if (navId == R.id.nav_id) {
-            IdentificationFragment host = new IdentificationFragment();
-            getChildFragmentManager().beginTransaction().add(host, null).commitNow();
-            sheetHost = host;
-            host.initSheetHost(requireContext(), onSaved);
-            host.openAddSheet();
-        } else if (navId == R.id.nav_bank) {
-            BankCardsFragment host = new BankCardsFragment();
-            getChildFragmentManager().beginTransaction().add(host, null).commitNow();
-            sheetHost = host;
-            host.initSheetHost(requireContext(), onSaved);
-            host.openAddSheet();
-        } else if (navId == R.id.nav_login) {
+        if (navId == R.id.nav_login) {
             SocialLoginsFragment host = new SocialLoginsFragment();
             getChildFragmentManager().beginTransaction().add(host, null).commitNow();
             sheetHost = host;
-            host.initSheetHost(requireContext(), onSaved);
+            host.initSheetHost(requireContext(), () -> {
+                if (isAdded()) {
+                    refreshDashboard();
+                }
+            });
             host.openAddSheet();
         }
     }
@@ -208,7 +270,7 @@ public class DashboardFragment extends Fragment {
         recyclerCarousel = view.findViewById(R.id.recycler_cards_carousel);
         emptyCards = view.findViewById(R.id.empty_cards);
 
-        cardAdapter = new DashboardCardAdapter(item -> goTo(R.id.nav_bank));
+        cardAdapter = new DashboardCardAdapter(this::openBankEditor);
         carouselLayoutManager =
                 new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
         recyclerCarousel.setLayoutManager(carouselLayoutManager);
@@ -229,7 +291,7 @@ public class DashboardFragment extends Fragment {
         carouselSnapHelper.attachToRecyclerView(recyclerCarousel);
 
         if (emptyCards != null) {
-            emptyCards.setOnClickListener(v -> goTo(R.id.nav_bank));
+            emptyCards.setOnClickListener(v -> openBankCreator());
         }
     }
 
@@ -250,7 +312,7 @@ public class DashboardFragment extends Fragment {
         recyclerIdsCarousel = view.findViewById(R.id.recycler_ids_carousel);
         emptyIds = view.findViewById(R.id.empty_ids);
 
-        idAdapter = new DashboardIdCardAdapter(item -> goTo(R.id.nav_id));
+        idAdapter = new DashboardIdCardAdapter(this::openIdEditor);
         idsLayoutManager =
                 new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
         recyclerIdsCarousel.setLayoutManager(idsLayoutManager);
@@ -271,7 +333,7 @@ public class DashboardFragment extends Fragment {
         idsSnapHelper.attachToRecyclerView(recyclerIdsCarousel);
 
         if (emptyIds != null) {
-            emptyIds.setOnClickListener(v -> goTo(R.id.nav_id));
+            emptyIds.setOnClickListener(v -> openIdCreator());
         }
     }
 

@@ -1,6 +1,5 @@
 package com.akin.wallet.fragment;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
@@ -47,46 +46,8 @@ public class SocialLoginsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_social_logins, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        dbHelper = new AppDatabaseHelper(requireContext());
-
-        RecyclerView recycler = view.findViewById(R.id.recycler_logins);
-        recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        adapter = new SocialLoginAdapter(dbHelper.getAllLogins(), dbHelper);
-        adapter.setOnCredentialActionListener(new SocialLoginAdapter.OnCredentialActionListener() {
-            @Override
-            public void onEdit(CredentialItem item) {
-                showEditLoginDialog(item);
-            }
-
-            @Override
-            public void onDelete(CredentialItem item) {
-                showDeleteConfirmation(item);
-            }
-        });
-        recycler.setAdapter(adapter);
-
-        EditText searchInput = view.findViewById(R.id.search_login);
-        searchInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                adapter.getFilter().filter(s);
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
+        // No UI: sheets only. Plain view keeps the fragment contract intact.
+        return new View(requireContext());
     }
 
     /**
@@ -104,23 +65,15 @@ public class SocialLoginsFragment extends Fragment {
         showAddLoginDialog();
     }
 
+    /** Opens the edit sheet for an existing account directly (no navigation). */
+    public void openEditSheet(@NonNull CredentialItem item) {
+        showEditLoginDialog(item);
+    }
+
     private void notifySheetSaved() {
         if (sheetSavedListener != null) {
             sheetSavedListener.run();
         }
-    }
-
-    private void showDeleteConfirmation(CredentialItem item) {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Delete Account")
-                .setMessage("Are you sure you want to delete " + item.getPlatform() + "?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    dbHelper.deleteLogin(item.getId());
-                    adapter.updateData(dbHelper.getAllLogins());
-                    Toast.makeText(requireContext(), "Deleted Successfully", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
     }
 
     private void showEditLoginDialog(CredentialItem item) {

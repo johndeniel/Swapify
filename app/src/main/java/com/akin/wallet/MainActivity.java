@@ -1,5 +1,6 @@
 package com.akin.wallet;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -10,10 +11,7 @@ import android.view.WindowManager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import com.akin.wallet.fragment.BankCardsFragment;
 import com.akin.wallet.fragment.DashboardFragment;
-import com.akin.wallet.fragment.IdentificationFragment;
-import com.akin.wallet.fragment.SocialLoginsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -71,8 +69,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /** Dashboard cards/rows call this to switch tabs. */
+    /** Dashboard links call this. Logins opens as a standalone screen. */
     public void navigateToTab(int itemId) {
+        if (itemId == R.id.nav_login) {
+            startActivity(new Intent(this, SocialLoginsActivity.class));
+            return;
+        }
         Fragment fragment = fragmentFor(itemId);
         if (fragment == null) {
             return;
@@ -87,12 +89,6 @@ public class MainActivity extends AppCompatActivity {
     private Fragment fragmentFor(int id) {
         if (id == R.id.nav_home) {
             return new DashboardFragment();
-        } else if (id == R.id.nav_id) {
-            return new IdentificationFragment();
-        } else if (id == R.id.nav_bank) {
-            return new BankCardsFragment();
-        } else if (id == R.id.nav_login) {
-            return new SocialLoginsFragment();
         }
         return null;
     }

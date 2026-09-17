@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Navigation keys for screens with no bottom tab.
+     Logins is reachable only via the dashboard (View All). -->
+<resources>
+    <item name="nav_login" type="id" />
+</resources>

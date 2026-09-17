@@ -92,7 +92,7 @@
 
         </LinearLayout>
 
-        <!-- Government IDs section header -->
+        <!-- Government ID section header (no tab: View All removed) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -107,21 +107,6 @@
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:textStyle="bold" />
-
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/btn_view_all_ids"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:text="View All"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="12sp" />
 
         </LinearLayout>
 
@@ -195,6 +180,7 @@
         </LinearLayout>
 
         <!-- Bank Cards section header -->
+        <!-- Bank Card section header (no tab: View All removed) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -209,21 +195,6 @@
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:textStyle="bold" />
-
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/btn_view_all_cards"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:text="View All"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="12sp" />
 
         </LinearLayout>
 

@@ -26,35 +26,37 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 import com.akin.wallet.adapter.IdCardDesignAdapter;
-import com.akin.wallet.adapter.IdCardListAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.IdTypeSpec;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class IdentificationFragment extends Fragment {
 
     private AppDatabaseHelper dbHelper;
-    private IdCardListAdapter cardAdapter;
     private Runnable sheetSavedListener;
 
     /**
-     * Headless sheet host: lets the dashboard open the creation sheet without
-     * navigating to this tab. Attach via FragmentManager first, then call.
+     * Sheet host: the IDs tab is gone — the dashboard attaches this fragment
+     * headless and opens creation/edit sheets directly. Attach via
+     * FragmentManager first, then call.
      */
     public void initSheetHost(@NonNull Context context, @Nullable Runnable onSaved) {
         dbHelper = new AppDatabaseHelper(context);
-        cardAdapter = new IdCardListAdapter(new ArrayList<>(), null);
         sheetSavedListener = onSaved;
     }
 
     /** Opens the creation sheet directly (no navigation). */
     public void openAddSheet() {
         showCardDialog(null);
+    }
+
+    /** Opens the edit sheet for an existing ID directly (no navigation). */
+    public void openEditSheet(@NonNull IdCardItem item) {
+        showCardDialog(item);
     }
 
     private void notifySheetSaved() {
@@ -67,50 +69,8 @@ public class IdentificationFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_identification, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        dbHelper = new AppDatabaseHelper(requireContext());
-
-        RecyclerView recyclerCards = view.findViewById(R.id.recycler_cards);
-        recyclerCards.setLayoutManager(new LinearLayoutManager(requireContext()));
-        cardAdapter = new IdCardListAdapter(dbHelper.getAllIdCards(),
-                new IdCardListAdapter.OnIdActionListener() {
-                    @Override
-                    public void onEdit(IdCardItem item) {
-                        showCardDialog(item);
-                    }
-
-                    @Override
-                    public void onDelete(IdCardItem item) {
-                        showDeleteConfirmation(item);
-                    }
-                });
-        recyclerCards.setAdapter(cardAdapter);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (cardAdapter != null && dbHelper != null) {
-            cardAdapter.updateData(dbHelper.getAllIdCards());
-        }
-    }
-
-    private void showDeleteConfirmation(IdCardItem item) {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Delete ID")
-                .setMessage("Are you sure you want to delete this " + item.getIdType() + "?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    dbHelper.deleteIdCard(item.getId());
-                    cardAdapter.updateData(dbHelper.getAllIdCards());
-                    Toast.makeText(requireContext(), "Deleted Successfully", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        // No tab UI: sheets only. Plain view keeps the fragment contract intact.
+        return new View(requireContext());
     }
 
     private void showCardDialog(@Nullable IdCardItem existing) {
@@ -272,17 +232,34 @@ public class IdentificationFragment extends Fragment {
                     updated = new IdCardItem(existing.getId(), typeName, filtered, fixedDesign);
                 }
                 dbHelper.updateIdCard(updated);
-                cardAdapter.updateData(dbHelper.getAllIdCards());
                 Toast.makeText(requireContext(), "Updated Successfully", Toast.LENGTH_SHORT).show();
             } else {
                 IdCardItem newCard = new IdCardItem(typeName, filtered, fixedDesign);
                 dbHelper.insertIdCard(newCard);
-                cardAdapter.updateData(dbHelper.getAllIdCards());
                 Toast.makeText(requireContext(), "ID Saved", Toast.LENGTH_SHORT).show();
             }
             notifySheetSaved();
             dialog.dismiss();
         });
+
+        // The IDs tab is gone: delete lives here, visible in edit mode only.
+        TextView btnDelete = dialogView.findViewById(R.id.btn_delete);
+        if (isEdit) {
+            btnDelete.setVisibility(View.VISIBLE);
+            btnDelete.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
+                    .setTitle("Delete ID")
+                    .setMessage("Are you sure you want to delete this "
+                            + existing.getIdType() + "?")
+                    .setPositiveButton("Delete", (d, which) -> {
+                        dbHelper.deleteIdCard(existing.getId());
+                        notifySheetSaved();
+                        dialog.dismiss();
+                        Toast.makeText(requireContext(),
+                                "Deleted Successfully", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show());
+        }
 
         dialog.show();
     }
