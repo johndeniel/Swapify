@@ -11,9 +11,26 @@ public class BankCardItem {
     private final String cvv;
     private final String pin;
     private final int design;
+    // Epoch millis (UTC). 0 = unknown (pre-migration rows or unsaved drafts);
+    // the DB fills real values on insert.
+    private final long createdAt;
+    private final long updatedAt;
 
     public BankCardItem(String cardType, String cardNetwork, String bankName, String holderName,
                         String cardNumber, String expiry, String cvv, String pin, int design) {
+        this(cardType, cardNetwork, bankName, holderName,
+                cardNumber, expiry, cvv, pin, design, 0, 0);
+    }
+
+    public BankCardItem(int id, String cardType, String cardNetwork, String bankName, String holderName,
+                        String cardNumber, String expiry, String cvv, String pin, int design) {
+        this(id, cardType, cardNetwork, bankName, holderName,
+                cardNumber, expiry, cvv, pin, design, 0, 0);
+    }
+
+    public BankCardItem(String cardType, String cardNetwork, String bankName, String holderName,
+                        String cardNumber, String expiry, String cvv, String pin, int design,
+                        long createdAt, long updatedAt) {
         this.id = -1;
         this.cardType = cardType;
         this.cardNetwork = cardNetwork;
@@ -24,10 +41,13 @@ public class BankCardItem {
         this.cvv = cvv;
         this.pin = pin;
         this.design = design;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public BankCardItem(int id, String cardType, String cardNetwork, String bankName, String holderName,
-                        String cardNumber, String expiry, String cvv, String pin, int design) {
+                        String cardNumber, String expiry, String cvv, String pin, int design,
+                        long createdAt, long updatedAt) {
         this.id = id;
         this.cardType = cardType;
         this.cardNetwork = cardNetwork;
@@ -38,6 +58,8 @@ public class BankCardItem {
         this.cvv = cvv;
         this.pin = pin;
         this.design = design;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public int getId() {
@@ -78,5 +100,13 @@ public class BankCardItem {
 
     public int getDesign() {
         return design;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public long getUpdatedAt() {
+        return updatedAt;
     }
 }

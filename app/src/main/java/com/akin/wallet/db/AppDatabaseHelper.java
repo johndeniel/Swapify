@@ -15,7 +15,7 @@ import java.util.List;
 public class AppDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "akin_wallet.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     private static final String TABLE_LOGINS = "logins";
     private static final String COL_ID = "id";
@@ -40,6 +40,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_CVV = "cvv";
     private static final String COL_CARD_PIN = "pin";
     private static final String COL_DESIGN = "design";
+    // Epoch millis (INTEGER). Added in v5; older rows backfilled on upgrade.
+    private static final String COL_CREATED_AT = "created_at";
+    private static final String COL_UPDATED_AT = "updated_at";
 
     private static final String TABLE_ID_CARDS = "id_cards";
     private static final String COL_ID_CARD_ID = "id";
@@ -74,7 +77,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_EXPIRY + " TEXT, "
                 + COL_CVV + " TEXT, "
                 + COL_CARD_PIN + " TEXT, "
-                + COL_DESIGN + " INTEGER)");
+                + COL_DESIGN + " INTEGER, "
+                + COL_CREATED_AT + " INTEGER DEFAULT 0, "
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
         db.execSQL(getCreateIdCardsSql());
     }
 
@@ -110,8 +115,42 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_EXPIRY + " TEXT, "
                 + COL_CVV + " TEXT, "
                 + COL_CARD_PIN + " TEXT, "
-                + COL_DESIGN + " INTEGER)");
+                + COL_DESIGN + " INTEGER, "
+                + COL_CREATED_AT + " INTEGER DEFAULT 0, "
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
         db.execSQL(getCreateIdCardsSql());
+
+        // v5: timestamp columns on bank_cards. CREATE TABLE IF NOT EXISTS is a
+        // no-op for existing installs, so ALTER explicitly and backfill.
+        if (oldVersion < 5) {
+            addColumnIfMissing(db, TABLE_BANK_CARDS, COL_CREATED_AT);
+            addColumnIfMissing(db, TABLE_BANK_CARDS, COL_UPDATED_AT);
+            // Pre-migration rows carry 0; stamp them so sort/display works.
+            long now = System.currentTimeMillis();
+            db.execSQL("UPDATE " + TABLE_BANK_CARDS
+                    + " SET " + COL_CREATED_AT + "=? WHERE " + COL_CREATED_AT + " IS NULL OR "
+                    + COL_CREATED_AT + "=0", new Object[]{now});
+            db.execSQL("UPDATE " + TABLE_BANK_CARDS
+                    + " SET " + COL_UPDATED_AT + "=? WHERE " + COL_UPDATED_AT + " IS NULL OR "
+                    + COL_UPDATED_AT + "=0", new Object[]{now});
+        }
+    }
+
+    /** Idempotent ADD COLUMN: SQLite throws if the column exists, so probe first. */
+    private static void addColumnIfMissing(SQLiteDatabase db, String table, String column) {
+        boolean missing = true;
+        try (android.database.Cursor c = db.rawQuery("PRAGMA table_info(" + table + ")", null)) {
+            int nameIdx = c.getColumnIndexOrThrow("name");
+            while (c.moveToNext()) {
+                if (column.equals(c.getString(nameIdx))) {
+                    missing = false;
+                    break;
+                }
+            }
+        }
+        if (missing) {
+            db.execSQL("ALTER TABLE " + table + " ADD COLUMN " + column + " INTEGER DEFAULT 0");
+        }
     }
 
     public long insertLogin(CredentialItem item) {
@@ -178,6 +217,11 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_CVV, item.getCvv());
         cv.put(COL_CARD_PIN, item.getPin());
         cv.put(COL_DESIGN, item.getDesign());
+        // Functional timestamps: a fresh row is both created and updated now.
+        // Honour caller-supplied values (e.g. imports) when present.
+        long now = System.currentTimeMillis();
+        cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
+        cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
         long id = db.insert(TABLE_BANK_CARDS, null, cv);
         db.close();
         return id;
@@ -188,6 +232,10 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS, null);
         if (cursor.moveToFirst()) {
+            // New columns may be absent on a DB that hasn't run the v5 upgrade
+            // in a test harness; fall back to 0 instead of crashing.
+            int createdIdx = cursor.getColumnIndex(COL_CREATED_AT);
+            int updatedIdx = cursor.getColumnIndex(COL_UPDATED_AT);
             do {
                 list.add(new BankCardItem(
                         cursor.getInt(cursor.getColumnIndexOrThrow(COL_CARD_ID)),
@@ -199,7 +247,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_EXPIRY)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_CVV)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_PIN)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_DESIGN))
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_DESIGN)),
+                        createdIdx != -1 ? cursor.getLong(createdIdx) : 0,
+                        updatedIdx != -1 ? cursor.getLong(updatedIdx) : 0
                 ));
             } while (cursor.moveToNext());
         }
@@ -220,6 +270,10 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_CVV, item.getCvv());
         cv.put(COL_CARD_PIN, item.getPin());
         cv.put(COL_DESIGN, item.getDesign());
+        // created_at is immutable: never overwritten, so creation order is kept.
+        // Every edit bumps updated_at; honour an explicit value if the caller set one.
+        cv.put(COL_UPDATED_AT,
+                item.getUpdatedAt() > 0 ? item.getUpdatedAt() : System.currentTimeMillis());
         int rows = db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
                 new String[]{String.valueOf(item.getId())});
         db.close();

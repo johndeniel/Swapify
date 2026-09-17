@@ -136,9 +136,6 @@
          bright steel-blue left, royal mid, dark navy right) -->
 
     <!-- Category icon tiles -->
-    <color name="dashboard_tile_blue">#FF1A8CFF</color>
-    <color name="dashboard_tile_green">#FF10B981</color>
-    <color name="dashboard_tile_purple">#FF8B5CF6</color>
 
     <!-- Wallet row gradients (one ramp per row) -->
 

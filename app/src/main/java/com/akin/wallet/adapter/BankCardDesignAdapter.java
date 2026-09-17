@@ -46,8 +46,20 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
     @NonNull
     @Override
     public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Reuse the exact dashboard card (item_dashboard_card -> includes
+        // item_bank_card_preview) so the form picker looks identical to the
+        // dashboard carousel. Same 0.68 page-width ratio for same size + peek.
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_bank_card_preview, parent, false);
+                .inflate(R.layout.item_dashboard_card, parent, false);
+        ViewGroup.LayoutParams lp = view.getLayoutParams();
+        int parentWidth = parent.getMeasuredWidth();
+        if (parentWidth <= 0) {
+            parentWidth = parent.getResources().getDisplayMetrics().widthPixels;
+        }
+        if (lp != null && parentWidth > 0) {
+            lp.width = (int) (parentWidth * DashboardCardAdapter.PAGE_WIDTH_RATIO);
+            view.setLayoutParams(lp);
+        }
         return new CardViewHolder(view);
     }
 

@@ -220,6 +220,8 @@ public class DashboardFragment extends Fragment {
         edit.putExtra(BankCardFormActivity.EXTRA_CVV, item.getCvv());
         edit.putExtra(BankCardFormActivity.EXTRA_PIN, item.getPin());
         edit.putExtra(BankCardFormActivity.EXTRA_DESIGN, item.getDesign());
+        edit.putExtra(BankCardFormActivity.EXTRA_CREATED_AT, item.getCreatedAt());
+        edit.putExtra(BankCardFormActivity.EXTRA_UPDATED_AT, item.getUpdatedAt());
         startActivity(edit);
     }
 
