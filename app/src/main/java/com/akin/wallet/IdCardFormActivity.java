@@ -1,14 +1,11 @@
-package com.akin.wallet.fragment;
+package com.akin.wallet;
 
-import android.app.AlertDialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -19,90 +16,65 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.akin.wallet.R;
 import com.akin.wallet.adapter.IdCardDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.IdTypeSpec;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class IdentificationFragment extends Fragment {
+/**
+ * Government ID creation/edit form as a full screen (replaces the old bottom
+ * sheet). Add mode when no ID is passed; edit mode otherwise. The type-picker
+ * carousel lives in the form content; dropdowns stay alert dialogs. Callers
+ * refresh in onResume; RESULT_OK is set on save.
+ */
+public class IdCardFormActivity extends AppCompatActivity {
+
+    public static final String EXTRA_ID = "extra_id";
+    public static final String EXTRA_TYPE = "extra_type";
+    public static final String EXTRA_FIELDS_JSON = "extra_fields_json";
+    public static final String EXTRA_DESIGN = "extra_design";
 
     private AppDatabaseHelper dbHelper;
-    private Runnable sheetSavedListener;
 
-    /**
-     * Sheet host: the IDs tab is gone — the dashboard attaches this fragment
-     * headless and opens creation/edit sheets directly. Attach via
-     * FragmentManager first, then call.
-     */
-    public void initSheetHost(@NonNull Context context, @Nullable Runnable onSaved) {
-        dbHelper = new AppDatabaseHelper(context);
-        sheetSavedListener = onSaved;
-    }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_government_id_form);
 
-    /** Opens the creation sheet directly (no navigation). */
-    public void openAddSheet() {
-        showCardDialog(null);
-    }
+        dbHelper = new AppDatabaseHelper(this);
 
-    /** Opens the edit sheet for an existing ID directly (no navigation). */
-    public void openEditSheet(@NonNull IdCardItem item) {
-        showCardDialog(item);
-    }
-
-    private void notifySheetSaved() {
-        if (sheetSavedListener != null) {
-            sheetSavedListener.run();
+        int id = getIntent().getIntExtra(EXTRA_ID, -1);
+        if (id == -1) {
+            bindForm(null);
+        } else {
+            String json = getIntent().getStringExtra(EXTRA_FIELDS_JSON);
+            Map<String, String> fields = json != null
+                    ? IdCardItem.parseFieldsJson(json)
+                    : new LinkedHashMap<>();
+            bindForm(new IdCardItem(
+                    id,
+                    getIntent().getStringExtra(EXTRA_TYPE),
+                    fields,
+                    getIntent().getIntExtra(EXTRA_DESIGN, 0)));
         }
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        // No tab UI: sheets only. Plain view keeps the fragment contract intact.
-        return new View(requireContext());
-    }
-
-    private void showCardDialog(@Nullable IdCardItem existing) {
+    private void bindForm(@Nullable IdCardItem existing) {
         final boolean isEdit = existing != null;
-        BottomSheetDialog dialog = new BottomSheetDialog(requireContext(),
-                com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_government_id, null);
-        dialog.setContentView(dialogView);
 
-        dialog.setOnShowListener(dialogInterface -> {
-            if (dialog.getWindow() != null) {
-                dialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
-            }
-            com.google.android.material.bottomsheet.BottomSheetDialog dialog2 =
-                    (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
-            View bottomSheet = dialog2.findViewById(com.google.android.material.R.id.design_bottom_sheet);
-            if (bottomSheet == null) {
-                return;
-            }
-            bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-            bottomSheet.requestLayout();
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setHideable(false);
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setDraggable(false);
-        });
 
-        LinearLayout formContainer = dialogView.findViewById(R.id.form_container);
-        TextView btnSave = dialogView.findViewById(R.id.btn_save);
-        TextView dialogTitle = dialogView.findViewById(R.id.dialog_title);
+        LinearLayout formContainer = findViewById(R.id.form_container);
+        TextView btnSave = findViewById(R.id.btn_save);
+        TextView dialogTitle = findViewById(R.id.dialog_title);
 
         // Draft holds EVERY typed value (even for hidden types) so switching
         // ID type back and forth never loses input; save filters to active spec.
@@ -129,7 +101,7 @@ public class IdentificationFragment extends Fragment {
 
         final IdCardDesignAdapter[] adapterRef = new IdCardDesignAdapter[1];
         final RecyclerView[] carouselRef = new RecyclerView[1];
-        final LinearLayout dotsContainer = dialogView.findViewById(R.id.dots_container);
+        final LinearLayout dotsContainer = findViewById(R.id.dots_container);
         dotsContainer.setVisibility(View.VISIBLE);
 
         Runnable refreshPreview = () -> {
@@ -142,7 +114,7 @@ public class IdentificationFragment extends Fragment {
         // Swiping (or tapping) a page selects that type and rebuilds the form.
         IdCardDesignAdapter designAdapter = new IdCardDesignAdapter(pos -> {
             if (isEdit && !knownType[0]) {
-                Toast.makeText(requireContext(),
+                Toast.makeText(IdCardFormActivity.this,
                         "ID type is fixed for entries from a newer version", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -154,10 +126,10 @@ public class IdentificationFragment extends Fragment {
             }
         });
         adapterRef[0] = designAdapter;
-        RecyclerView recyclerDesign = dialogView.findViewById(R.id.recycler_card_design);
+        RecyclerView recyclerDesign = findViewById(R.id.recycler_card_design);
         carouselRef[0] = recyclerDesign;
         LinearLayoutManager layoutManager =
-                new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
+                new LinearLayoutManager(IdCardFormActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerDesign.setLayoutManager(layoutManager);
         recyclerDesign.setAdapter(designAdapter);
         PagerSnapHelper snapHelper = new PagerSnapHelper();
@@ -232,39 +204,37 @@ public class IdentificationFragment extends Fragment {
                     updated = new IdCardItem(existing.getId(), typeName, filtered, fixedDesign);
                 }
                 dbHelper.updateIdCard(updated);
-                Toast.makeText(requireContext(), "Updated Successfully", Toast.LENGTH_SHORT).show();
+                Toast.makeText(IdCardFormActivity.this, "Updated Successfully", Toast.LENGTH_SHORT).show();
             } else {
                 IdCardItem newCard = new IdCardItem(typeName, filtered, fixedDesign);
                 dbHelper.insertIdCard(newCard);
-                Toast.makeText(requireContext(), "ID Saved", Toast.LENGTH_SHORT).show();
+                Toast.makeText(IdCardFormActivity.this, "ID Saved", Toast.LENGTH_SHORT).show();
             }
-            notifySheetSaved();
-            dialog.dismiss();
+            setResult(RESULT_OK);
+            finish();
         });
 
         // The IDs tab is gone: delete lives here, visible in edit mode only.
-        TextView btnDelete = dialogView.findViewById(R.id.btn_delete);
+        TextView btnDelete = findViewById(R.id.btn_delete);
         if (isEdit) {
             btnDelete.setVisibility(View.VISIBLE);
-            btnDelete.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
+            btnDelete.setOnClickListener(v -> new AlertDialog.Builder(IdCardFormActivity.this)
                     .setTitle("Delete ID")
                     .setMessage("Are you sure you want to delete this "
                             + existing.getIdType() + "?")
                     .setPositiveButton("Delete", (d, which) -> {
                         dbHelper.deleteIdCard(existing.getId());
-                        notifySheetSaved();
-                        dialog.dismiss();
-                        Toast.makeText(requireContext(),
+                        setResult(RESULT_OK);
+                        finish();
+                        Toast.makeText(IdCardFormActivity.this,
                                 "Deleted Successfully", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("Cancel", null)
                     .show());
         }
 
-        dialog.show();
-    }
 
-    // ---------- dynamic form ----------
+    }
 
     private String currentTypeName(int selected, boolean known, @Nullable String existingType) {
         if (!known && existingType != null) {
@@ -321,20 +291,20 @@ public class IdentificationFragment extends Fragment {
 
     private View buildTextField(IdTypeSpec.IdField field, Map<String, String> draft,
                                 Map<String, EditText> textInputs, Runnable onChanged) {
-        LinearLayout wrap = new LinearLayout(requireContext());
+        LinearLayout wrap = new LinearLayout(IdCardFormActivity.this);
         wrap.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         wrapParams.topMargin = dp(16);
         wrap.setLayoutParams(wrapParams);
 
-        TextView label = new TextView(requireContext());
+        TextView label = new TextView(IdCardFormActivity.this);
         label.setText(field.required ? field.label + " *" : field.label);
         label.setTextColor(getResources().getColor(R.color.text_secondary, null));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         wrap.addView(label);
 
-        EditText input = new EditText(requireContext());
+        EditText input = new EditText(IdCardFormActivity.this);
         LinearLayout.LayoutParams inputParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         inputParams.topMargin = dp(8);
@@ -379,20 +349,20 @@ public class IdentificationFragment extends Fragment {
 
     private View buildDropdownField(IdTypeSpec.IdField field, Map<String, String> draft,
                                     Runnable onChanged) {
-        LinearLayout wrap = new LinearLayout(requireContext());
+        LinearLayout wrap = new LinearLayout(IdCardFormActivity.this);
         wrap.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         wrapParams.topMargin = dp(16);
         wrap.setLayoutParams(wrapParams);
 
-        TextView label = new TextView(requireContext());
+        TextView label = new TextView(IdCardFormActivity.this);
         label.setText(field.required ? field.label + " *" : field.label);
         label.setTextColor(getResources().getColor(R.color.text_secondary, null));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         wrap.addView(label);
 
-        LinearLayout row = new LinearLayout(requireContext());
+        LinearLayout row = new LinearLayout(IdCardFormActivity.this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
@@ -406,7 +376,7 @@ public class IdentificationFragment extends Fragment {
         row.setClickable(true);
         row.setFocusable(true);
 
-        TextView valueView = new TextView(requireContext());
+        TextView valueView = new TextView(IdCardFormActivity.this);
         LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         valueView.setLayoutParams(valueParams);
@@ -426,7 +396,7 @@ public class IdentificationFragment extends Fragment {
             valueView.setAlpha(1f);
         }
 
-        ImageView chevron = new ImageView(requireContext());
+        ImageView chevron = new ImageView(IdCardFormActivity.this);
         chevron.setImageResource(R.drawable.ic_dropdown);
         LinearLayout.LayoutParams chevParams = new LinearLayout.LayoutParams(dp(20), dp(20));
         chevron.setLayoutParams(chevParams);
@@ -437,7 +407,7 @@ public class IdentificationFragment extends Fragment {
 
         row.setOnClickListener(v -> {
             int checked = indexOfOption(field.options, draft.get(field.key));
-            new AlertDialog.Builder(requireContext())
+            new AlertDialog.Builder(IdCardFormActivity.this)
                     .setTitle(field.label)
                     .setSingleChoiceItems(field.options, checked, (d, which) -> {
                         String picked = field.options[which];
@@ -475,7 +445,7 @@ public class IdentificationFragment extends Fragment {
                     input.setError(f.label + " is required");
                     input.requestFocus();
                 } else {
-                    Toast.makeText(requireContext(), f.label + " is required", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(IdCardFormActivity.this, f.label + " is required", Toast.LENGTH_SHORT).show();
                 }
                 return false;
             }
@@ -485,7 +455,7 @@ public class IdentificationFragment extends Fragment {
                     input.setError(f.label + " looks too short");
                     input.requestFocus();
                 } else {
-                    Toast.makeText(requireContext(), f.label + " looks too short", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(IdCardFormActivity.this, f.label + " looks too short", Toast.LENGTH_SHORT).show();
                 }
                 return false;
             }
@@ -505,9 +475,6 @@ public class IdentificationFragment extends Fragment {
         return -1;
     }
 
-    // ---------- shared UI helpers (mirrors BankCardsFragment) ----------
-
-    /** Single choke point for ID-type switches (carousel swipe or tap). */
     private void applyIdTypeSelection(int pos, TextView dialogTitle, boolean isEdit,
                                       LinearLayout formContainer,
                                       Map<String, String> draft, Map<String, EditText> textInputs,
@@ -540,7 +507,7 @@ public class IdentificationFragment extends Fragment {
         int size = (int) (8 * density);
         int margin = (int) (4 * density);
         for (int i = 0; i < count; i++) {
-            View dot = new View(requireContext());
+            View dot = new View(IdCardFormActivity.this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
             params.setMargins(margin, 0, margin, 0);
             dot.setLayoutParams(params);

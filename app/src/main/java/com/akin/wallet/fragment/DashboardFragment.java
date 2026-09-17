@@ -23,6 +23,8 @@ import com.akin.wallet.adapter.DashboardLoginAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
+import com.akin.wallet.BankCardFormActivity;
+import com.akin.wallet.IdCardFormActivity;
 import com.akin.wallet.SocialLoginFormActivity;
 import com.akin.wallet.model.IdCardItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -54,7 +56,6 @@ public class DashboardFragment extends Fragment {
     private View fabAddMenu;
     private View fabScrim;
     private boolean isFabMenuOpen = false;
-    private Fragment sheetHost;
 
     @Nullable
     @Override
@@ -164,80 +165,46 @@ public class DashboardFragment extends Fragment {
         }
     }
 
-    /** Opens the ID creation sheet directly (IDs tab is gone; FAB is the only entry). */
+    /** Opens the ID creation form directly (IDs tab is gone; FAB is the only entry). */
     private void openIdCreator() {
-        if (sheetHost != null) {
-            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
-            sheetHost = null;
+        if (isFabMenuOpen) {
+            toggleAddMenu();
         }
-        IdentificationFragment host = new IdentificationFragment();
-        getChildFragmentManager().beginTransaction().add(host, null).commitNow();
-        sheetHost = host;
-        host.initSheetHost(requireContext(), () -> {
-            if (isAdded()) {
-                refreshDashboard();
-            }
-        });
-        host.openAddSheet();
+        startActivity(new Intent(requireContext(), IdCardFormActivity.class));
     }
 
-    /** Opens an ID edit sheet directly (IDs tab is gone; dashboard is the editor). */
+    /** Opens an ID edit form directly (IDs tab is gone; dashboard is the editor). */
     private void openIdEditor(IdCardItem item) {
-        if (sheetHost != null) {
-            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
-            sheetHost = null;
-        }
-        IdentificationFragment host = new IdentificationFragment();
-        getChildFragmentManager().beginTransaction().add(host, null).commitNow();
-        sheetHost = host;
-        host.initSheetHost(requireContext(), () -> {
-            if (isAdded()) {
-                refreshDashboard();
-            }
-        });
-        host.openEditSheet(item);
+        Intent edit = new Intent(requireContext(), IdCardFormActivity.class);
+        edit.putExtra(IdCardFormActivity.EXTRA_ID, item.getId());
+        edit.putExtra(IdCardFormActivity.EXTRA_TYPE, item.getIdType());
+        edit.putExtra(IdCardFormActivity.EXTRA_FIELDS_JSON, item.getFieldsJson());
+        edit.putExtra(IdCardFormActivity.EXTRA_DESIGN, item.getDesign());
+        startActivity(edit);
     }
 
-    /**
-     * Opens a creation sheet directly over the dashboard — no navigation, so
-     * the destination tab is never shown. The tab fragment is attached
-     * headless purely as the sheet owner; dashboard refreshes on save.
-     */
-    /** Opens the bank creation sheet directly (bank tab is gone; FAB is the only entry). */
+    /** Opens the bank creation form directly (bank tab is gone; FAB is the only entry). */
     private void openBankCreator() {
         if (isFabMenuOpen) {
             toggleAddMenu();
         }
-        if (sheetHost != null) {
-            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
-            sheetHost = null;
-        }
-        BankCardsFragment host = new BankCardsFragment();
-        getChildFragmentManager().beginTransaction().add(host, null).commitNow();
-        sheetHost = host;
-        host.initSheetHost(requireContext(), () -> {
-            if (isAdded()) {
-                refreshDashboard();
-            }
-        });
-        host.openAddSheet();
+        startActivity(new Intent(requireContext(), BankCardFormActivity.class));
     }
 
-    /** Opens a bank edit sheet directly (bank tab is gone; dashboard is the editor). */
+    /** Opens a bank edit form directly (bank tab is gone; dashboard is the editor). */
     private void openBankEditor(BankCardItem item) {
-        if (sheetHost != null) {
-            getChildFragmentManager().beginTransaction().remove(sheetHost).commitNow();
-            sheetHost = null;
-        }
-        BankCardsFragment host = new BankCardsFragment();
-        getChildFragmentManager().beginTransaction().add(host, null).commitNow();
-        sheetHost = host;
-        host.initSheetHost(requireContext(), () -> {
-            if (isAdded()) {
-                refreshDashboard();
-            }
-        });
-        host.openEditSheet(item);
+        Intent edit = new Intent(requireContext(), BankCardFormActivity.class);
+        edit.putExtra(BankCardFormActivity.EXTRA_ID, item.getId());
+        edit.putExtra(BankCardFormActivity.EXTRA_TYPE, item.getCardType());
+        edit.putExtra(BankCardFormActivity.EXTRA_NETWORK, item.getCardNetwork());
+        edit.putExtra(BankCardFormActivity.EXTRA_BANK, item.getBankName());
+        edit.putExtra(BankCardFormActivity.EXTRA_HOLDER, item.getHolderName());
+        edit.putExtra(BankCardFormActivity.EXTRA_NUMBER, item.getCardNumber());
+        edit.putExtra(BankCardFormActivity.EXTRA_EXPIRY, item.getExpiry());
+        edit.putExtra(BankCardFormActivity.EXTRA_CVV, item.getCvv());
+        edit.putExtra(BankCardFormActivity.EXTRA_PIN, item.getPin());
+        edit.putExtra(BankCardFormActivity.EXTRA_DESIGN, item.getDesign());
+        startActivity(edit);
     }
 
     /**

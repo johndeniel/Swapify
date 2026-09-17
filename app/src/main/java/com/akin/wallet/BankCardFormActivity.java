@@ -1,15 +1,11 @@
-package com.akin.wallet.fragment;
+package com.akin.wallet;
 
-import android.app.AlertDialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -17,109 +13,95 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.akin.wallet.R;
 import com.akin.wallet.adapter.BankCardDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-public class BankCardsFragment extends Fragment {
+/**
+ * Bank card creation/edit form as a full screen (replaces the old bottom
+ * sheet). Add mode when no card id is passed; edit mode otherwise. The card
+ * design carousel lives in the form content; the type picker stays an
+ * alert dialog. Callers refresh in onResume; RESULT_OK is set on save.
+ */
+public class BankCardFormActivity extends AppCompatActivity {
+
+    public static final String EXTRA_ID = "extra_id";
+    public static final String EXTRA_TYPE = "extra_type";
+    public static final String EXTRA_NETWORK = "extra_network";
+    public static final String EXTRA_BANK = "extra_bank";
+    public static final String EXTRA_HOLDER = "extra_holder";
+    public static final String EXTRA_NUMBER = "extra_number";
+    public static final String EXTRA_EXPIRY = "extra_expiry";
+    public static final String EXTRA_CVV = "extra_cvv";
+    public static final String EXTRA_PIN = "extra_pin";
+    public static final String EXTRA_DESIGN = "extra_design";
+
+    private AppDatabaseHelper dbHelper;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_bank_card_form);
+
+        dbHelper = new AppDatabaseHelper(this);
+
+        int id = getIntent().getIntExtra(EXTRA_ID, -1);
+        if (id == -1) {
+            bindForm(null);
+        } else {
+            bindForm(new BankCardItem(
+                    id,
+                    getIntent().getStringExtra(EXTRA_TYPE),
+                    getIntent().getStringExtra(EXTRA_NETWORK),
+                    getIntent().getStringExtra(EXTRA_BANK),
+                    getIntent().getStringExtra(EXTRA_HOLDER),
+                    getIntent().getStringExtra(EXTRA_NUMBER),
+                    getIntent().getStringExtra(EXTRA_EXPIRY),
+                    getIntent().getStringExtra(EXTRA_CVV),
+                    getIntent().getStringExtra(EXTRA_PIN),
+                    getIntent().getIntExtra(EXTRA_DESIGN, 0)));
+        }
+    }
 
     private static final String[] CARD_TYPES = {"Debit", "Credit", "Prepaid"};
     private static final String[] CARD_NETWORKS = {"Visa", "Mastercard"};
 
-    private AppDatabaseHelper dbHelper;
-    private Runnable sheetSavedListener;
-
-    /**
-     * Sheet host: the bank tab is gone — the dashboard attaches this fragment
-     * headless and opens creation/edit sheets directly. Attach via
-     * FragmentManager first, then call.
-     */
-    public void initSheetHost(@NonNull Context context, @Nullable Runnable onSaved) {
-        dbHelper = new AppDatabaseHelper(context);
-        sheetSavedListener = onSaved;
-    }
-
-    /** Opens the creation sheet directly (no navigation). */
-    public void openAddSheet() {
-        showCardDialog(null);
-    }
-
-    /** Opens the edit sheet for an existing card directly (no navigation). */
-    public void openEditSheet(@NonNull BankCardItem item) {
-        showCardDialog(item);
-    }
-
-    private void notifySheetSaved() {
-        if (sheetSavedListener != null) {
-            sheetSavedListener.run();
-        }
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        // No tab UI: sheets only. Plain view keeps the fragment contract intact.
-        return new View(requireContext());
-    }
-
-    private void showCardDialog(@Nullable BankCardItem existing) {
+    private void bindForm(@Nullable BankCardItem existing) {
         final boolean isEdit = existing != null;
-        BottomSheetDialog dialog = new BottomSheetDialog(requireContext(),
-                com.google.android.material.R.style.ThemeOverlay_Material3_BottomSheetDialog);
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_add_bank_card, null);
-        dialog.setContentView(dialogView);
 
-        dialog.setOnShowListener(dialogInterface -> {
-            if (dialog.getWindow() != null) {
-                dialog.getWindow().setStatusBarColor(requireContext().getColor(R.color.dark_bg));
-            }
-            com.google.android.material.bottomsheet.BottomSheetDialog dialog2 =
-                    (com.google.android.material.bottomsheet.BottomSheetDialog) dialogInterface;
-            View bottomSheet = dialog2.findViewById(com.google.android.material.R.id.design_bottom_sheet);
-            bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-            bottomSheet.requestLayout();
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setHideable(false);
-            com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
-                    .setDraggable(false);
-        });
 
         final int[] selectedType = {0};
         final int[] selectedNetwork = {0};
         final int[] selectedDesign = {0};
 
-        TextView textCardType = dialogView.findViewById(R.id.text_card_type);
-        TextView textCardNetwork = dialogView.findViewById(R.id.text_card_network);
-        EditText inputBankName = dialogView.findViewById(R.id.input_bank_name);
-        EditText inputHolderName = dialogView.findViewById(R.id.input_holder_name);
-        EditText inputCardNumber = dialogView.findViewById(R.id.input_card_number);
-        EditText inputExpiry = dialogView.findViewById(R.id.input_expiry);
-        EditText inputCvv = dialogView.findViewById(R.id.input_cvv);
-        EditText inputPin = dialogView.findViewById(R.id.input_pin);
-        TextView btnSave = dialogView.findViewById(R.id.btn_save);
+        TextView textCardType = findViewById(R.id.text_card_type);
+        TextView textCardNetwork = findViewById(R.id.text_card_network);
+        EditText inputBankName = findViewById(R.id.input_bank_name);
+        EditText inputHolderName = findViewById(R.id.input_holder_name);
+        EditText inputCardNumber = findViewById(R.id.input_card_number);
+        EditText inputExpiry = findViewById(R.id.input_expiry);
+        EditText inputCvv = findViewById(R.id.input_cvv);
+        EditText inputPin = findViewById(R.id.input_pin);
+        TextView btnSave = findViewById(R.id.btn_save);
 
 
 
         BankCardDesignAdapter designAdapter = new BankCardDesignAdapter();
-        RecyclerView recyclerDesign = dialogView.findViewById(R.id.recycler_card_design);
+        RecyclerView recyclerDesign = findViewById(R.id.recycler_card_design);
         LinearLayoutManager layoutManager =
-                new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
+                new LinearLayoutManager(BankCardFormActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerDesign.setLayoutManager(layoutManager);
         recyclerDesign.setAdapter(designAdapter);
         PagerSnapHelper snapHelper = new PagerSnapHelper();
         snapHelper.attachToRecyclerView(recyclerDesign);
 
-        LinearLayout dotsContainer = dialogView.findViewById(R.id.dots_container);
+        LinearLayout dotsContainer = findViewById(R.id.dots_container);
         setupDots(dotsContainer, designAdapter.getDesignCount(), 0);
 
         recyclerDesign.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -247,21 +229,21 @@ public class BankCardsFragment extends Fragment {
             }
         });
 
-        dialogView.findViewById(R.id.row_card_type).setOnClickListener(v ->
+        findViewById(R.id.row_card_type).setOnClickListener(v ->
                 showChoiceDialog("Card Type", CARD_TYPES, selectedType[0], which -> {
                     selectedType[0] = which;
                     textCardType.setText(CARD_TYPES[which]);
                     refreshPreview.run();
                 }));
 
-        dialogView.findViewById(R.id.row_card_network).setOnClickListener(v ->
+        findViewById(R.id.row_card_network).setOnClickListener(v ->
                 showChoiceDialog("Card Network", CARD_NETWORKS, selectedNetwork[0], which -> {
                     selectedNetwork[0] = which;
                     textCardNetwork.setText(CARD_NETWORKS[which]);
                     refreshPreview.run();
                 }));
 
-        dialogView.findViewById(R.id.btn_toggle_cvv).setOnClickListener(v -> {
+        findViewById(R.id.btn_toggle_cvv).setOnClickListener(v -> {
             if (inputCvv.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
                 inputCvv.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
             } else {
@@ -270,7 +252,7 @@ public class BankCardsFragment extends Fragment {
             inputCvv.setSelection(inputCvv.getText().length());
         });
 
-        dialogView.findViewById(R.id.btn_toggle_pin).setOnClickListener(v -> {
+        findViewById(R.id.btn_toggle_pin).setOnClickListener(v -> {
             if (inputPin.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
                 inputPin.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
             } else {
@@ -279,7 +261,7 @@ public class BankCardsFragment extends Fragment {
             inputPin.setSelection(inputPin.getText().length());
         });
 
-        dialogView.findViewById(R.id.btn_save).setOnClickListener(v -> {
+        findViewById(R.id.btn_save).setOnClickListener(v -> {
             if (inputBankName.getText().toString().trim().isEmpty()) {
                 inputBankName.setError("Bank name is required");
                 return;
@@ -323,7 +305,7 @@ public class BankCardsFragment extends Fragment {
                         pinDigits,
                         selectedDesign[0]);
                 dbHelper.updateBankCard(updated);
-                Toast.makeText(requireContext(), "Updated Successfully", Toast.LENGTH_SHORT).show();
+                Toast.makeText(BankCardFormActivity.this, "Updated Successfully", Toast.LENGTH_SHORT).show();
             } else {
                 BankCardItem newCard = new BankCardItem(
                         CARD_TYPES[selectedType[0]],
@@ -336,31 +318,31 @@ public class BankCardsFragment extends Fragment {
                         pinDigits,
                         selectedDesign[0]);
                 dbHelper.insertBankCard(newCard);
-                Toast.makeText(requireContext(), "Card Saved", Toast.LENGTH_SHORT).show();
+                Toast.makeText(BankCardFormActivity.this, "Card Saved", Toast.LENGTH_SHORT).show();
             }
-            notifySheetSaved();
-            dialog.dismiss();
+            setResult(RESULT_OK);
+            finish();
         });
 
         // The bank tab is gone: delete lives here, visible in edit mode only.
-        TextView btnDelete = dialogView.findViewById(R.id.btn_delete);
+        TextView btnDelete = findViewById(R.id.btn_delete);
         if (isEdit) {
             btnDelete.setVisibility(View.VISIBLE);
-            btnDelete.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
+            btnDelete.setOnClickListener(v -> new AlertDialog.Builder(BankCardFormActivity.this)
                     .setTitle("Delete Card")
                     .setMessage("Are you sure you want to delete this card?")
                     .setPositiveButton("Delete", (d, which) -> {
                         dbHelper.deleteBankCard(existing.getId());
-                        notifySheetSaved();
-                        dialog.dismiss();
-                        Toast.makeText(requireContext(),
+                        setResult(RESULT_OK);
+                        finish();
+                        Toast.makeText(BankCardFormActivity.this,
                                 "Deleted Successfully", Toast.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("Cancel", null)
                     .show());
         }
 
-        dialog.show();
+
     }
 
     private static int indexOf(String[] options, String value) {
@@ -375,7 +357,7 @@ public class BankCardsFragment extends Fragment {
     }
 
     private void showChoiceDialog(String title, String[] options, int checked, OnChoiceListener listener) {
-        new AlertDialog.Builder(requireContext())
+        new AlertDialog.Builder(BankCardFormActivity.this)
                 .setTitle(title)
                 .setSingleChoiceItems(options, checked, (d, which) -> {
                     listener.onChoice(which);
@@ -391,7 +373,7 @@ public class BankCardsFragment extends Fragment {
         int size = (int) (8 * density);
         int margin = (int) (4 * density);
         for (int i = 0; i < count; i++) {
-            View dot = new View(requireContext());
+            View dot = new View(BankCardFormActivity.this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
             params.setMargins(margin, 0, margin, 0);
             dot.setLayoutParams(params);

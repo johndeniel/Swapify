@@ -29,6 +29,20 @@
             android:name=".SocialLoginFormActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".BankCardFormActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".IdCardFormActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".PlatformPickerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LinkAccountPickerActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
