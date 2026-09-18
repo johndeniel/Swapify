@@ -221,8 +221,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Header buttons: search opens the M3 SearchView results, settings opens
-     * Security preferences (biometrics live there). Back closes search first.
+     * M3 TopAppBar header: title/subtitle are static in XML; search opens
+     * the full-screen SearchView, settings opens Security preferences
+     * (biometrics live there). Back closes search first.
      */
     private void setupHeader() {
         headerIds = findViewById(R.id.header_ids);
@@ -257,10 +258,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * M3 Search: the full-screen SearchView (toolbar back + field + clear
-     * built in), opened from the header search icon. Typing filters the
-     * master lists into its own result lists; the dashboard behind stays
-     * whole. The FAB hides while results cover the screen.
+     * M3 Search: full-screen SearchView (toolbar back + field + clear built
+     * in), opened from the header search IconButton. Typing filters the
+     * master lists into its own result lists while the dashboard behind
+     * stays whole. The FAB hides while results cover it.
      */
     private void setupSearch() {
         searchView = findViewById(R.id.search_view);
@@ -604,6 +605,10 @@ public class MainActivity extends AppCompatActivity {
         if (emptyCards != null) {
             emptyCards.setOnClickListener(v -> openBankCreator());
         }
+        View btnEmptyCards = findViewById(R.id.btn_empty_cards);
+        if (btnEmptyCards != null) {
+            btnEmptyCards.setOnClickListener(v -> openBankCreator());
+        }
     }
 
     private void refreshCardCarousel(List<BankCardItem> cards) {
@@ -667,6 +672,10 @@ public class MainActivity extends AppCompatActivity {
         if (emptyIds != null) {
             emptyIds.setOnClickListener(v -> openIdCreator());
         }
+        View btnEmptyIds = findViewById(R.id.btn_empty_ids);
+        if (btnEmptyIds != null) {
+            btnEmptyIds.setOnClickListener(v -> openIdCreator());
+        }
     }
 
     private void refreshIdsCarousel(List<IdCardItem> ids) {
@@ -700,6 +709,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (emptySocialAccounts != null) {
             emptySocialAccounts.setOnClickListener(v -> openSocialCreator());
+        }
+        View btnEmptySocial = findViewById(R.id.btn_empty_social);
+        if (btnEmptySocial != null) {
+            btnEmptySocial.setOnClickListener(v -> openSocialCreator());
         }
     }
 

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dashboard Social Account row: one created social login.
-     Icon well + platform/username + chevron; tap opens Logins.
+<!-- Dashboard Social Account row: M3 list item (rounded icon well + title/
+     supporting text + trailing chevron) with M3 ripple and divider.
      Hairline divider below every row except the last (toggled by adapter). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     android:orientation="vertical">
 
     <LinearLayout
@@ -12,20 +16,21 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="8dp"
+        android:paddingStart="12dp"
         android:paddingEnd="8dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/social_icon"
             android:layout_width="42dp"
             android:layout_height="42dp"
-            android:background="@drawable/bg_dashboard_icon_white"
+            android:background="@color/white"
             android:contentDescription="Platform"
-            android:padding="8dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/google" />
+            android:src="@drawable/google"
+            app:contentPadding="5dp"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Akin.Rounded12" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -42,9 +47,7 @@
             android:maxLines="1"
             android:singleLine="true"
             android:text="Platform"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.Akin.CardTitle" />
 
             <TextView
                 android:id="@+id/social_sub"
@@ -55,19 +58,28 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:text="username"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="12sp" />
+                android:textAppearance="@style/TextAppearance.Akin.BodyMuted" />
 
         </LinearLayout>
 
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="8dp"
+            android:alpha="0.6"
+            android:contentDescription="Platform"
+            android:src="@drawable/ic_chevron_right"
+            android:tint="@color/dashboard_muted" />
+
     </LinearLayout>
 
-    <View
+    <com.google.android.material.divider.MaterialDivider
         android:id="@+id/social_divider"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:background="@color/dashboard_surface_border" />
+        android:layout_height="wrap_content"
+        app:dividerColor="@color/dashboard_surface_border"
+        app:dividerInsetEnd="8dp"
+        app:dividerInsetStart="12dp"
+        app:dividerThickness="1dp" />
 
 </LinearLayout>
