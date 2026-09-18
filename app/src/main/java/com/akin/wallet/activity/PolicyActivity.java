@@ -1,6 +1,9 @@
 package com.akin.wallet.activity;
 
 import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,8 +12,9 @@ import com.akin.wallet.R;
 
 /**
  * In-app legal screen behind Settings. Shows either the Privacy Policy or
- * the Terms of Service depending on {@link #EXTRA_TYPE}; both are static
- * offline-friendly texts bundled with the app.
+ * the Terms of Service depending on {@link #EXTRA_TYPE}. The bundled text is
+ * sectioned (ALL-CAPS heading line, then body, blank line apart) and each
+ * section renders as an accent-blue heading over light body copy.
  */
 public class PolicyActivity extends AppCompatActivity {
 
@@ -26,14 +30,60 @@ public class PolicyActivity extends AppCompatActivity {
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
         TextView title = findViewById(R.id.policy_title);
-        TextView body = findViewById(R.id.policy_body);
+        LinearLayout sections = findViewById(R.id.policy_sections);
 
+        String body;
         if (TYPE_TERMS.equals(getIntent().getStringExtra(EXTRA_TYPE))) {
             title.setText(R.string.settings_terms);
-            body.setText(R.string.policy_terms_body);
+            body = getString(R.string.policy_terms_body);
         } else {
             title.setText(R.string.settings_privacy);
-            body.setText(R.string.policy_privacy_body);
+            body = getString(R.string.policy_privacy_body);
+        }
+        renderSections(sections, body);
+    }
+
+    /** Splits "HEADING\nbody\n\n..." into styled heading + body view pairs. */
+    private void renderSections(LinearLayout container, String body) {
+        if (body == null || body.trim().isEmpty()) {
+            return;
+        }
+        float density = getResources().getDisplayMetrics().density;
+        boolean first = true;
+        for (String chunk : body.split("\n\n")) {
+            String section = chunk.trim();
+            if (section.isEmpty()) {
+                continue;
+            }
+            int cut = section.indexOf('\n');
+            String heading = cut == -1 ? section : section.substring(0, cut).trim();
+            String text = cut == -1 ? "" : section.substring(cut + 1).trim();
+
+            TextView headingView = new TextView(this);
+            headingView.setText(heading);
+            headingView.setTextColor(getColor(R.color.dashboard_active));
+            headingView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+            headingView.setTypeface(headingView.getTypeface(), android.graphics.Typeface.BOLD);
+            headingView.setLetterSpacing(0.06f);
+            LinearLayout.LayoutParams headingParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            headingParams.topMargin = first ? 0 : (int) (20 * density);
+            headingView.setLayoutParams(headingParams);
+            container.addView(headingView);
+
+            if (!text.isEmpty()) {
+                TextView bodyView = new TextView(this);
+                bodyView.setText(text);
+                bodyView.setTextColor(getColor(R.color.text_subtle_light));
+                bodyView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                bodyView.setLineSpacing(0, 1.25f);
+                LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                bodyParams.topMargin = (int) (6 * density);
+                bodyView.setLayoutParams(bodyParams);
+                container.addView(bodyView);
+            }
+            first = false;
         }
     }
 }

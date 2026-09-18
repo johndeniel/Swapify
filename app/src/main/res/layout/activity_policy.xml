@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Policy — static legal text (Privacy Policy or Terms) in the same navy
-     card language as Settings. Title is set by PolicyActivity per type. -->
+<!-- Policy — static legal text (Privacy Policy or Terms). Uncarded sections:
+     accent-blue letterspaced heading over light body copy, built row by row
+     by PolicyActivity from the bundled string. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -45,22 +46,11 @@
             android:textSize="12sp" />
 
         <LinearLayout
+            android:id="@+id/policy_sections"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:background="@drawable/bg_dashboard_card"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/policy_body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:lineSpacingExtra="4dp"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
-
-        </LinearLayout>
+            android:orientation="vertical" />
 
     </LinearLayout>
 

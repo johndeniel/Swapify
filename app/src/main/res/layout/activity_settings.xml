@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ============================================================
-     Akin Wallet — Settings. Biometric unlock stays OFF until the
-     user enables it here (and proves a working fingerprint), plus
-     app-PIN change. Same navy card/row language as the dashboard.
+     Akin Wallet — Settings. Letterspaced section labels (SECURITY /
+     LEGAL) over navy cards; dark icon tiles with light icons, chevron
+     affordances on every tappable row, toggle only on biometrics.
      ============================================================ -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -39,10 +39,19 @@
         android:textColor="@color/dashboard_muted"
         android:textSize="13sp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:letterSpacing="0.08"
+        android:text="SECURITY"
+        android:textColor="@color/dashboard_muted"
+        android:textSize="12sp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="8dp"
         android:background="@drawable/bg_dashboard_card"
         android:orientation="vertical"
         android:paddingStart="6dp"
@@ -64,7 +73,7 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_dashboard_icon_white"
+                android:background="@drawable/bg_settings_icon"
                 android:contentDescription="@string/settings_biometric"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
@@ -130,11 +139,12 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_dashboard_icon_white"
+                android:background="@drawable/bg_settings_icon"
                 android:contentDescription="@string/settings_change_pin"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_lock" />
+                android:src="@drawable/ic_lock"
+                android:tint="@color/text_subtle_light" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -160,6 +170,13 @@
                     android:textSize="12sp" />
 
             </LinearLayout>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_chevron_right"
+                android:contentDescription="@string/settings_change_pin" />
 
         </LinearLayout>
 
@@ -195,7 +212,7 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_dashboard_icon_white"
+                android:background="@drawable/bg_settings_icon"
                 android:contentDescription="@string/settings_trash"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
@@ -227,16 +244,32 @@
 
             </LinearLayout>
 
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_chevron_right"
+                android:contentDescription="@string/settings_trash" />
+
         </LinearLayout>
 
     </LinearLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:letterSpacing="0.08"
+        android:text="LEGAL"
+        android:textColor="@color/dashboard_muted"
+        android:textSize="12sp" />
+
     <!-- Legal: in-app Privacy Policy and Terms screens. Same row language
-         as the cards above (white icon well + bold title + muted sub). -->
+         as the cards above (dark icon tile + bold title + muted sub). -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:background="@drawable/bg_dashboard_card"
         android:orientation="vertical"
         android:paddingStart="6dp"
@@ -261,11 +294,12 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_dashboard_icon_white"
+                android:background="@drawable/bg_settings_icon"
                 android:contentDescription="@string/settings_privacy"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_privacy" />
+                android:src="@drawable/ic_privacy"
+                android:tint="@color/text_subtle_light" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -291,6 +325,13 @@
                     android:textSize="12sp" />
 
             </LinearLayout>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_chevron_right"
+                android:contentDescription="@string/settings_privacy" />
 
         </LinearLayout>
 
@@ -318,11 +359,12 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_dashboard_icon_white"
+                android:background="@drawable/bg_settings_icon"
                 android:contentDescription="@string/settings_terms"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_policy" />
+                android:src="@drawable/ic_policy"
+                android:tint="@color/text_subtle_light" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -348,6 +390,13 @@
                     android:textSize="12sp" />
 
             </LinearLayout>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_chevron_right"
+                android:contentDescription="@string/settings_terms" />
 
         </LinearLayout>
 
