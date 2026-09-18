@@ -9,7 +9,7 @@
     android:clipToPadding="false"
     android:padding="24dp">
 
-    <!-- M3 small top app bar: back plus the existing title block. -->
+    <!-- M3 small top app bar, back action only: no title text. -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -19,12 +19,7 @@
         android:background="@android:color/transparent"
         app:contentInsetStart="0dp"
         app:contentInsetStartWithNavigation="0dp"
-        app:navigationIcon="@drawable/ic_arrow_back"
-        app:subtitle="@string/dialog_link_subtitle"
-        app:subtitleTextAppearance="@style/TextAppearance.Akin.ToolbarSubtitle"
-        app:title="@string/dialog_link_title"
-        app:titleMarginStart="12dp"
-        app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
+        app:navigationIcon="@drawable/ic_arrow_back" />
 
     <!-- Search bar, identical sizing to the platform picker. -->
     <LinearLayout

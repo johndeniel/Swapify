@@ -75,18 +75,13 @@
     <string name="policy_updated">Last updated: September 2026</string>
     <string name="policy_privacy_body">OVERVIEW\nAkin Wallet is an offline vault for your social accounts, bank cards, and government IDs. There is no online account, no sign-up, and no server. Everything you save stays on this device.\n\nDATA WE STORE\nThe details you enter (usernames, passwords, card and ID information) are kept only in the app\'s private on-device database. Your app PIN is never stored directly — only a salted hash used to verify it.\n\nENCRYPTION\nThe on-device database is encrypted at rest with SQLCipher (AES-256). Its key is a random 256-bit value sealed by your device\'s hardware-backed keystore — never derived from your PIN and never written to disk in the open. The raw database file alone is unreadable without it.\n\nDATA WE NEVER COLLECT\nWe collect nothing: no analytics, no crash reports, no advertising identifiers, and no personal information. The app does not need internet access to work, and it sends your data nowhere.\n\nSECURITY\nAccess is guarded by your 4-digit app PIN, with optional fingerprint unlock that you control in Settings. Failed attempts trigger a temporary lockout. Encryption protects against raw file reads, but no software protection is absolute — a compromised or rooted device can still expose data, so keep your device itself locked as well.\n\nBACKUPS\nThe encrypted vault is excluded from cloud and device-transfer backups, because a copy restored elsewhere could never be decrypted. Keep any records you cannot afford to lose somewhere safe yourself.\n\nYOUR CONTROL\nDeleting an item moves it to Trash, where you can restore it or delete it forever. Uninstalling the app removes the on-device database and everything in it.</string>
     <string name="policy_terms_body">ACCEPTANCE\nBy using Akin Wallet you agree to these terms. If you do not agree, do not use the app.\n\nTHE SERVICE\nAkin Wallet provides a private, offline place to organize your own account, card, and ID details. Your vault is encrypted on this device (SQLCipher AES-256) and the app offers no financial, legal, or identity services and stores nothing outside your device.\n\nYOUR RESPONSIBILITIES\nYou are responsible for keeping your app PIN secret, keeping your device secure, and keeping the details you store accurate. Because everything lives only on this device — and is excluded from cloud backups — uninstalling, resetting, or losing it means your saved items cannot be recovered by anyone, including us.\n\nACCEPTABLE USE\nUse the app only for your own lawful purposes. Do not attempt to bypass the app lock or use the app to store information you have no right to keep.\n\nNO WARRANTY\nThe app is provided as is, without warranties of any kind. To the fullest extent allowed by law, we are not liable for any loss arising from use of the app, including loss of stored data.\n\nCHANGES\nWe may update these terms in future versions of the app. Continued use after an update means you accept the revised terms.</string>
-    <!-- Bottom-sheet titles and subtitles -->
+    <!-- Quick-add FAB menu labels -->
     <!-- Bank card -->
     <string name="dialog_bank_title">Bank Card</string>
     <!-- Social account -->
     <string name="dialog_social_title">Social Account</string>
     <!-- Government ID -->
     <string name="dialog_id_title">Government ID</string>
-    <!-- Link / platform pickers (social flow) -->
-    <string name="dialog_link_title">Link Account</string>
-    <string name="dialog_link_subtitle">Select an existing account to associate</string>
-    <string name="dialog_platform_title">Select Platform</string>
-    <string name="dialog_platform_subtitle">Choose platform for this account</string>
 
     <!-- Form sections -->
     <string name="section_account_details">Account Details</string>
