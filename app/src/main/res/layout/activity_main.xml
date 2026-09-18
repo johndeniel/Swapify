@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ============================================================
      Akin Wallet — Dashboard (Home), hosted directly by MainActivity.
-     Single-screen app: no fragments, no bottom nav. Professional header,
-     Government ID + Bank Card carousels, Social Account list,
-     circular quick-add FAB. (Merged from dashboard.xml/DashboardFragment.)
+     M3 Search (SearchBar + full-screen SearchView) filters the vault;
+     Government ID + Bank Card carousels, Social Account list and the
+     circular quick-add FAB live underneath. CoordinatorLayout root hosts
+     the SearchView transition.
      ============================================================ -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -65,24 +66,6 @@
             </LinearLayout>
 
             <FrameLayout
-                android:id="@+id/btn_header_search"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginStart="12dp"
-                android:background="@drawable/bg_dashboard_circle"
-                android:clickable="true"
-                android:focusable="true">
-
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_gravity="center"
-                    android:contentDescription="@string/cd_search"
-                    android:src="@drawable/ic_search_white" />
-
-            </FrameLayout>
-
-            <FrameLayout
                 android:id="@+id/btn_header_settings"
                 android:layout_width="38dp"
                 android:layout_height="38dp"
@@ -102,55 +85,21 @@
 
         </LinearLayout>
 
-        <!-- Inline dashboard search bar: hidden until the header search
-             button toggles it. Same bg_search bar as the pickers; typing
-             filters the ID / card / social sections below in place. -->
-        <LinearLayout
+        <!-- M3 SearchBar: docked entry point. Tapping expands the full-screen
+             SearchView below; typing filters the vault into its results list.
+             Pinned to the dark theme so M3 ?attrs resolve dark on navy. -->
+        <com.google.android.material.search.SearchBar
             android:id="@+id/search_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:background="@drawable/bg_search"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="14dp"
-            android:paddingEnd="8dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:visibility="gone">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_search"
-                android:contentDescription="@string/cd_search" />
-
-            <EditText
-                android:id="@+id/input_dashboard_search"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_weight="1"
-                android:background="@null"
-                android:hint="@string/search_hint"
-                android:textColorHint="@color/text_secondary"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:singleLine="true"
-                android:inputType="text" />
-
-            <ImageView
-                android:id="@+id/btn_clear_search"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:padding="7dp"
-                android:src="@drawable/ic_close"
-                android:contentDescription="@string/cd_clear"
-                android:clickable="true"
-                android:focusable="true"
-                android:visibility="gone" />
-
-        </LinearLayout>
+            android:hint="@string/search_hint"
+            android:textColorHint="@color/text_secondary"
+            android:theme="@style/ThemeOverlay.Material3.Dark"
+            app:backgroundTint="@color/dashboard_surface"
+            app:navigationIcon="@drawable/ic_search_white"
+            app:strokeColor="@color/dashboard_surface_border"
+            app:strokeWidth="1dp" />
 
         <!-- Government ID section header (no tab: View All removed) -->
         <LinearLayout
@@ -325,46 +274,6 @@
 
         </LinearLayout>
 
-        <!-- Search empty state: shown only while searching when no section
-             matches. Same card style as the dashboard empties, but with no
-             add action — clearing the query restores the dashboard. -->
-        <LinearLayout
-            android:id="@+id/empty_search_results"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/bg_dashboard_card"
-            android:clickable="false"
-            android:focusable="false"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/search_empty_title"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/empty_search_sub"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:gravity="center"
-                android:text="@string/search_empty_sub"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="12sp" />
-
-        </LinearLayout>
-
         <!-- Empty state: shown when no social account exists yet. Weight 1
              stretches it to occupy the rest of the screen. -->
         <LinearLayout
@@ -487,4 +396,164 @@
         app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Circle"
         app:tint="@color/white" />
 
-</FrameLayout>
+    <!-- M3 SearchView: full-screen search experience. Its toolbar (back +
+         field + clear) is built in; the containers below host the filtered
+         vault, rebound with the same adapters as the dashboard. -->
+    <com.google.android.material.search.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:theme="@style/ThemeOverlay.Material3.Dark"
+        app:backgroundTint="@color/dashboard_bg_start">
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="24dp">
+
+                <LinearLayout
+                    android:id="@+id/search_header_ids"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Government ID"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_search_ids"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingEnd="36dp" />
+
+                <LinearLayout
+                    android:id="@+id/search_header_cards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Bank Card"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_search_cards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingEnd="36dp" />
+
+                <LinearLayout
+                    android:id="@+id/search_header_social"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Social Account"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_search_social"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_dashboard_card"
+                    android:orientation="vertical"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recycler_search_social"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipToPadding="false"
+                        android:nestedScrollingEnabled="false" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/empty_search_results"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_dashboard_card"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="20dp"
+                    android:paddingBottom="20dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/search_empty_title"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/empty_search_sub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center"
+                        android:text="@string/search_empty_sub"
+                        android:textColor="@color/dashboard_muted"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </com.google.android.material.search.SearchView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
