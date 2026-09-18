@@ -19,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -29,6 +31,7 @@ import com.akin.wallet.adapter.DashboardCardAdapter;
 import com.akin.wallet.adapter.DashboardIdCardAdapter;
 import com.akin.wallet.adapter.DashboardSocialAccountAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
+import com.akin.wallet.security.AppLockManager;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
@@ -87,6 +90,18 @@ public class MainActivity extends AppCompatActivity {
     private View headerSocial;
     private View emptySearchResults;
     private TextView emptySearchSub;
+    private long lastBackgroundAt;
+
+    /**
+     * Session re-lock: backing out of the verify screen means "do not enter",
+     * so the dashboard closes instead of sitting unlocked behind it.
+     */
+    private final ActivityResultLauncher<Intent> verifyLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() != RESULT_OK) {
+                    finish();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +143,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshDashboard();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Vault re-lock: cold starts always land here locked, and returning
+        // after the app sat in the background past the grace period asks
+        // again. Quick trips (editors) stay unlocked.
+        if (dbHelper == null || !AppLockManager.isPinSet(this)) {
+            return;
+        }
+        boolean graceExpired = lastBackgroundAt > 0
+                && System.currentTimeMillis() - lastBackgroundAt
+                > AppLockManager.SESSION_GRACE_MS;
+        if (!AppLockManager.isSessionUnlocked() || graceExpired) {
+            verifyLauncher.launch(new Intent(this, LockActivity.class)
+                    .putExtra(LockActivity.EXTRA_MODE, LockActivity.MODE_VERIFY));
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        lastBackgroundAt = System.currentTimeMillis();
+        super.onStop();
     }
 
     @Override
@@ -178,9 +217,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Header search toggles the inline search bar below it. Typing filters
-     * the dashboard's own sections (IDs + cards + socials) in place — same
-     * activity, no dialog, no new screen. Back press collapses search first.
+     * Header buttons: search toggles the inline search bar below it,
+     * settings opens Security preferences (biometrics live there).
      */
     private void setupHeader() {
         searchBar = findViewById(R.id.search_bar);
@@ -195,6 +233,11 @@ public class MainActivity extends AppCompatActivity {
         View btnSearch = findViewById(R.id.btn_header_search);
         if (btnSearch != null) {
             btnSearch.setOnClickListener(v -> toggleSearchBar());
+        }
+        View btnSettings = findViewById(R.id.btn_header_settings);
+        if (btnSettings != null) {
+            btnSettings.setOnClickListener(
+                    v -> startActivity(new Intent(this, SettingsActivity.class)));
         }
         if (btnClearSearch != null) {
             btnClearSearch.setOnClickListener(v -> {
@@ -240,10 +283,6 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isSearchOpen() {
         return searchBar != null && searchBar.getVisibility() == View.VISIBLE;
-    }
-
-    private boolean isSearching() {
-        return isSearchOpen() && !currentQuery.trim().isEmpty();
     }
 
     /** Expands (and focuses) or collapses (and clears) the search bar. */

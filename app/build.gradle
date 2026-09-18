@@ -33,6 +33,7 @@ android {
 
 dependencies {
     implementation libs.appcompat
+    implementation libs.biometric
     implementation libs.constraintlayout
     implementation libs.material
 

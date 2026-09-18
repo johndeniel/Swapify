@@ -43,6 +43,36 @@
     <string name="search_section_social">Social Account</string>
     <string name="search_empty_title">No results found</string>
     <string name="search_empty_sub">Try a different keyword</string>
+    <!-- App lock (first-run PIN setup, PIN entry, fingerprint unlock) -->
+    <string name="lock_sub_create">Create a 4-digit PIN</string>
+    <string name="lock_sub_create_hint">Set a PIN to protect your wallet</string>
+    <string name="lock_sub_confirm">Confirm your 4-digit PIN</string>
+    <string name="lock_sub_enter">Enter your PIN</string>
+    <string name="lock_sub_verify">Enter your current PIN</string>
+    <string name="lock_sub_fingerprint">Use your fingerprint\nto unlock</string>
+    <string name="lock_use_fingerprint">Use fingerprint</string>
+    <string name="lock_use_pin">Use PIN instead</string>
+    <string name="lock_touch_sensor">Touch the fingerprint sensor</string>
+    <string name="lock_error_mismatch">PINs don\'t match. Try again</string>
+    <string name="lock_error_wrong">Wrong PIN. %1$d attempts left</string>
+    <string name="lock_error_locked">Too many attempts. Try again in %1$d seconds</string>
+    <string name="lock_error_fingerprint">Fingerprint not recognized. Use PIN</string>
+    <string name="lock_pin_updated">App PIN updated</string>
+    <string name="lock_trust_footer">Your keys never leave this device</string>
+    <string name="lock_biometric_title">Biometric unlock</string>
+    <!-- Step helper shown in the tagline slot during PIN setup / update -->
+    <string name="lock_step_old_pin">Enter your old PIN</string>
+    <string name="lock_step_new_pin">Enter your new PIN</string>
+    <string name="lock_step_confirm_pin">Confirm your new PIN</string>
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Security and preferences</string>
+    <string name="settings_biometric">Biometric unlock</string>
+    <string name="settings_biometric_on">Unlock with your fingerprint</string>
+    <string name="settings_biometric_off">Turn on to unlock with your fingerprint</string>
+    <string name="settings_biometric_unavailable">Not available on this device</string>
+    <string name="settings_change_pin">Change app PIN</string>
+    <string name="settings_change_pin_sub">Update your 4-digit PIN</string>
     <!-- Bottom-sheet titles and subtitles -->
     <!-- Bank card -->
     <string name="dialog_bank_title">Bank Card</string>

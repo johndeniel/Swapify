@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Subtitle glass pill: faint royal fill + hairline, keeps the
+     status line quiet so the PIN dots stay the hero. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/lock_pill_fill" />
+    <corners android:radius="16dp" />
+    <stroke android:width="1dp" android:color="@color/lock_pill_stroke" />
+    <padding
+        android:left="14dp"
+        android:top="7dp"
+        android:right="14dp"
+        android:bottom="7dp" />
+</shape>

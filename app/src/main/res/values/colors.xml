@@ -146,4 +146,33 @@
     <!-- Header avatar / settings wells -->
     <color name="dashboard_well">#FF16305A</color>
     <color name="dashboard_well_border">#FF2A4A7A</color>
+
+    <!-- ============================================================
+         Lock screen — premium biometric passcode system.
+         Layered depth: halo glow, glass keys, glowing dots,
+         biometric medallion. All sampled from the Akin logo blues
+         so the 3D mark sits natively in the scene.
+         ============================================================ -->
+    <color name="lock_halo_center">#662EA6FF</color>
+    <color name="lock_halo_edge">#002EA6FF</color>
+    <color name="lock_glow_top">#331E4B9E</color>
+    <color name="pin_key_top">#FF182C4E</color>
+    <color name="pin_key_bottom">#FF0B1830</color>
+    <color name="pin_key_stroke">#FF2C4E80</color>
+    <color name="pin_key_pressed_top">#FF2560B8</color>
+    <color name="pin_key_pressed_bottom">#FF14305E</color>
+    <color name="dot_empty_fill">#FF0C1A31</color>
+    <color name="dot_empty_stroke">#FF2A456E</color>
+    <color name="dot_filled_start">#FF4DB8FF</color>
+    <color name="dot_filled_end">#FF1B6BFF</color>
+    <color name="dot_filled_glow">#662EA6FF</color>
+    <color name="fp_disc_top">#FF142844</color>
+    <color name="fp_disc_bottom">#FF0A172E</color>
+    <color name="fp_ring_start">#FF4DB8FF</color>
+    <color name="fp_ring_end">#FF1B4B9E</color>
+    <color name="fp_core">#FF4DB8FF</color>
+    <color name="fp_outer">#FF2E7FD6</color>
+    <color name="lock_pill_fill">#141E4B9E</color>
+    <color name="lock_pill_stroke">#FF243C62</color>
+    <color name="trust_muted">#FF6B7E99</color>
 </resources>
