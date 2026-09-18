@@ -3,24 +3,31 @@ package com.akin.wallet.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
+import com.akin.wallet.security.DbKeyManager;
+import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteOpenHelper;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AppDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "akin_wallet.db";
-    // v10 is the consolidated schema: logins/bank_cards/id_cards each carry
-    // created_at + updated_at (newest-first ordering), logins carries mobile,
-    // and all three carry deleted_at (0 = active, epoch millis = in Trash).
-    // Every older install upgrades to exactly this schema in one step below;
-    // no per-version legacy paths are kept.
-    private static final int DATABASE_VERSION = 10;
+    // v10 consolidated every schema column (timestamps, mobile, trash stamp).
+    // v11 changes the envelope, not the schema: the file is SQLCipher
+    // encrypted (AES-256) with a Keystore-wrapped random key. The table/column
+    // set is identical to v10, so the upgrade step below is unchanged apart
+    // from the version gate; plaintext installs convert on first open.
+    // No per-version legacy paths are kept.
+    private static final int DATABASE_VERSION = 11;
+
+    /** Guards first-open plaintext conversion against concurrent helpers. */
+    private static final Object ENCRYPTION_LOCK = new Object();
 
     private static final String TABLE_LOGINS = "logins";
     private static final String COL_ID = "id";
@@ -58,8 +65,92 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ID_FIELDS_JSON = "fields_json";
     private static final String COL_ID_DESIGN = "design";
 
+    private final Context appContext;
+
     public AppDatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
+        this.appContext = context.getApplicationContext();
+        SQLiteDatabase.loadLibs(appContext);
+    }
+
+    // All opens flow through the vault key: no caller touches raw schema or
+    // plaintext. SQLCipher's helper only offers password-taking getters, so
+    // these same-named no-arg wrappers are new methods (not overrides) that
+    // keep every existing call site working.
+    public SQLiteDatabase getWritableDatabase() {
+        synchronized (ENCRYPTION_LOCK) {
+            ensureEncrypted();
+            return super.getWritableDatabase(DbKeyManager.getPassphrase(appContext));
+        }
+    }
+
+    public SQLiteDatabase getReadableDatabase() {
+        synchronized (ENCRYPTION_LOCK) {
+            ensureEncrypted();
+            return super.getReadableDatabase(DbKeyManager.getPassphrase(appContext));
+        }
+    }
+
+    /**
+     * One-time plaintext conversion for installs predating encryption.
+     * Detected by file header ("SQLite format 3" = plaintext; SQLCipher
+     * files start with random bytes). Exports into a fresh encrypted copy
+     * via sqlcipher_export, then atomically swaps it in. Fresh installs
+     * (no file yet) and already-encrypted files skip untouched.
+     */
+    private void ensureEncrypted() {
+        File dbFile = appContext.getDatabasePath(DATABASE_NAME);
+        if (dbFile == null || !dbFile.exists() || dbFile.length() < 16) {
+            return;
+        }
+        try (FileInputStream in = new FileInputStream(dbFile)) {
+            byte[] header = new byte[16];
+            if (in.read(header) != 16 || !isPlaintextHeader(header)) {
+                return;
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Vault header unreadable", e);
+        }
+        char[] key = DbKeyManager.getPassphrase(appContext);
+        File encFile = new File(dbFile.getAbsolutePath() + ".enc");
+        if (encFile.exists() && !encFile.delete()) {
+            throw new IllegalStateException("Vault conversion blocked");
+        }
+        SQLiteDatabase plain = null;
+        try {
+            // Empty passphrase opens the legacy plaintext file.
+            plain = SQLiteDatabase.openOrCreateDatabase(
+                    dbFile.getAbsolutePath(), "", null);
+            plain.rawExecSQL("ATTACH DATABASE '"
+                    + encFile.getAbsolutePath().replace("'", "''")
+                    + "' AS enc KEY \"" + new String(key) + "\";");
+            plain.rawExecSQL("SELECT sqlcipher_export('enc');");
+            plain.rawExecSQL("DETACH DATABASE enc;");
+        } finally {
+            if (plain != null) {
+                try {
+                    plain.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        if (!dbFile.delete() || !encFile.renameTo(dbFile)) {
+            encFile.delete();
+            throw new IllegalStateException("Vault conversion failed");
+        }
+    }
+
+    private static boolean isPlaintextHeader(byte[] header) {
+        byte[] magic = "SQLite format 3\0".getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+        if (header.length < magic.length) {
+            return false;
+        }
+        for (int i = 0; i < magic.length; i++) {
+            if (header[i] != magic[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -113,11 +204,12 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Single consolidated migration, non-destructive (never drops data):
-        // bring every older install to the exact v10 schema. Missing tables
-        // are created; any missing column is added in place. No per-version
-        // branches, no backfills, no legacy fallbacks anywhere else.
+        // bring every older install to the exact v10/v11 column set. Missing
+        // tables are created; any missing column is added in place. v11 adds
+        // no columns — it is the encryption envelope (handled on open above).
+        // No per-version branches, no backfills, no legacy fallbacks anywhere.
         createAllTables(db);
-        if (oldVersion < 10) {
+        if (oldVersion < 11) {
             ensureColumn(db, TABLE_LOGINS, COL_CREATED_AT, "INTEGER DEFAULT 0");
             ensureColumn(db, TABLE_LOGINS, COL_UPDATED_AT, "INTEGER DEFAULT 0");
             ensureColumn(db, TABLE_LOGINS, COL_MOBILE, "TEXT DEFAULT ''");

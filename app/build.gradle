@@ -36,5 +36,7 @@ dependencies {
     implementation libs.biometric
     implementation libs.constraintlayout
     implementation libs.material
+    implementation libs.sqlcipher
+    implementation libs.androidx.sqlite
 
 }

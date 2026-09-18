@@ -4,12 +4,19 @@ appcompat = "1.8.0"
 biometric = "1.1.0"
 material = "1.14.0"
 constraintlayout = "2.2.2"
+sqlcipher = "4.5.4"
+androidx-sqlite = "2.2.0"
 
 [libraries]
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
+# SQLCipher's POM scopes androidx.sqlite as runtime-only, but its
+# SQLiteDatabase type implements SupportSQLiteDatabase, so compilation needs
+# it on the compile classpath too.
+androidx-sqlite = { group = "androidx.sqlite", name = "sqlite", version.ref = "androidx-sqlite" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
