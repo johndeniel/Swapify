@@ -67,6 +67,14 @@ public class SettingsActivity extends AppCompatActivity {
 
         findViewById(R.id.row_trash).setOnClickListener(v ->
                 startActivity(new Intent(this, TrashActivity.class)));
+
+        findViewById(R.id.row_privacy).setOnClickListener(v ->
+                startActivity(new Intent(this, PolicyActivity.class)
+                        .putExtra(PolicyActivity.EXTRA_TYPE, PolicyActivity.TYPE_PRIVACY)));
+
+        findViewById(R.id.row_terms).setOnClickListener(v ->
+                startActivity(new Intent(this, PolicyActivity.class)
+                        .putExtra(PolicyActivity.EXTRA_TYPE, PolicyActivity.TYPE_TERMS)));
     }
 
     @Override
