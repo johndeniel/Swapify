@@ -25,6 +25,11 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
         void onAction(CredentialItem item, boolean isRemove);
     }
 
+    /** Fired after every filter pass so hosts can toggle an empty state. */
+    public interface OnCountChangedListener {
+        void onCountChanged(int count);
+    }
+
     private final List<CredentialItem> items;
     // Unfiltered source for search. Displayed items mutate in place (remove on
     // unlink keeps the caller's list in sync for save); both lists hold the
@@ -32,6 +37,17 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
     private final List<CredentialItem> itemsFull;
     private final boolean showRemove;
     private final OnActionListener listener;
+    private OnCountChangedListener countListener;
+    /** Pick mode only: false hides the [+] icon, the row itself taps. */
+    private boolean showPickAction = true;
+
+    public void setShowPickAction(boolean showPickAction) {
+        this.showPickAction = showPickAction;
+    }
+
+    public void setOnCountChangedListener(OnCountChangedListener countListener) {
+        this.countListener = countListener;
+    }
 
     public LinkedAccountAdapter(List<CredentialItem> items, boolean showRemove, OnActionListener listener) {
         this.items = items;
@@ -73,8 +89,16 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
                 listener.onAction(removed, true);
             });
         } else {
-            holder.action.setImageResource(R.drawable.ic_add_circle);
-            holder.action.setOnClickListener(v -> listener.onAction(item, false));
+            // Pick mode (link search): the row itself links, like the
+            // platform picker rows. The [+] icon stays hidden; row tap picks.
+            if (showPickAction) {
+                holder.action.setVisibility(View.VISIBLE);
+                holder.action.setImageResource(R.drawable.ic_add_circle);
+                holder.action.setOnClickListener(v -> listener.onAction(item, false));
+            } else {
+                holder.action.setVisibility(View.GONE);
+            }
+            holder.itemView.setOnClickListener(v -> listener.onAction(item, false));
         }
     }
 
@@ -129,6 +153,9 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
             items.clear();
             items.addAll((List<CredentialItem>) results.values);
             notifyDataSetChanged();
+            if (countListener != null) {
+                countListener.onCountChanged(items.size());
+            }
         }
     };
 

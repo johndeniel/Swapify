@@ -23,9 +23,19 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
         void onPlatformSelected(int iconRes, String name, String url);
     }
 
+    /** Fired after every filter pass so hosts can toggle an empty state. */
+    public interface OnCountChangedListener {
+        void onCountChanged(int count);
+    }
+
     private final List<PlatformIcons.Option> platforms;
     private final List<PlatformIcons.Option> platformsFull;
     private final OnPlatformSelectedListener listener;
+    private OnCountChangedListener countListener;
+
+    public void setOnCountChangedListener(OnCountChangedListener countListener) {
+        this.countListener = countListener;
+    }
 
     public PlatformSelectionAdapter(List<PlatformIcons.Option> platforms, OnPlatformSelectedListener listener) {
         this.platforms = platforms;
@@ -86,6 +96,9 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
             platforms.clear();
             platforms.addAll((List<PlatformIcons.Option>) results.values);
             notifyDataSetChanged();
+            if (countListener != null) {
+                countListener.onCountChanged(platforms.size());
+            }
         }
     };
 
