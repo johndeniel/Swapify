@@ -47,7 +47,6 @@
     <string name="lock_step_confirm_pin">Confirm your new PIN</string>
     <!-- Settings -->
     <string name="settings_title">Settings</string>
-    <string name="settings_subtitle">Security and preferences</string>
     <string name="settings_biometric">Biometric unlock</string>
     <string name="settings_biometric_on">Unlock with your fingerprint</string>
     <string name="settings_biometric_off">Turn on to unlock with your fingerprint</string>
