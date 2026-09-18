@@ -1,4 +1,4 @@
-package com.akin.wallet;
+package com.akin.wallet.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.akin.wallet.R;
 import com.akin.wallet.adapter.PlatformSelectionAdapter;
 import com.akin.wallet.model.PlatformIcons;
 

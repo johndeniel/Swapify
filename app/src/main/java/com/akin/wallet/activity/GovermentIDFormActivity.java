@@ -1,4 +1,4 @@
-package com.akin.wallet;
+package com.akin.wallet.activity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.akin.wallet.R;
 import com.akin.wallet.adapter.IdCardDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.IdCardItem;

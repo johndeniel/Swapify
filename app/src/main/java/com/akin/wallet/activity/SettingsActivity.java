@@ -1,4 +1,4 @@
-package com.akin.wallet;
+package com.akin.wallet.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,7 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
+import com.akin.wallet.R;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.security.AppLockManager;
 
