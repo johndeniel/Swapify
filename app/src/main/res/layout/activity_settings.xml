@@ -66,7 +66,7 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_settings_icon"
+                android:background="@drawable/bg_dashboard_icon_white"
                 android:contentDescription="@string/settings_biometric"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
@@ -132,12 +132,11 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_settings_icon"
+                android:background="@drawable/bg_dashboard_icon_white"
                 android:contentDescription="@string/settings_change_pin"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_lock"
-                android:tint="@color/text_subtle_light" />
+                android:src="@drawable/ic_lock" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -205,7 +204,7 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_settings_icon"
+                android:background="@drawable/bg_dashboard_icon_white"
                 android:contentDescription="@string/settings_trash"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
@@ -287,12 +286,11 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_settings_icon"
+                android:background="@drawable/bg_dashboard_icon_white"
                 android:contentDescription="@string/settings_privacy"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_privacy"
-                android:tint="@color/text_subtle_light" />
+                android:src="@drawable/ic_privacy" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -352,12 +350,11 @@
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_settings_icon"
+                android:background="@drawable/bg_dashboard_icon_white"
                 android:contentDescription="@string/settings_terms"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_policy"
-                android:tint="@color/text_subtle_light" />
+                android:src="@drawable/ic_policy" />
 
             <LinearLayout
                 android:layout_width="0dp"
