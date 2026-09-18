@@ -682,12 +682,6 @@ public class BankCardFormActivity extends AppCompatActivity {
         }
     }
 
-    /** Kept for compatibility; prefer createDots() + updateDots(). */
-    private void setupDots(LinearLayout container, int count, int selected) {
-        createDots(container, count);
-        updateDots(container, selected);
-    }
-
     private interface OnChoiceListener {
         void onChoice(int which);
     }

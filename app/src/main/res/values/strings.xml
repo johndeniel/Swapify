@@ -18,38 +18,21 @@
     <!-- Dashboard quick-add FAB -->
     <string name="fab_add">Add</string>
 
-    <!-- Bottom navigation tabs (short labels) -->
-    <string name="tab_home">Home</string>
-
-    <!-- Section headers -->
-    <!-- 1. Social account -->
-    <string name="title_social">Social Account</string>
-    <string name="desc_social">Usernames and passwords, organized</string>
-
     <!-- Shared actions (also reused as content descriptions) -->
     <string name="action_add">Add</string>
     <string name="action_save">Save</string>
-    <string name="action_edit">Edit</string>
     <string name="action_delete">Delete</string>
 
     <!-- Search -->
     <string name="search_hint">Search account\u2026</string>
     <string name="hint_search_platforms">Search platforms…</string>
     <string name="hint_search_accounts">Search accounts…</string>
-    <string name="search_title">Search</string>
-    <string name="search_subtitle">IDs, bank cards, and social accounts</string>
-    <string name="search_section_ids">Government ID</string>
-    <string name="search_section_cards">Bank Card</string>
-    <string name="search_section_social">Social Account</string>
     <string name="search_empty_title">No results found</string>
     <string name="search_empty_sub">Try a different keyword</string>
     <!-- App lock (first-run PIN setup, PIN entry, fingerprint unlock) -->
     <string name="lock_sub_create">Create a 4-digit PIN</string>
-    <string name="lock_sub_create_hint">Set a PIN to protect your wallet</string>
     <string name="lock_sub_confirm">Confirm your 4-digit PIN</string>
     <string name="lock_sub_enter">Enter your PIN</string>
-    <string name="lock_sub_verify">Enter your current PIN</string>
-    <string name="lock_sub_fingerprint">Use your fingerprint\nto unlock</string>
     <string name="lock_use_fingerprint">Use fingerprint</string>
     <string name="lock_use_pin">Use PIN instead</string>
     <string name="lock_touch_sensor">Touch the fingerprint sensor</string>
@@ -58,8 +41,6 @@
     <string name="lock_error_locked">Too many attempts. Try again in %1$d seconds</string>
     <string name="lock_error_fingerprint">Fingerprint not recognized. Use PIN</string>
     <string name="lock_pin_updated">App PIN updated</string>
-    <string name="lock_trust_footer">Your keys never leave this device</string>
-    <string name="lock_biometric_title">Biometric unlock</string>
     <!-- Step helper shown in the tagline slot during PIN setup / update -->
     <string name="lock_step_old_pin">Enter your old PIN</string>
     <string name="lock_step_new_pin">Enter your new PIN</string>
@@ -89,13 +70,10 @@
     <!-- Bottom-sheet titles and subtitles -->
     <!-- Bank card -->
     <string name="dialog_bank_title">Bank Card</string>
-    <string name="dialog_bank_subtitle">Save your card details securely</string>
     <!-- Social account -->
     <string name="dialog_social_title">Social Account</string>
-    <string name="dialog_social_subtitle">Save your account details securely</string>
     <!-- Government ID -->
     <string name="dialog_id_title">Government ID</string>
-    <string name="dialog_id_subtitle">Save your ID details securely</string>
     <!-- Link / platform pickers (social flow) -->
     <string name="dialog_link_title">Link Account</string>
     <string name="dialog_link_subtitle">Select an existing account to associate</string>
@@ -104,7 +82,6 @@
 
     <!-- Form sections -->
     <string name="section_account_details">Account Details</string>
-    <string name="section_account_info">Account Information</string>
     <string name="section_associated_accounts">Associated Accounts</string>
 
     <!-- Field labels (identical wording shared across screens) -->
@@ -158,16 +135,10 @@
     <string name="cd_search">Search</string>
     <string name="cd_add_account">Add account</string>
     <string name="cd_link_account">Link</string>
-    <string name="cd_toggle_details">Toggle details</string>
     <string name="cd_toggle_visibility">Toggle visibility</string>
-    <string name="cd_toggle_pin">Toggle PIN visibility</string>
-    <string name="cd_toggle_password">Toggle password visibility</string>
     <string name="cd_select_platform">Select platform</string>
     <string name="cd_select_card_type">Select card type</string>
     <string name="cd_select_card_network">Select card network</string>
-    <string name="cd_copy_username">Copy username</string>
-    <string name="cd_copy_password">Copy password</string>
-    <string name="cd_copy_pin">Copy PIN</string>
     <string name="cd_card_network">Card network</string>
     <string name="cd_card_chip">Card chip</string>
     <string name="cd_id_photo">ID photo placeholder</string>

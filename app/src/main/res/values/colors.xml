@@ -166,13 +166,5 @@
     <color name="dot_filled_start">#FF4DB8FF</color>
     <color name="dot_filled_end">#FF1B6BFF</color>
     <color name="dot_filled_glow">#662EA6FF</color>
-    <color name="fp_disc_top">#FF142844</color>
-    <color name="fp_disc_bottom">#FF0A172E</color>
     <color name="fp_ring_start">#FF4DB8FF</color>
-    <color name="fp_ring_end">#FF1B4B9E</color>
-    <color name="fp_core">#FF4DB8FF</color>
-    <color name="fp_outer">#FF2E7FD6</color>
-    <color name="lock_pill_fill">#141E4B9E</color>
-    <color name="lock_pill_stroke">#FF243C62</color>
-    <color name="trust_muted">#FF6B7E99</color>
 </resources>
