@@ -1,16 +1,24 @@
 package com.akin.wallet;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsetsController;
 import android.graphics.Color;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,7 +34,10 @@ import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Dashboard (Home) — single-screen host, no fragments. Shows live Government
@@ -60,6 +71,23 @@ public class MainActivity extends AppCompatActivity {
     private View fabScrim;
     private boolean isFabMenuOpen = false;
 
+    // Inline dashboard search state. Masters hold the full newest-first rows;
+    // typing filters the three sections in place (same activity, no dialog).
+    private List<IdCardItem> allIds;
+    private List<BankCardItem> allCards;
+    private List<CredentialItem> allAccounts;
+    private String currentQuery = "";
+    private static final String KEY_SEARCH_QUERY = "dashboard_search_query";
+    private static final String KEY_SEARCH_OPEN = "dashboard_search_open";
+    private View searchBar;
+    private EditText inputSearch;
+    private ImageView btnClearSearch;
+    private View headerIds;
+    private View headerCards;
+    private View headerSocial;
+    private View emptySearchResults;
+    private TextView emptySearchSub;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,10 +96,30 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper = new AppDatabaseHelper(this);
 
+        setupHeader();
         setupCardCarousel();
         setupIdsCarousel();
         setupSocialAccounts();
         setupAddMenu();
+
+        if (savedInstanceState != null) {
+            // Rotation: restore the search bar exactly as left (masters load
+            // below in refreshDashboard, which re-applies this query).
+            currentQuery = savedInstanceState.getString(KEY_SEARCH_QUERY, "");
+            boolean open = savedInstanceState.getBoolean(KEY_SEARCH_OPEN, false);
+            if (open && searchBar != null) {
+                searchBar.setVisibility(View.VISIBLE);
+                setFabVisible(false);
+            }
+            if (inputSearch != null && !currentQuery.isEmpty()) {
+                inputSearch.setText(currentQuery);
+                inputSearch.setSelection(currentQuery.length());
+            }
+            if (btnClearSearch != null) {
+                btnClearSearch.setVisibility(
+                        currentQuery.isEmpty() ? View.GONE : View.VISIBLE);
+            }
+        }
 
         refreshDashboard();
     }
@@ -80,6 +128,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshDashboard();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_SEARCH_QUERY, currentQuery);
+        outState.putBoolean(KEY_SEARCH_OPEN, isSearchOpen());
     }
 
     @Override
@@ -120,6 +175,230 @@ public class MainActivity extends AppCompatActivity {
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         }
+    }
+
+    /**
+     * Header search toggles the inline search bar below it. Typing filters
+     * the dashboard's own sections (IDs + cards + socials) in place — same
+     * activity, no dialog, no new screen. Back press collapses search first.
+     */
+    private void setupHeader() {
+        searchBar = findViewById(R.id.search_bar);
+        inputSearch = findViewById(R.id.input_dashboard_search);
+        btnClearSearch = findViewById(R.id.btn_clear_search);
+        headerIds = findViewById(R.id.header_ids);
+        headerCards = findViewById(R.id.header_cards);
+        headerSocial = findViewById(R.id.header_social);
+        emptySearchResults = findViewById(R.id.empty_search_results);
+        emptySearchSub = findViewById(R.id.empty_search_sub);
+
+        View btnSearch = findViewById(R.id.btn_header_search);
+        if (btnSearch != null) {
+            btnSearch.setOnClickListener(v -> toggleSearchBar());
+        }
+        if (btnClearSearch != null) {
+            btnClearSearch.setOnClickListener(v -> {
+                if (inputSearch != null) {
+                    inputSearch.setText("");
+                }
+            });
+        }
+        if (inputSearch != null) {
+            inputSearch.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    currentQuery = s != null ? s.toString() : "";
+                    if (btnClearSearch != null) {
+                        btnClearSearch.setVisibility(
+                                currentQuery.isEmpty() ? View.GONE : View.VISIBLE);
+                    }
+                    applySearchFilter();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
+        }
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isSearchOpen()) {
+                    toggleSearchBar();
+                } else {
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        });
+    }
+
+    private boolean isSearchOpen() {
+        return searchBar != null && searchBar.getVisibility() == View.VISIBLE;
+    }
+
+    private boolean isSearching() {
+        return isSearchOpen() && !currentQuery.trim().isEmpty();
+    }
+
+    /** Expands (and focuses) or collapses (and clears) the search bar. */
+    private void toggleSearchBar() {
+        if (searchBar == null) {
+            return;
+        }
+        if (isSearchOpen()) {
+            if (inputSearch != null) {
+                inputSearch.setText("");
+            }
+            currentQuery = "";
+            searchBar.setVisibility(View.GONE);
+            hideKeyboard();
+            setFabVisible(true);
+            applySearchFilter();
+        } else {
+            if (isFabMenuOpen) {
+                toggleAddMenu();
+            }
+            setFabVisible(false);
+            searchBar.setVisibility(View.VISIBLE);
+            if (inputSearch != null) {
+                inputSearch.requestFocus();
+                showKeyboard(inputSearch);
+            }
+        }
+    }
+
+    /** FAB hides while searching so it never covers filtered results. */
+    private void setFabVisible(boolean visible) {
+        if (fabAdd != null) {
+            fabAdd.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void showKeyboard(@NonNull View view) {
+        InputMethodManager imm =
+                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    private void hideKeyboard() {
+        View focus = getCurrentFocus();
+        if (focus == null && inputSearch != null) {
+            focus = inputSearch;
+        }
+        if (focus == null) {
+            return;
+        }
+        InputMethodManager imm =
+                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
+        }
+        focus.clearFocus();
+    }
+
+    /**
+     * Re-renders the three sections from the master lists through the current
+     * query. Empty query restores the exact dashboard (with add prompts);
+     * non-empty hides add prompts and empty sections, showing one global
+     * "no results" card when nothing matches anywhere.
+     */
+    private void applySearchFilter() {
+        if (allIds == null || allCards == null || allAccounts == null) {
+            return;
+        }
+        String q = currentQuery.trim().toLowerCase(Locale.US);
+        String digits = q.replaceAll("\\D", "");
+        boolean searching = !q.isEmpty();
+
+        List<IdCardItem> ids = searching ? filterIds(allIds, q) : allIds;
+        List<BankCardItem> cards = searching ? filterCards(allCards, q, digits) : allCards;
+        List<CredentialItem> accounts = searching ? filterAccounts(allAccounts, q) : allAccounts;
+
+        refreshIdsCarousel(ids, searching);
+        refreshCardCarousel(cards, searching);
+        refreshSocialAccounts(accounts, searching);
+
+        boolean allEmpty = ids.isEmpty() && cards.isEmpty() && accounts.isEmpty();
+        if (emptySearchResults != null) {
+            emptySearchResults.setVisibility(
+                    searching && allEmpty ? View.VISIBLE : View.GONE);
+        }
+        if (searching && allEmpty && emptySearchSub != null) {
+            emptySearchSub.setText(
+                    getString(R.string.search_empty_sub) + " for \"" + currentQuery.trim() + "\"");
+        }
+    }
+
+    private static List<IdCardItem> filterIds(List<IdCardItem> source, String q) {
+        List<IdCardItem> out = new ArrayList<>();
+        for (IdCardItem item : source) {
+            if (containsText(item.getIdType(), q) || idFieldsContain(item, q)) {
+                out.add(item);
+            }
+        }
+        return out;
+    }
+
+    private static List<BankCardItem> filterCards(
+            List<BankCardItem> source, String q, String digits) {
+        List<BankCardItem> out = new ArrayList<>();
+        for (BankCardItem item : source) {
+            // Non-secret fields only: card number matches on digits so "1234"
+            // finds "•••• •••• •••• 1234". CVV/PIN are never matched.
+            if (containsText(item.getBankName(), q)
+                    || containsText(item.getHolderName(), q)
+                    || containsText(item.getCardType(), q)
+                    || containsText(item.getCardNetwork(), q)
+                    || cardNumberContains(item, digits)) {
+                out.add(item);
+            }
+        }
+        return out;
+    }
+
+    private static List<CredentialItem> filterAccounts(List<CredentialItem> source, String q) {
+        List<CredentialItem> out = new ArrayList<>();
+        for (CredentialItem item : source) {
+            // Non-secret fields only: password/PIN stay out of the index.
+            if (containsText(item.getPlatform(), q)
+                    || containsText(item.getUsername(), q)
+                    || containsText(item.getMobile(), q)) {
+                out.add(item);
+            }
+        }
+        return out;
+    }
+
+    private static boolean containsText(String value, String q) {
+        return value != null && !value.trim().isEmpty()
+                && value.toLowerCase(Locale.US).contains(q);
+    }
+
+    private static boolean idFieldsContain(@NonNull IdCardItem id, String q) {
+        Map<String, String> fields = id.getFields();
+        for (String value : fields.values()) {
+            if (containsText(value, q)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Card numbers are raw digits; match on digits only (CVV/PIN excluded). */
+    private static boolean cardNumberContains(@NonNull BankCardItem card, String digits) {
+        if (digits.isEmpty() || card.getCardNumber() == null) {
+            return false;
+        }
+        String numberDigits = card.getCardNumber().replaceAll("\\D", "");
+        return !numberDigits.isEmpty() && numberDigits.contains(digits);
     }
 
     /** Extended FAB: round main button expanding the 3-option menu above it. */
@@ -278,16 +557,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshCardCarousel(List<BankCardItem> cards) {
+    private void refreshCardCarousel(List<BankCardItem> cards, boolean searching) {
         if (cardAdapter == null || recyclerCarousel == null) {
             return;
         }
         cardAdapter.updateData(cards);
         boolean hasCards = cards != null && !cards.isEmpty();
         recyclerCarousel.setVisibility(hasCards ? View.VISIBLE : View.GONE);
+        if (headerCards != null) {
+            // While searching, empty sections (header included) collapse so
+            // only matches stay on screen.
+            headerCards.setVisibility(!searching || hasCards ? View.VISIBLE : View.GONE);
+        }
         if (emptyCards != null) {
-            emptyCards.setVisibility(hasCards ? View.GONE : View.VISIBLE);
-            if (!hasCards) {
+            // The add-prompt empty card is dashboard-only; search shows the
+            // global "no results" card instead.
+            emptyCards.setVisibility(!searching && !hasCards ? View.VISIBLE : View.GONE);
+            if (!searching && !hasCards) {
                 matchEmptyHeightToCards(recyclerCarousel, emptyCards);
             }
         }
@@ -349,16 +635,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshIdsCarousel(List<IdCardItem> ids) {
+    private void refreshIdsCarousel(List<IdCardItem> ids, boolean searching) {
         if (idAdapter == null || recyclerIdsCarousel == null) {
             return;
         }
         idAdapter.updateData(ids);
         boolean hasIds = ids != null && !ids.isEmpty();
         recyclerIdsCarousel.setVisibility(hasIds ? View.VISIBLE : View.GONE);
+        if (headerIds != null) {
+            headerIds.setVisibility(!searching || hasIds ? View.VISIBLE : View.GONE);
+        }
         if (emptyIds != null) {
-            emptyIds.setVisibility(hasIds ? View.GONE : View.VISIBLE);
-            if (!hasIds) {
+            emptyIds.setVisibility(!searching && !hasIds ? View.VISIBLE : View.GONE);
+            if (!searching && !hasIds) {
                 matchEmptyHeightToCards(recyclerIdsCarousel, emptyIds);
             }
         }
@@ -380,7 +669,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshSocialAccounts(List<CredentialItem> accounts) {
+    private void refreshSocialAccounts(List<CredentialItem> accounts, boolean searching) {
         if (socialAdapter == null || recyclerSocialAccounts == null) {
             return;
         }
@@ -389,8 +678,12 @@ public class MainActivity extends AppCompatActivity {
         if (cardSocialAccounts != null) {
             cardSocialAccounts.setVisibility(hasAccounts ? View.VISIBLE : View.GONE);
         }
+        if (headerSocial != null) {
+            headerSocial.setVisibility(!searching || hasAccounts ? View.VISIBLE : View.GONE);
+        }
         if (emptySocialAccounts != null) {
-            emptySocialAccounts.setVisibility(hasAccounts ? View.GONE : View.VISIBLE);
+            emptySocialAccounts.setVisibility(
+                    !searching && !hasAccounts ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -398,13 +691,11 @@ public class MainActivity extends AppCompatActivity {
         if (dbHelper == null) {
             return;
         }
-        List<IdCardItem> ids = dbHelper.getAllIdCards();
-        List<BankCardItem> cards = dbHelper.getAllBankCards();
-        List<CredentialItem> accounts = dbHelper.getAllLogins();
+        allIds = dbHelper.getAllIdCards();
+        allCards = dbHelper.getAllBankCards();
+        allAccounts = dbHelper.getAllLogins();
 
-        refreshCardCarousel(cards);
-        refreshIdsCarousel(ids);
-        refreshSocialAccounts(accounts);
+        applySearchFilter();
     }
 
     private int dp(int value) {

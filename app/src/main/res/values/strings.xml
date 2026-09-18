@@ -36,6 +36,13 @@
     <string name="search_hint">Search account\u2026</string>
     <string name="hint_search_platforms">Search platforms…</string>
     <string name="hint_search_accounts">Search accounts…</string>
+    <string name="search_title">Search</string>
+    <string name="search_subtitle">IDs, bank cards, and social accounts</string>
+    <string name="search_section_ids">Government ID</string>
+    <string name="search_section_cards">Bank Card</string>
+    <string name="search_section_social">Social Account</string>
+    <string name="search_empty_title">No results found</string>
+    <string name="search_empty_sub">Try a different keyword</string>
     <!-- Bottom-sheet titles and subtitles -->
     <!-- Bank card -->
     <string name="dialog_bank_title">Bank Card</string>
@@ -104,7 +111,7 @@
     <!-- Generic detail-row default -->
 
     <!-- Content descriptions (accessibility) -->
-    <string name="cd_notifications">Notifications</string>
+    <string name="cd_settings">Settings</string>
     <string name="cd_search">Search</string>
     <string name="cd_add_account">Add account</string>
     <string name="cd_link_account">Link</string>
@@ -122,4 +129,5 @@
     <string name="cd_card_chip">Card chip</string>
     <string name="cd_id_photo">ID photo placeholder</string>
     <string name="cd_back">Back</string>
+    <string name="cd_clear">Clear search</string>
 </resources>
