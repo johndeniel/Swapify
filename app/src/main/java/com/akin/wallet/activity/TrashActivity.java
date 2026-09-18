@@ -19,6 +19,7 @@ import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.PlatformIcons;
+import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +57,8 @@ public class TrashActivity extends AppCompatActivity {
 
         dbHelper = new AppDatabaseHelper(this);
 
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         emptyTrash = findViewById(R.id.empty_trash);
         headerIds = findViewById(R.id.header_trash_ids);

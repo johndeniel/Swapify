@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.akin.wallet.R;
+import com.google.android.material.appbar.MaterialToolbar;
 
 /**
  * In-app legal screen behind Settings. Shows either the Privacy Policy or
@@ -27,17 +28,17 @@ public class PolicyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_policy);
 
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
-        TextView title = findViewById(R.id.policy_title);
         LinearLayout sections = findViewById(R.id.policy_sections);
 
         String body;
         if (TYPE_TERMS.equals(getIntent().getStringExtra(EXTRA_TYPE))) {
-            title.setText(R.string.settings_terms);
+            toolbar.setTitle(R.string.settings_terms);
             body = getString(R.string.policy_terms_body);
         } else {
-            title.setText(R.string.settings_privacy);
+            toolbar.setTitle(R.string.settings_privacy);
             body = getString(R.string.policy_privacy_body);
         }
         renderSections(sections, body);

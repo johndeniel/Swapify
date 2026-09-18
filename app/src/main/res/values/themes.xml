@@ -12,6 +12,20 @@
     </style>
     <style name="Theme.AkinWallet" parent="Base.Theme.AkinWallet" />
 
+    <!-- M3 small top-app-bar headline: 20sp bold, set via
+         app:titleTextAppearance on each MaterialToolbar. -->
+    <style name="TextAppearance.Akin.ToolbarTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- M3 small top-app-bar supporting text under the headline. -->
+    <style name="TextAppearance.Akin.ToolbarSubtitle" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/dashboard_muted</item>
+    </style>
+
     <!-- True-circle overlay for the dashboard FAB (M3 default is a squircle). -->
     <style name="ShapeAppearanceOverlay.Circle" parent="">
         <item name="cornerFamily">rounded</item>

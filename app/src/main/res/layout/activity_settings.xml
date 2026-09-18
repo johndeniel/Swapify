@@ -5,39 +5,30 @@
      affordances on every tappable row, toggle only on biometrics.
      ============================================================ -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_dashboard_root"
     android:orientation="vertical"
     android:padding="24dp">
 
-    <ImageView
-        android:id="@+id/btn_back"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+    <!-- M3 small top app bar: 64dp, nav icon + two-line headline. The -12dp
+         margin pulls the 48dp nav target to the padding edge; insets are
+         zeroed so the title sits a fixed 12dp past the arrow. -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
         android:layout_marginStart="-12dp"
-        android:padding="12dp"
-        android:src="@drawable/ic_arrow_back"
-        android:contentDescription="@string/cd_back"
-        android:clickable="true"
-        android:focusable="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="@string/settings_title"
-        android:textColor="@color/text_primary"
-        android:textSize="20sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="@string/settings_subtitle"
-        android:textColor="@color/dashboard_muted"
-        android:textSize="13sp" />
+        android:background="@android:color/transparent"
+        app:contentInsetStart="0dp"
+        app:contentInsetStartWithNavigation="0dp"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:subtitle="@string/settings_subtitle"
+        app:subtitleTextAppearance="@style/TextAppearance.Akin.ToolbarSubtitle"
+        app:title="@string/settings_title"
+        app:titleMarginStart="12dp"
+        app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
 
     <TextView
         android:layout_width="wrap_content"

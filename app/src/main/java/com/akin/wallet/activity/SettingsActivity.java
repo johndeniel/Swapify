@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat;
 import com.akin.wallet.R;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.security.AppLockManager;
+import com.google.android.material.appbar.MaterialToolbar;
 
 /**
  * Settings — security preferences behind the app lock. Biometric unlock is
@@ -36,7 +37,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         dbHelper = new AppDatabaseHelper(this);
 
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         biometricSwitch = findViewById(R.id.switch_biometric);
         biometricStatus = findViewById(R.id.biometric_status);

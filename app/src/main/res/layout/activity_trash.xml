@@ -3,6 +3,7 @@
      22sp title block, grouped navy cards with hairline dividers
      (same as Home social list), count badges per section, plain empty label. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_dashboard_root"
@@ -16,44 +17,22 @@
         android:paddingTop="16dp"
         android:paddingBottom="24dp">
 
-        <ImageView
-            android:id="@+id/btn_back"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="-12dp"
-            android:padding="12dp"
-            android:src="@drawable/ic_arrow_back"
-            android:contentDescription="@string/cd_back"
-            android:clickable="true"
-            android:focusable="true" />
-
-        <!-- Title block. -->
-        <LinearLayout
+        <!-- M3 small top app bar: 64dp, nav icon + two-line headline. Same
+             insets as Settings so all three headers match. -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:text="@string/trash_title"
-                android:textColor="@color/text_primary"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/trash_subtitle"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="12sp" />
-
-        </LinearLayout>
+            android:layout_height="64dp"
+            android:layout_marginStart="-12dp"
+            android:background="@android:color/transparent"
+            app:contentInsetStart="0dp"
+            app:contentInsetStartWithNavigation="0dp"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:subtitle="@string/trash_subtitle"
+            app:subtitleTextAppearance="@style/TextAppearance.Akin.ToolbarSubtitle"
+            app:title="@string/trash_title"
+            app:titleMarginStart="12dp"
+            app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
 
         <!-- Empty state: single centered label, no icon or extra copy. -->
         <LinearLayout
