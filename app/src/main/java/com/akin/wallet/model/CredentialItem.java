@@ -8,10 +8,10 @@ public class CredentialItem {
     private final String pin;
     private final int iconRes;
     // Contact number stored as its own column (never inside another field).
-    // Empty string when not provided; no legacy fallback exists (unreleased).
+    // Empty string when not provided.
     private final String mobile;
-    // Epoch millis (UTC). 0 = unknown (pre-migration rows or unsaved drafts);
-    // the DB fills real values on insert.
+    // Epoch millis (UTC). 0 = unset (unsaved drafts); the DB fills real
+    // values on insert.
     private final long createdAt;
     private final long updatedAt;
 

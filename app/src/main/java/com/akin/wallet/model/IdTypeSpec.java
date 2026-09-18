@@ -2,7 +2,8 @@ package com.akin.wallet.model;
 
 import android.text.InputType;
 
-import com.akin.wallet.R;import java.util.ArrayList;
+import com.akin.wallet.R;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -12,7 +13,7 @@ import java.util.Map;
 /**
  * Single source of truth for every supported government ID type.
  *
- * <p>Adding Passport / SSS / GSIS later = append one {@link IdType} here.
+ * <p>Adding another ID type later = append one {@link IdType} here.
  * No DB migration, no new XML, no adapter change needed because storage is
  * JSON ({@code fields_json}) and both the list card and the form are rendered
  * dynamically from these specs.
@@ -374,14 +375,13 @@ public final class IdTypeSpec {
         public final int holderColorRes;
         public final int numberLabelColorRes;
         public final int numberColorRes;
-        public final int metaColorRes;
         public final int photoBgRes;
         public final int photoBorderRes;
         public final int photoIconRes;
 
         FaceScheme(int backgroundRes, int titleColorRes, int subtitleColorRes,
                    int ruleColorRes, int holderColorRes, int numberLabelColorRes,
-                   int numberColorRes, int metaColorRes,
+                   int numberColorRes,
                    int photoBgRes, int photoBorderRes, int photoIconRes) {
             this.backgroundRes = backgroundRes;
             this.titleColorRes = titleColorRes;
@@ -390,7 +390,6 @@ public final class IdTypeSpec {
             this.holderColorRes = holderColorRes;
             this.numberLabelColorRes = numberLabelColorRes;
             this.numberColorRes = numberColorRes;
-            this.metaColorRes = metaColorRes;
             this.photoBgRes = photoBgRes;
             this.photoBorderRes = photoBorderRes;
             this.photoIconRes = photoIconRes;
@@ -405,7 +404,7 @@ public final class IdTypeSpec {
                         R.drawable.bg_drivers_license,
                         R.color.dl_ink, R.color.dl_accent, R.color.dl_bar,
                         R.color.dl_ink, R.color.dl_muted,
-                        R.color.dl_ink, R.color.dl_muted,
+                        R.color.dl_ink,
                         R.color.photo_bg_dl, R.color.dl_bar, R.color.dl_ink);
             }
             if (t.equalsIgnoreCase(TYPE_PASSPORT)) {
@@ -413,7 +412,7 @@ public final class IdTypeSpec {
                         R.drawable.bg_passport,
                         R.color.passport_ink, R.color.passport_muted, R.color.passport_rule,
                         R.color.passport_ink, R.color.passport_muted,
-                        R.color.passport_ink, R.color.passport_muted,
+                        R.color.passport_ink,
                         R.color.photo_bg_passport, R.color.passport_rule,
                         R.color.photo_icon_passport);
             }
@@ -422,7 +421,7 @@ public final class IdTypeSpec {
                         R.drawable.bg_sss,
                         R.color.text_primary, R.color.sss_muted, R.color.sss_muted,
                         R.color.text_primary, R.color.sss_muted,
-                        R.color.text_primary, R.color.sss_muted,
+                        R.color.text_primary,
                         R.color.photo_bg_sss, R.color.sss_bg_start, R.color.sss_bg_end);
             }
             if (t.equalsIgnoreCase(TYPE_PHILHEALTH)) {
@@ -430,7 +429,7 @@ public final class IdTypeSpec {
                         R.drawable.bg_philhealth,
                         R.color.philhealth_ink, R.color.philhealth_muted, R.color.philhealth_rule,
                         R.color.philhealth_ink, R.color.philhealth_muted,
-                        R.color.philhealth_ink, R.color.philhealth_muted,
+                        R.color.philhealth_ink,
                         R.color.photo_bg_philhealth, R.color.philhealth_rule,
                         R.color.philhealth_ink);
             }
@@ -439,7 +438,7 @@ public final class IdTypeSpec {
                         R.drawable.bg_tin,
                         R.color.tin_ink, R.color.tin_muted, R.color.tin_rule,
                         R.color.tin_ink, R.color.tin_muted,
-                        R.color.tin_ink, R.color.tin_muted,
+                        R.color.tin_ink,
                         R.color.photo_bg_tin, R.color.tin_rule, R.color.tin_ink);
             }
         }
@@ -447,7 +446,7 @@ public final class IdTypeSpec {
                 R.drawable.bg_national_id,
                 R.color.national_ink, R.color.national_muted, R.color.national_rule,
                 R.color.national_ink, R.color.national_muted,
-                R.color.national_ink, R.color.national_muted,
+                R.color.national_ink,
                 R.color.photo_bg_national, R.color.national_rule, R.color.national_ink);
     }
 

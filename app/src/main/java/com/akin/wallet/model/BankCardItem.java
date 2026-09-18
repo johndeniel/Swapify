@@ -11,8 +11,8 @@ public class BankCardItem {
     private final String cvv;
     private final String pin;
     private final int design;
-    // Epoch millis (UTC). 0 = unknown (pre-migration rows or unsaved drafts);
-    // the DB fills real values on insert.
+    // Epoch millis (UTC). 0 = unset (unsaved drafts); the DB fills real
+    // values on insert.
     private final long createdAt;
     private final long updatedAt;
 
