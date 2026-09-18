@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Full-screen account picker for associating accounts (replaces the old bottom
- * sheet). Shows only the IDs passed in; returns the picked account id.
+ * Full-screen account picker for associating accounts. Shows only the IDs
+ * passed in; returns the picked account id.
  */
 public class LinkAccountPickerActivity extends AppCompatActivity {
 
@@ -46,6 +46,7 @@ public class LinkAccountPickerActivity extends AppCompatActivity {
                 }
             }
         }
+        db.close();
 
         RecyclerView recyclerAccounts = findViewById(R.id.recycler_accounts);
         recyclerAccounts.setLayoutManager(new LinearLayoutManager(this));

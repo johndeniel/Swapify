@@ -14,8 +14,8 @@ import com.akin.wallet.adapter.PlatformSelectionAdapter;
 import com.akin.wallet.model.PlatformIcons;
 
 /**
- * Full-screen platform picker (replaces the old bottom sheet). Returns the
- * chosen platform icon and name; the caller keeps its own search/filter.
+ * Full-screen platform picker. Returns the chosen platform icon and name;
+ * the caller keeps its own search/filter.
  */
 public class PlatformPickerActivity extends AppCompatActivity {
 

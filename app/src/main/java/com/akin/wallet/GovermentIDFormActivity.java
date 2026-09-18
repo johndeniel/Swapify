@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Government ID creation/edit form as a full screen (replaces the old bottom
- * sheet). Add mode when no ID is passed; edit mode otherwise. The type-picker
- * carousel lives in the form content; dropdowns stay alert dialogs. Callers
- * refresh in onResume; RESULT_OK is set on save.
+ * Government ID creation/edit form as a full screen. Add mode when no ID is
+ * passed; edit mode otherwise. The type-picker carousel lives in the form
+ * content; dropdowns stay alert dialogs. Callers refresh in onResume;
+ * RESULT_OK is set on save.
  */
 public class GovermentIDFormActivity extends AppCompatActivity {
 

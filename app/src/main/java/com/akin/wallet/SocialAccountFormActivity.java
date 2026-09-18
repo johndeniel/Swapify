@@ -29,10 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Social login creation/edit form as a full screen (replaces the old bottom
- * sheets). Add mode when no login id is passed; edit mode otherwise. The
- * platform and link pickers stay as nested bottom sheets. Callers refresh in
- * onResume; RESULT_OK is set on successful save.
+ * Social login creation/edit form as a full screen. Add mode when no login
+ * id is passed; edit mode otherwise. The platform and link pickers open as
+ * full-screen activities. Callers refresh in onResume; RESULT_OK is set on
+ * successful save.
  */
 public class SocialAccountFormActivity extends AppCompatActivity {
 
@@ -46,7 +46,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     public static final String EXTRA_CREATED_AT = "extra_created_at";
     public static final String EXTRA_UPDATED_AT = "extra_updated_at";
 
-    /** Default pick for a fresh form (also the icon fallback for legacy rows). */
+    /** Default pick for a fresh form (also the icon fallback for stored rows). */
     public static final String DEFAULT_PLATFORM_NAME = "Google";
 
     /**
