@@ -1,0 +1,11 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Document with a punched-out check: single path, even-odd fill. -->
+    <path
+        android:fillColor="@color/text_secondary"
+        android:fillType="evenOdd"
+        android:pathData="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z M8.8,13L11,15.2L16.2,9.8L17.4,11L11,17.4L7.6,14.2Z" />
+</vector>

@@ -354,7 +354,7 @@
                 android:contentDescription="@string/settings_terms"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_policy" />
+                android:src="@drawable/ic_terms" />
 
             <LinearLayout
                 android:layout_width="0dp"
