@@ -64,6 +64,16 @@
     <string name="trash_delete_forever">Delete</string>
     <string name="trash_restored">Restored</string>
     <string name="trash_deleted_forever">Permanently deleted</string>
+    <!-- Trash gallery: multi-select grid of soft-deleted items -->
+    <string name="trash_empty_title">Trash is empty</string>
+    <string name="trash_empty_sub">Items you delete will appear here</string>
+    <string name="trash_select_all">Select all</string>
+    <string name="trash_selected">%1$d selected</string>
+    <string name="trash_restore_count">Restore (%1$d)</string>
+    <string name="trash_delete_count">Delete (%1$d)</string>
+    <string name="trash_delete_many">Delete %1$d items forever? This cannot be undone.</string>
+    <string name="trash_restored_count">%1$d items restored</string>
+    <string name="trash_deleted_count">%1$d items permanently deleted</string>
     <!-- Legal (Settings rows + in-app policy screens) -->
     <string name="settings_privacy">Privacy Policy</string>
     <string name="settings_terms">Terms of Service</string>

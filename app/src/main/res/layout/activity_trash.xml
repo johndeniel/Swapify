@@ -1,202 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Trash — restorable soft-deletes. Professional dashboard language:
-     22sp title block, grouped navy cards with hairline dividers
-     (same as Home social list), count badges per section, plain empty label. -->
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Trash gallery — soft-deletes as one uniform set of selectable tiles
+     (centered icon + title + masked hint, paired two-per-row). Tap toggles
+     selection; the toolbar turns contextual (count + select-all) and the
+     bottom bar offers bulk Restore / Delete forever. M3 empty card
+     when empty. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="@drawable/bg_dashboard_root"
-    android:fillViewport="true">
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
 
+    <!-- Contextual M3 small top app bar: "Trash" idle, "N selected" + close
+         while selecting. Same insets as Settings so headers match. -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="-12dp"
+        android:background="@android:color/transparent"
+        app:contentInsetStart="0dp"
+        app:contentInsetStartWithNavigation="0dp"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/trash_title"
+        app:titleMarginStart="12dp"
+        app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
+
+    <!-- Gallery grid: faces span both columns, social cells pair up. -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_trash"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false" />
+
+    <!-- Bulk action bar: visible only while items are selected. -->
     <LinearLayout
+        android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:orientation="vertical"
-        android:paddingHorizontal="20dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="24dp">
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
 
-        <!-- M3 small top app bar: 64dp, nav icon + two-line headline. Same
-             insets as Settings so all three headers match. -->
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_marginStart="-12dp"
-            android:background="@android:color/transparent"
-            app:contentInsetStart="0dp"
-            app:contentInsetStartWithNavigation="0dp"
-            app:navigationIcon="@drawable/ic_arrow_back"
-            app:title="@string/trash_title"
-            app:titleMarginStart="12dp"
-            app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
-
-        <!-- Empty state: single centered label, no icon or extra copy. -->
-        <LinearLayout
-            android:id="@+id/empty_trash"
-            android:layout_width="match_parent"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_bulk_restore"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_dashboard_card"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="20dp"
-            android:visibility="gone">
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:minHeight="48dp"
+            android:text="@string/trash_restore"
+            android:textColor="@color/text_primary"
+            app:backgroundTint="@color/dashboard_well"
+            app:icon="@drawable/restore"
+            app:iconSize="18dp"
+            app:iconTint="@color/dashboard_active" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/settings_trash_empty"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="13sp" />
-
-        </LinearLayout>
-
-        <!-- Government ID section -->
-        <LinearLayout
-            android:id="@+id/header_trash_ids"
-            android:layout_width="match_parent"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_bulk_delete"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/trash_section_ids"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/header_ids_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="12sp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/card_ids"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_dashboard_card"
-            android:orientation="vertical"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp">
-
-            <LinearLayout
-                android:id="@+id/container_ids"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-
-        </LinearLayout>
-
-        <!-- Bank Card section -->
-        <LinearLayout
-            android:id="@+id/header_trash_cards"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/trash_section_cards"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/header_cards_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="12sp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/card_cards"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_dashboard_card"
-            android:orientation="vertical"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp">
-
-            <LinearLayout
-                android:id="@+id/container_cards"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-
-        </LinearLayout>
-
-        <!-- Social Account section -->
-        <LinearLayout
-            android:id="@+id/header_trash_social"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/trash_section_social"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/header_social_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="12sp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/card_social"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_dashboard_card"
-            android:orientation="vertical"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp">
-
-            <LinearLayout
-                android:id="@+id/container_social"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-
-        </LinearLayout>
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:minHeight="48dp"
+            android:text="@string/trash_delete_forever"
+            android:textColor="@color/danger"
+            app:icon="@drawable/ic_delete"
+            app:iconSize="18dp"
+            app:iconTint="@color/danger"
+            app:strokeColor="@color/danger" />
 
     </LinearLayout>
 
-</androidx.core.widget.NestedScrollView>
+    <!-- Empty state: M3 filled card with icon well, title + supporting text. -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/empty_trash"
+        style="@style/Widget.Akin.DashboardCard"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <FrameLayout
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_dashboard_circle">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/trash_title"
+                    android:src="@drawable/ic_trash" />
+
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="@string/trash_empty_title"
+                android:textAppearance="@style/TextAppearance.Akin.CardTitle" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="@string/trash_empty_sub"
+                android:textAppearance="@style/TextAppearance.Akin.BodyMuted" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

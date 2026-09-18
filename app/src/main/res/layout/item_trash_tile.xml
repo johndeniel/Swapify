@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Trash gallery tile: centered icon well + title + subtitle, paired
+     two-per-row for every type (IDs, bank cards, social accounts).
+     Tapping toggles selection (badge + blue stroke). No real card faces
+     or sensitive values are shown — titles and masked hints only. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cell_card"
+    style="@style/Widget.Akin.DashboardCard"
+    android:layout_width="match_parent"
+    android:layout_height="172dp"
+    android:layout_margin="4dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/tile_icon"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@color/white"
+                android:scaleType="fitCenter"
+                app:contentPadding="7dp"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Akin.Rounded12" />
+
+            <TextView
+                android:id="@+id/tile_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.Akin.CardTitle" />
+
+            <TextView
+                android:id="@+id/tile_sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.Akin.BodyMuted" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/check_badge"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
+            android:background="@drawable/bg_check_badge"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/trash_restore"
+                android:src="@drawable/ic_check" />
+
+        </FrameLayout>
+
+    </FrameLayout>
+
+</com.google.android.material.card.MaterialCardView>
