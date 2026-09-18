@@ -442,7 +442,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
         TextView label = new TextView(GovermentIDFormActivity.this);
         label.setText(field.required ? field.label + " *" : field.label);
-        label.setTextColor(getResources().getColor(R.color.text_secondary, null));
+        label.setTextColor(getResources().getColor(R.color.dashboard_muted, null));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         wrap.addView(label);
 
@@ -451,7 +451,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         inputParams.topMargin = dp(8);
         input.setLayoutParams(inputParams);
-        input.setBackgroundResource(R.drawable.bg_card);
+        input.setBackgroundResource(R.drawable.bg_dashboard_card);
         input.setHint(field.hint);
         input.setHintTextColor(getResources().getColor(R.color.hint_text, null));
         input.setTextColor(getResources().getColor(R.color.text_primary, null));
@@ -500,7 +500,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
         TextView label = new TextView(GovermentIDFormActivity.this);
         label.setText(field.required ? field.label + " *" : field.label);
-        label.setTextColor(getResources().getColor(R.color.text_secondary, null));
+        label.setTextColor(getResources().getColor(R.color.dashboard_muted, null));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         wrap.addView(label);
 
@@ -511,7 +511,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         rowParams.topMargin = dp(8);
         row.setLayoutParams(rowParams);
-        row.setBackgroundResource(R.drawable.bg_card);
+        row.setBackgroundResource(R.drawable.bg_dashboard_card);
         int h = dp(16);
         int padV = dp(14);
         row.setPadding(h, padV, h, padV);
@@ -602,6 +602,18 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             if (!validateNationalIdFields(values, textInputs, dropdownValues)) {
                 return false;
             }
+        } else if (spec != null && IdTypeSpec.TYPE_PASSPORT.equalsIgnoreCase(spec.name)) {
+            if (!validatePassportFields(values, textInputs, dropdownValues)) {
+                return false;
+            }
+        } else if (spec != null && IdTypeSpec.TYPE_DRIVERS_LICENSE.equalsIgnoreCase(spec.name)) {
+            if (!validateDriversLicenseFields(values, textInputs, dropdownValues)) {
+                return false;
+            }
+        } else if (spec != null && IdTypeSpec.TYPE_SSS.equalsIgnoreCase(spec.name)) {
+            if (!validateSssFields(values, textInputs, dropdownValues)) {
+                return false;
+            }
         }
         for (IdTypeSpec.IdField f : spec.fields) {
             String v = values.get(f.key);
@@ -690,9 +702,74 @@ public class GovermentIDFormActivity extends AppCompatActivity {
     }
 
     /**
+     * Passport document rules: the shared 8-digit shapes for birth, issue and
+     * expiry (number presence is covered by the generic required pass).
+     * Fail-fast in field order, matching the other passes.
+     */
+    private boolean validatePassportFields(Map<String, String> values,
+                                           Map<String, EditText> textInputs,
+                                           Map<String, TextView> dropdownValues) {
+        String dobError = numericDateError("Date of Birth", values.get("birth_date"));
+        if (dobError != null) {
+            return failField(textInputs, dropdownValues, "birth_date", dobError);
+        }
+        String issueError = numericDateError("Date of Issue", values.get("issue_date"));
+        if (issueError != null) {
+            return failField(textInputs, dropdownValues, "issue_date", issueError);
+        }
+        String expiryError = numericDateError("Date of Expiry", values.get("expiry_date"));
+        if (expiryError != null) {
+            return failField(textInputs, dropdownValues, "expiry_date", expiryError);
+        }
+        return true;
+    }
+
+    /**
+     * Driver's License document rules: the shared 8-digit shapes for birth and
+     * expiry plus numeric-only serial (number presence is covered by the
+     * generic required pass). Fail-fast in field order, matching the passes.
+     */
+    private boolean validateDriversLicenseFields(Map<String, String> values,
+                                                 Map<String, EditText> textInputs,
+                                                 Map<String, TextView> dropdownValues) {
+        String dobError = numericDateError("Date of Birth", values.get("birth_date"));
+        if (dobError != null) {
+            return failField(textInputs, dropdownValues, "birth_date", dobError);
+        }
+        String expiryError = numericDateError("Expiry Date", values.get("expiry_date"));
+        if (expiryError != null) {
+            return failField(textInputs, dropdownValues, "expiry_date", expiryError);
+        }
+        String serialRaw = trimmed(values.get("serial_no"));
+        if (!serialRaw.isEmpty() && serialRaw.matches(".*[A-Za-z].*")) {
+            return failField(textInputs, dropdownValues, "serial_no",
+                    "Serial No. must contain numbers only (no letters)");
+        }
+        return true;
+    }
+    /**
+     * SSS document rules: 10-digit numeric SS number plus the shared 8-digit
+     * birth shape (other presence is covered by the generic required pass).
+     * Fail-fast in field order, matching the other passes.
+     */
+    private boolean validateSssFields(Map<String, String> values,
+                                      Map<String, EditText> textInputs,
+                                      Map<String, TextView> dropdownValues) {
+        String ssError = exactDigitNumberError("SS Number", values.get("ss_number"), 10);
+        if (ssError != null) {
+            return failField(textInputs, dropdownValues, "ss_number", ssError);
+        }
+
+        String dobError = numericDateError("Date of Birth", values.get("birth_date"));
+        if (dobError != null) {
+            return failField(textInputs, dropdownValues, "birth_date", dobError);
+        }
+        return true;
+    }
+    /**
      * Shared exact-length document-number rule (16-digit PSN, 12-digit TIN /
-     * PhilHealth No.): no alphabet, exactly the expected digit count. Returns
-     * the error message, or null when the value is acceptable.
+     * PhilHealth No., 10-digit SS number): no alphabet, exactly the expected
+     * digit count. Returns the error message, or null when acceptable.
      */
     private static String exactDigitNumberError(String label, String rawValue, int digits) {
         String raw = trimmed(rawValue);

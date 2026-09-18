@@ -156,40 +156,58 @@ public final class IdTypeSpec {
                 IdField.text("present_address", "Present Address", "Street, City", true, false, 120)
         )));
 
+        // Driver's License layout: license number + agency code share the top
+        // row, then name, address + nationality, and paired rows (sex + blood
+        // type, birth + expiry, weight + height, eye color + serial number,
+        // DL code + conditions). Every field required. The license number caps
+        // at 11 chars and regroups N01-23-456789 (3-2-6) on the face; the
+        // serial number is numeric-only; both dates are exactly 8 digits
+        // (YYYYMMDD) capped at 8 chars and dashed as YYYY-MM-DD on the face;
+        // text-led pairs use the explicit flag.
         list.add(new IdType(TYPE_DRIVERS_LICENSE, "license_no", Arrays.asList(
-                IdField.text("license_no", "License No.", "N01-23-456789", true, true, 20),
+                IdField.text("license_no", "License No.", "N0123456789", true, true, 11).pairedWithNext(),
+                IdField.text("agency_code", "Agency Code", "e.g. N01", true, false, 10),
                 IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
-                IdField.text("address", "Address", "Street, City", false, false, 120),
-                IdField.text("nationality", "Nationality", "Filipino", false, false, 40),
-                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
-                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
-                IdField.text("expiry_date", "Expiry Date", "YYYY-MM-DD", false, false, 10),
-                IdField.dropdown("blood_type", "Blood Type", false, BLOOD_OPTIONS),
-                IdField.text("restrictions", "Restrictions", "e.g. 1, 2", false, false, 20),
-                IdField.text("conditions", "Conditions", "e.g. A", false, false, 20)
+                IdField.text("address", "Address", "Street, City", true, false, 120).pairedWithNext(),
+                IdField.text("nationality", "Nationality", "Filipino", true, false, 40),
+                IdField.dropdown("sex", "Sex", true, SEX_OPTIONS),
+                IdField.dropdown("blood_type", "Blood Type", true, BLOOD_OPTIONS),
+                IdField.date("birth_date", "Date of Birth", "YYYYMMDD", true, 8),
+                IdField.date("expiry_date", "Expiry Date", "YYYYMMDD", true, 8),
+                IdField.text("weight", "Weight", "e.g. 70 kg", true, false, 10).pairedWithNext(),
+                IdField.text("height", "Height", "e.g. 170 cm", true, false, 10),
+                IdField.text("eye_color", "Eye Color", "e.g. Brown", true, false, 20).pairedWithNext(),
+                IdField.number("serial_no", "Serial No.", "e.g. 123456", true, false, 20),
+                IdField.text("dl_code", "DL Code", "e.g. B", true, false, 20).pairedWithNext(),
+                IdField.text("conditions", "Conditions", "e.g. A", true, false, 20)
         )));
 
+        // Passport layout: number + issuing authority share the top row, name,
+        // then paired rows (nationality + sex, birth + issue, birthplace +
+        // expiry). Every field required. All three dates are exactly 8 digits
+        // (YYYYMMDD) capped at 8 chars and dashed as YYYY-MM-DD on the face.
         list.add(new IdType(TYPE_PASSPORT, "passport_no", Arrays.asList(
-                IdField.text("passport_no", "Passport No.", "P1234567A", true, true, 20),
-                IdField.text("surname", "Surname", "Dela Cruz", true, false, 60),
-                IdField.text("given_names", "Given Names", "Juan", true, false, 80),
-                IdField.text("middle_name", "Middle Name", "Santos", false, false, 60),
-                IdField.text("nationality", "Nationality", "Filipino", false, false, 40),
-                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
-                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
-                IdField.text("place_of_birth", "Place of Birth", "Manila, PH", false, false, 80),
-                IdField.text("issue_date", "Date of Issue", "YYYY-MM-DD", false, false, 10),
-                IdField.text("expiry_date", "Date of Expiry", "YYYY-MM-DD", false, false, 10),
-                IdField.text("issuing_authority", "Issuing Authority", "DFA Manila", false, false, 60)
+                IdField.text("passport_no", "Passport No.", "P1234567A", true, true, 9).pairedWithNext(),
+                IdField.text("issuing_authority", "Issuing Authority", "DFA Manila", true, false, 60),
+                IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
+                IdField.text("nationality", "Nationality", "Filipino", true, false, 40).pairedWithNext(),
+                IdField.dropdown("sex", "Sex", true, SEX_OPTIONS),
+                IdField.date("birth_date", "Date of Birth", "YYYYMMDD", true, 8),
+                IdField.date("issue_date", "Date of Issue", "YYYYMMDD", true, 8),
+                IdField.text("place_of_birth", "Place of Birth", "Manila, PH", true, false, 80).pairedWithNext(),
+                IdField.date("expiry_date", "Date of Expiry", "YYYYMMDD", true, 8)
         )));
 
+        // SSS layout: number, name, then the paired birth + sex row, address
+        // stacked. Every field required. The SS number is exactly 10 digits
+        // capped at 10 chars on a numeric keyboard; birth is exactly 8 digits
+        // (YYYYMMDD) capped at 8 chars and dashed as YYYY-MM-DD on the face.
         list.add(new IdType(TYPE_SSS, "ss_number", Arrays.asList(
-                IdField.text("ss_number", "SS Number", "34-1234567-8", true, true, 14),
+                IdField.number("ss_number", "SS Number", "3412345678", true, true, 10),
                 IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
-                IdField.text("birth_date", "Date of Birth", "YYYY-MM-DD", false, false, 10),
-                IdField.dropdown("sex", "Sex", false, SEX_OPTIONS),
-                IdField.text("address", "Address", "Street, City", false, false, 120),
-                IdField.text("mobile_no", "Mobile No.", "09XX XXX XXXX", false, false, 20)
+                IdField.date("birth_date", "Date of Birth", "YYYYMMDD", true, 8),
+                IdField.dropdown("sex", "Sex", true, SEX_OPTIONS),
+                IdField.text("address", "Address", "Street, City", true, false, 120)
         )));
 
         // PhilHealth field contract: every field required; the short
@@ -454,6 +472,15 @@ public final class IdTypeSpec {
             return new FaceExtra("DATE OF ISSUE", displayDate(
                     firstNonEmpty(safe.get("dateOfIssue"), safe.get("issue_date"))));
         }
+        // Passport has no sex slot: its compact face pairs birth with expiry.
+        if (typeName != null && typeName.trim().equalsIgnoreCase(TYPE_PASSPORT)) {
+            return new FaceExtra("DATE OF EXPIRY", displayDate(safe.get("expiry_date")));
+        }
+        // Driver's License has no sex slot either: birth pairs with expiry,
+        // matching the form's side-by-side date row.
+        if (typeName != null && typeName.trim().equalsIgnoreCase(TYPE_DRIVERS_LICENSE)) {
+            return new FaceExtra("EXPIRY DATE", displayDate(safe.get("expiry_date")));
+        }
         // PhilHealth shows membership beside birth (no sex slot on its face),
         // matching the form's PhilHealth No. + Membership top row.
         if (typeName != null && typeName.trim().equalsIgnoreCase(TYPE_PHILHEALTH)) {
@@ -469,25 +496,20 @@ public final class IdTypeSpec {
         return s.trim();
     }
 
-    /** Card-face holder line: full name, or Given + Surname for passports. */
+    /** Card-face holder line: the type's full-name field, uppercased. */
     public static String displayName(IdType type, Map<String, String> fields) {
         Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
         // Name key varies by type: PhilHealth "fullName", TIN "fullname",
         // everything else "full_name". First non-blank wins.
         String full = firstNonEmpty(safe.get("fullName"), safe.get("fullname"), safe.get("full_name"));
-        if (nonEmpty(full)) {
-            return full.trim().toUpperCase();
-        }
-        String given = nonEmpty(safe.get("given_names")) ? safe.get("given_names").trim() : "";
-        String surname = nonEmpty(safe.get("surname")) ? safe.get("surname").trim() : "";
-        String combined = (given + " " + surname).trim();
-        return combined.isEmpty() ? "FULL NAME" : combined.toUpperCase();
+        return nonEmpty(full) ? full.trim().toUpperCase() : "FULL NAME";
     }
 
     /**
      * Card-face primary number. 12-digit numbers (TIN, PhilHealth No.) regroup
-     * as 111-111-111-111 and the 16-digit PSN as 1111-1111-1111-1111;
-     * everything else renders as stored.
+     * as 111-111-111-111, the 16-digit PSN as 1111-1111-1111-1111, the SS
+     * number as 34-1234567-8 (2-7-1), and the license number as N01-23-456789
+     * (3-2-6); everything else renders uppercased as stored.
      */
     public static String displayNumber(IdType spec, Map<String, String> fields) {
         Map<String, String> safe = fields != null ? fields : new LinkedHashMap<>();
@@ -502,7 +524,15 @@ public final class IdTypeSpec {
         if (spec != null && usesGrouped16Display(spec.name)) {
             return formatGrouped16(primary);
         }
-        return primary.trim();
+        if (spec != null && usesSssDisplay(spec.name)) {
+            return formatSssNumber(primary);
+        }
+        if (spec != null && usesLicenseDisplay(spec.name)) {
+            return formatLicenseNumber(primary);
+        }
+        // Document numbers render uppercase (passport "p1234567a" normalizes to
+        // "P1234567A"); pure-digit numbers are unaffected. Display-only.
+        return primary.trim().toUpperCase();
     }
 
     /** 12-digit document numbers (TIN, PhilHealth No.) group 3-3-3-3 on the face. */
@@ -514,6 +544,16 @@ public final class IdTypeSpec {
     /** The 16-digit PSN groups 4-4-4-4 on the face. */
     private static boolean usesGrouped16Display(String typeName) {
         return TYPE_NATIONAL_ID.equalsIgnoreCase(typeName);
+    }
+
+    /** The 10-digit SS number groups 2-7-1 (34-1234567-8) on the face. */
+    private static boolean usesSssDisplay(String typeName) {
+        return TYPE_SSS.equalsIgnoreCase(typeName);
+    }
+
+    /** The license number groups 3-2-6 (N01-23-456789) on the face. */
+    private static boolean usesLicenseDisplay(String typeName) {
+        return TYPE_DRIVERS_LICENSE.equalsIgnoreCase(typeName);
     }
 
     /**
@@ -543,6 +583,39 @@ public final class IdTypeSpec {
                     + "-" + digits.substring(8, 12) + "-" + digits.substring(12, 16);
         }
         return raw != null && !raw.trim().isEmpty() ? raw.trim() : "—";
+    }
+
+    /**
+     * Face grouping for the 10-digit SS number: 34-1234567-8 (2-7-1). Same
+     * contract as the other groupings — storage holds bare digits, grouping
+     * is presentational only, anything else passes through for validation.
+     */
+    public static String formatSssNumber(String raw) {
+        String digits = raw != null ? raw.replaceAll("\\D", "") : "";
+        if (digits.length() == 10) {
+            return digits.substring(0, 2) + "-" + digits.substring(2, 9)
+                    + "-" + digits.substring(9, 10);
+        }
+        return raw != null && !raw.trim().isEmpty() ? raw.trim() : "—";
+    }
+
+    /**
+     * Face grouping for the driver's license number: N01-23-456789 (3-2-6).
+     * Storage holds the bare 11 characters (the field caps at 11); grouping
+     * is presentational only and uppercases letters. Anything else passes
+     * through uppercased for validation to flag.
+     */
+    public static String formatLicenseNumber(String raw) {
+        String v = raw != null ? raw.trim() : "";
+        if (v.isEmpty()) {
+            return "—";
+        }
+        String compact = v.replaceAll("[\\s-]", "").toUpperCase();
+        if (compact.length() == 11) {
+            return compact.substring(0, 3) + "-" + compact.substring(3, 5)
+                    + "-" + compact.substring(5, 11);
+        }
+        return v.toUpperCase();
     }
 
     /**
