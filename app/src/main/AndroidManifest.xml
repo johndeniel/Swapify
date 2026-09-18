@@ -30,6 +30,9 @@
             android:name=".SettingsActivity"
             android:exported="false" />
         <activity
+            android:name=".TrashActivity"
+            android:exported="false" />
+        <activity
             android:name=".SocialAccountFormActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />

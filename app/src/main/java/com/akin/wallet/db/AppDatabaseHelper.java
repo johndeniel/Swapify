@@ -18,7 +18,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     // v7 adds audit timestamps to id_cards (created_at/updated_at), mirroring
     // bank_cards (v5) and logins (v6), so Government IDs sort newest-first.
     // v8 adds the mobile column to logins (contact number beside PIN).
-    private static final int DATABASE_VERSION = 8;
+    // v9 adds soft-delete (deleted_at) to logins/bank_cards/id_cards so
+    // deletes move to Trash (Settings) instead of vanishing. 0 = active.
+    private static final int DATABASE_VERSION = 9;
 
     private static final String TABLE_LOGINS = "logins";
     private static final String COL_ID = "id";
@@ -47,6 +49,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     // Epoch millis (INTEGER). Added in v5; older rows backfilled on upgrade.
     private static final String COL_CREATED_AT = "created_at";
     private static final String COL_UPDATED_AT = "updated_at";
+    // Soft-delete stamp (INTEGER epoch millis). 0/NULL = active, >0 = in Trash.
+    // Added in v9; deletes set this, Trash lists/restores/clears it.
+    private static final String COL_DELETED_AT = "deleted_at";
 
     private static final String TABLE_ID_CARDS = "id_cards";
     private static final String COL_ID_CARD_ID = "id";
@@ -69,7 +74,8 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_ICON_RES + " INTEGER, "
                 + COL_MOBILE + " TEXT DEFAULT '', "
                 + COL_CREATED_AT + " INTEGER DEFAULT 0, "
-                + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0, "
+                + COL_DELETED_AT + " INTEGER DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ASSOCIATIONS + " ("
                 + COL_LOGIN_ID + " INTEGER, "
                 + COL_ASSOCIATED_ID + " INTEGER, "
@@ -86,20 +92,23 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_CARD_PIN + " TEXT, "
                 + COL_DESIGN + " INTEGER, "
                 + COL_CREATED_AT + " INTEGER DEFAULT 0, "
-                + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0, "
+                + COL_DELETED_AT + " INTEGER DEFAULT 0)");
         db.execSQL(getCreateIdCardsSql());
     }
 
     private static String getCreateIdCardsSql() {
         // Audit columns live beside the row identity (id), never inside
         // fields_json — the JSON blob carries only per-type document data.
+        // deleted_at (v9) powers Trash; 0 means the ID is active.
         return "CREATE TABLE IF NOT EXISTS " + TABLE_ID_CARDS + " ("
                 + COL_ID_CARD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_ID_TYPE + " TEXT, "
                 + COL_ID_FIELDS_JSON + " TEXT, "
                 + COL_ID_DESIGN + " INTEGER, "
                 + COL_CREATED_AT + " INTEGER DEFAULT 0, "
-                + COL_UPDATED_AT + " INTEGER DEFAULT 0)";
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0, "
+                + COL_DELETED_AT + " INTEGER DEFAULT 0)";
     }
 
     @Override
@@ -114,7 +123,8 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_ICON_RES + " INTEGER, "
                 + COL_MOBILE + " TEXT DEFAULT '', "
                 + COL_CREATED_AT + " INTEGER DEFAULT 0, "
-                + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0, "
+                + COL_DELETED_AT + " INTEGER DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ASSOCIATIONS + " ("
                 + COL_LOGIN_ID + " INTEGER, "
                 + COL_ASSOCIATED_ID + " INTEGER, "
@@ -131,7 +141,8 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_CARD_PIN + " TEXT, "
                 + COL_DESIGN + " INTEGER, "
                 + COL_CREATED_AT + " INTEGER DEFAULT 0, "
-                + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
+                + COL_UPDATED_AT + " INTEGER DEFAULT 0, "
+                + COL_DELETED_AT + " INTEGER DEFAULT 0)");
         db.execSQL(getCreateIdCardsSql());
 
         // v5: timestamp columns on bank_cards. CREATE TABLE IF NOT EXISTS is a
@@ -179,6 +190,14 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         // v8: mobile column on logins (contact number beside PIN).
         if (oldVersion < 8) {
             addTextColumnIfMissing(db, TABLE_LOGINS, COL_MOBILE);
+        }
+
+        // v9: soft-delete stamp on all three vault tables. Active rows stay 0;
+        // deletes set epoch millis so Trash can list newest-deleted first.
+        if (oldVersion < 9) {
+            addColumnIfMissing(db, TABLE_LOGINS, COL_DELETED_AT);
+            addColumnIfMissing(db, TABLE_BANK_CARDS, COL_DELETED_AT);
+            addColumnIfMissing(db, TABLE_ID_CARDS, COL_DELETED_AT);
         }
     }
 
@@ -230,6 +249,8 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         long now = System.currentTimeMillis();
         cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
         cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
+        // Fresh rows are always active (not in Trash).
+        cv.put(COL_DELETED_AT, 0);
         long id = db.insert(TABLE_LOGINS, null, cv);
         db.close();
         return id;
@@ -238,9 +259,10 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     public List<CredentialItem> getAllLogins() {
         List<CredentialItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
+        // Active rows only: trashed rows live in Trash (Settings).
         // Newest-first by recency; id breaks ties (equal stamps, legacy rows).
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_LOGINS
-                + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_ID + " DESC", null);
+        Cursor cursor = queryActiveOrFallback(db, TABLE_LOGINS,
+                COL_UPDATED_AT + " DESC, " + COL_ID + " DESC");
         if (cursor.moveToFirst()) {
             // New columns may be absent on a DB that hasn't run the v6 upgrade
             // in a test harness; fall back to 0 instead of crashing.
@@ -266,6 +288,12 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         return list;
     }
 
+    /**
+     * Permanent delete: removes the row plus every association touching it.
+     * Used by Trash "delete forever" / "empty trash" and by the social edit
+     * save (delete+reinsert). User-facing deletes must call
+     * {@link #moveLoginToTrash(int)} instead so the item lands in Trash.
+     */
     public int deleteLogin(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_ASSOCIATIONS, COL_LOGIN_ID + "=? OR " + COL_ASSOCIATED_ID + "=?",
@@ -273,6 +301,70 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         int rows = db.delete(TABLE_LOGINS, COL_ID + "=?", new String[]{String.valueOf(id)});
         db.close();
         return rows;
+    }
+
+    /**
+     * Soft-delete: stamps deleted_at so the account disappears from the
+     * dashboard and appears in Settings > Trash. Associations are kept so a
+     * restore brings links back; permanent delete cleans them up.
+     */
+    public int moveLoginToTrash(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_DELETED_AT, System.currentTimeMillis());
+        int rows = db.update(TABLE_LOGINS, cv, COL_ID + "=?",
+                new String[]{String.valueOf(id)});
+        db.close();
+        return rows;
+    }
+
+    /** Restores a trashed account back to the dashboard (deleted_at = 0). */
+    public int restoreLogin(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_DELETED_AT, 0);
+        int rows = db.update(TABLE_LOGINS, cv, COL_ID + "=?",
+                new String[]{String.valueOf(id)});
+        db.close();
+        return rows;
+    }
+
+    /** Trashed social accounts, newest-deleted first. */
+    public List<CredentialItem> getTrashedLogins() {
+        List<CredentialItem> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_LOGINS
+                    + " WHERE " + COL_DELETED_AT + " IS NOT NULL AND "
+                    + COL_DELETED_AT + " != 0"
+                    + " ORDER BY " + COL_DELETED_AT + " DESC, " + COL_ID + " DESC", null);
+        } catch (Exception e) {
+            // Pre-v9 DB without the column: nothing can be trashed yet.
+            db.close();
+            return list;
+        }
+        if (cursor.moveToFirst()) {
+            int createdIdx = cursor.getColumnIndex(COL_CREATED_AT);
+            int updatedIdx = cursor.getColumnIndex(COL_UPDATED_AT);
+            int mobileIdx = cursor.getColumnIndex(COL_MOBILE);
+            do {
+                list.add(new CredentialItem(
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_PLATFORM)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_USERNAME)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_PASSWORD)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_PIN)),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ICON_RES)),
+                        mobileIdx != -1 ? cursor.getString(mobileIdx) : "",
+                        createdIdx != -1 ? cursor.getLong(createdIdx) : 0,
+                        updatedIdx != -1 ? cursor.getLong(updatedIdx) : 0
+                ));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return list;
     }
 
     /**
@@ -316,6 +408,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         long now = System.currentTimeMillis();
         cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
         cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
+        cv.put(COL_DELETED_AT, 0);
         long id = db.insert(TABLE_BANK_CARDS, null, cv);
         db.close();
         return id;
@@ -324,9 +417,10 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     public List<BankCardItem> getAllBankCards() {
         List<BankCardItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
+        // Active rows only; trashed cards live in Trash.
         // Newest-first by recency; id breaks ties (equal stamps, legacy rows).
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS
-                + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_CARD_ID + " DESC", null);
+        Cursor cursor = queryActiveOrFallback(db, TABLE_BANK_CARDS,
+                COL_UPDATED_AT + " DESC, " + COL_CARD_ID + " DESC");
         if (cursor.moveToFirst()) {
             // New columns may be absent on a DB that hasn't run the v5 upgrade
             // in a test harness; fall back to 0 instead of crashing.
@@ -384,6 +478,70 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * Soft-delete: moves the card to Trash (Settings). The dashboard hides it
+     * until restored or permanently deleted.
+     */
+    public int moveBankCardToTrash(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_DELETED_AT, System.currentTimeMillis());
+        int rows = db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
+                new String[]{String.valueOf(id)});
+        db.close();
+        return rows;
+    }
+
+    /** Restores a trashed card back to the dashboard. */
+    public int restoreBankCard(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_DELETED_AT, 0);
+        int rows = db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
+                new String[]{String.valueOf(id)});
+        db.close();
+        return rows;
+    }
+
+    /** Trashed bank cards, newest-deleted first. */
+    public List<BankCardItem> getTrashedBankCards() {
+        List<BankCardItem> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS
+                    + " WHERE " + COL_DELETED_AT + " IS NOT NULL AND "
+                    + COL_DELETED_AT + " != 0"
+                    + " ORDER BY " + COL_DELETED_AT + " DESC, " + COL_CARD_ID + " DESC", null);
+        } catch (Exception e) {
+            db.close();
+            return list;
+        }
+        if (cursor.moveToFirst()) {
+            int createdIdx = cursor.getColumnIndex(COL_CREATED_AT);
+            int updatedIdx = cursor.getColumnIndex(COL_UPDATED_AT);
+            do {
+                list.add(new BankCardItem(
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_CARD_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_TYPE)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_NETWORK)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_BANK_NAME)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_HOLDER_NAME)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_NUMBER)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_EXPIRY)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CVV)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_PIN)),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_DESIGN)),
+                        createdIdx != -1 ? cursor.getLong(createdIdx) : 0,
+                        updatedIdx != -1 ? cursor.getLong(updatedIdx) : 0
+                ));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return list;
+    }
+
+    /**
      * Marks a card as recently used without touching its data: bumps only
      * updated_at to now so newest-first ordering picks it up. Called on
      * dashboard tap; the list re-sorts on the next refresh.
@@ -410,6 +568,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         long now = System.currentTimeMillis();
         cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
         cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
+        cv.put(COL_DELETED_AT, 0);
         long id = db.insert(TABLE_ID_CARDS, null, cv);
         db.close();
         return id;
@@ -418,10 +577,11 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     public List<IdCardItem> getAllIdCards() {
         List<IdCardItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
+        // Active rows only; trashed IDs live in Trash.
         // Newest-first by recency, matching bank cards and logins; id breaks
         // ties (equal stamps, legacy rows).
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS
-                + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_ID_CARD_ID + " DESC", null);
+        Cursor cursor = queryActiveOrFallback(db, TABLE_ID_CARDS,
+                COL_UPDATED_AT + " DESC, " + COL_ID_CARD_ID + " DESC");
         if (cursor.moveToFirst()) {
             // New columns may be absent on a DB that hasn't run the v7 upgrade
             // in a test harness; fall back to 0 instead of crashing.
@@ -481,6 +641,91 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         int rows = db.delete(TABLE_ID_CARDS, COL_ID_CARD_ID + "=?", new String[]{String.valueOf(id)});
         db.close();
         return rows;
+    }
+
+    /**
+     * Soft-delete: moves the ID to Trash (Settings). The dashboard hides it
+     * until restored or permanently deleted.
+     */
+    public int moveIdCardToTrash(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_DELETED_AT, System.currentTimeMillis());
+        int rows = db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
+                new String[]{String.valueOf(id)});
+        db.close();
+        return rows;
+    }
+
+    /** Restores a trashed ID back to the dashboard. */
+    public int restoreIdCard(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_DELETED_AT, 0);
+        int rows = db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
+                new String[]{String.valueOf(id)});
+        db.close();
+        return rows;
+    }
+
+    /** Trashed government IDs, newest-deleted first. */
+    public List<IdCardItem> getTrashedIdCards() {
+        List<IdCardItem> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS
+                    + " WHERE " + COL_DELETED_AT + " IS NOT NULL AND "
+                    + COL_DELETED_AT + " != 0"
+                    + " ORDER BY " + COL_DELETED_AT + " DESC, " + COL_ID_CARD_ID + " DESC", null);
+        } catch (Exception e) {
+            db.close();
+            return list;
+        }
+        if (cursor.moveToFirst()) {
+            int createdIdx = cursor.getColumnIndex(COL_CREATED_AT);
+            int updatedIdx = cursor.getColumnIndex(COL_UPDATED_AT);
+            do {
+                list.add(new IdCardItem(
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_CARD_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_TYPE)),
+                        IdCardItem.parseFieldsJson(
+                                cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_FIELDS_JSON))),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_DESIGN)),
+                        createdIdx != -1 ? cursor.getLong(createdIdx) : 0,
+                        updatedIdx != -1 ? cursor.getLong(updatedIdx) : 0
+                ));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return list;
+    }
+
+    // ------------------------------------------------------------------
+    // Trash helpers
+    // ------------------------------------------------------------------
+
+    /**
+     * Active-rows query with pre-v9 fallback: if deleted_at is missing (old
+     * test DB that skipped the v9 upgrade), return every row instead of
+     * crashing — nothing can be trashed there yet.
+     */
+    private Cursor queryActiveOrFallback(SQLiteDatabase db, String table, String orderBy) {
+        try {
+            return db.rawQuery("SELECT * FROM " + table
+                    + " WHERE " + COL_DELETED_AT + " IS NULL OR " + COL_DELETED_AT + "=0"
+                    + " ORDER BY " + orderBy, null);
+        } catch (Exception e) {
+            return db.rawQuery("SELECT * FROM " + table + " ORDER BY " + orderBy, null);
+        }
+    }
+
+    /** Total items currently in Trash (all three vault tables). */
+    public int getTrashCount() {
+        return getTrashedLogins().size()
+                + getTrashedBankCards().size()
+                + getTrashedIdCards().size();
     }
 
     public List<Integer> getAssociations(long loginId) {

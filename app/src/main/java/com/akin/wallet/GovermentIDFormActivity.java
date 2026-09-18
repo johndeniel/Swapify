@@ -279,9 +279,10 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             finish();
         });
 
-        // Delete lives on this screen (no IDs tab), shown in-row in edit mode
+        // Delete on this screen (no IDs tab), shown in-row in edit mode
         // only — same placement and outline-red style as the bank card form.
-        // Dialog copy and toasts stay ID-specific; only the design is shared.
+        // Soft-delete behind the scenes: the dialog reads as a normal delete
+        // while the row moves to Trash (Settings). Copy and toasts stay ID-specific.
         View btnDelete = findViewById(R.id.btn_delete);
         if (isEdit) {
             btnDelete.setVisibility(View.VISIBLE);
@@ -290,7 +291,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                     .setMessage("Are you sure you want to delete this "
                             + existing.getIdType() + "?")
                     .setPositiveButton("Delete", (d, which) -> {
-                        dbHelper.deleteIdCard(existing.getId());
+                        dbHelper.moveIdCardToTrash(existing.getId());
                         setResult(RESULT_OK);
                         finish();
                         Toast.makeText(GovermentIDFormActivity.this,

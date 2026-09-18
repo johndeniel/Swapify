@@ -388,9 +388,11 @@ public class SocialAccountFormActivity extends AppCompatActivity {
             Toast.makeText(context, "Updated Successfully", Toast.LENGTH_SHORT).show();
         });
 
-        // Delete lives here in edit mode (the standalone list screen is gone),
-        // same in-row outline-red pattern as the bank and government ID forms.
-        // deleteLogin also clears this account's associations.
+        // Delete in edit mode (the standalone list screen is gone), same
+        // in-row outline-red pattern as the bank and government ID forms.
+        // Soft-delete behind the scenes: the row moves to Trash (Settings)
+        // but the dialog reads as a normal delete. deleteLogin stays for
+        // edit reinsert + Trash permanent delete only.
         View btnDelete = findViewById(R.id.btn_delete);
         btnDelete.setVisibility(View.VISIBLE);
         btnDelete.setOnClickListener(v -> new AlertDialog.Builder(SocialAccountFormActivity.this)
@@ -398,7 +400,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to delete this "
                         + item.getPlatform() + " account?")
                 .setPositiveButton("Delete", (d, which) -> {
-                    dbHelper.deleteLogin(item.getId());
+                    dbHelper.moveLoginToTrash(item.getId());
                     setResult(RESULT_OK);
                     finish();
                     Toast.makeText(SocialAccountFormActivity.this,

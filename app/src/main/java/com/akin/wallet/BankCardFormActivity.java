@@ -492,7 +492,7 @@ public class BankCardFormActivity extends AppCompatActivity {
         });
     }
 
-    /** Delete lives on this screen (no bank tab); edit mode shows it in-row. */
+    /** Delete on this screen (no bank tab); edit mode shows it in-row. Soft-deletes to Trash behind a normal delete dialog. */
     private void setupDeleteAction() {
         if (!isEdit) {
             return;
@@ -502,7 +502,7 @@ public class BankCardFormActivity extends AppCompatActivity {
                 .setTitle("Delete Card")
                 .setMessage("Are you sure you want to delete this card?")
                 .setPositiveButton("Delete", (d, which) -> {
-                    dbHelper.deleteBankCard(editingItem.getId());
+                    dbHelper.moveBankCardToTrash(editingItem.getId());
                     setResult(RESULT_OK);
                     finish();
                     Toast.makeText(this, "Deleted Successfully", Toast.LENGTH_SHORT).show();

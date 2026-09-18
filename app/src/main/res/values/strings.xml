@@ -73,6 +73,19 @@
     <string name="settings_biometric_unavailable">Not available on this device</string>
     <string name="settings_change_pin">Change app PIN</string>
     <string name="settings_change_pin_sub">Update your 4-digit PIN</string>
+    <!-- Trash (soft-deleted vault items) -->
+    <string name="settings_trash">Trash</string>
+    <string name="settings_trash_sub">Deleted IDs, cards and accounts</string>
+    <string name="settings_trash_empty">Empty</string>
+    <string name="trash_title">Trash</string>
+    <string name="trash_subtitle">Restore items or delete them forever</string>
+    <string name="trash_section_ids">Government ID</string>
+    <string name="trash_section_cards">Bank Card</string>
+    <string name="trash_section_social">Social Account</string>
+    <string name="trash_restore">Restore</string>
+    <string name="trash_delete_forever">Delete</string>
+    <string name="trash_restored">Restored</string>
+    <string name="trash_deleted_forever">Permanently deleted</string>
     <!-- Bottom-sheet titles and subtitles -->
     <!-- Bank card -->
     <string name="dialog_bank_title">Bank Card</string>
