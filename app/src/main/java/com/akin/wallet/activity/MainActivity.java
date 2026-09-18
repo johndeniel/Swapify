@@ -14,6 +14,7 @@ import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -32,7 +33,6 @@ import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.search.SearchBar;
 import com.google.android.material.search.SearchView;
 
 import java.util.ArrayList;
@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
     private String currentQuery = "";
     private static final String KEY_SEARCH_QUERY = "dashboard_search_query";
     private static final String KEY_SEARCH_OPEN = "dashboard_search_open";
-    private SearchBar searchBar;
     private SearchView searchView;
     private boolean searchShowing = false;
     private DashboardCardAdapter searchCardAdapter;
@@ -133,8 +132,8 @@ public class MainActivity extends AppCompatActivity {
             currentQuery = savedInstanceState.getString(KEY_SEARCH_QUERY, "");
             boolean open = savedInstanceState.getBoolean(KEY_SEARCH_OPEN, false);
             if (open && searchView != null) {
-                if (!currentQuery.isEmpty() && searchBar != null) {
-                    searchBar.setText(currentQuery);
+                if (!currentQuery.isEmpty()) {
+                    searchView.getEditText().setText(currentQuery);
                 }
                 setFabVisible(false);
                 searchView.post(() -> searchView.show());
@@ -222,31 +221,50 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Header button: settings opens Security preferences (biometrics live
-     * there). Search lives in the M3 SearchBar below (see setupSearch).
+     * Header buttons: search opens the M3 SearchView results, settings opens
+     * Security preferences (biometrics live there). Back closes search first.
      */
     private void setupHeader() {
         headerIds = findViewById(R.id.header_ids);
         headerCards = findViewById(R.id.header_cards);
         headerSocial = findViewById(R.id.header_social);
 
+        View btnSearch = findViewById(R.id.btn_header_search);
+        if (btnSearch != null) {
+            btnSearch.setOnClickListener(v -> {
+                if (searchView != null) {
+                    searchView.show();
+                }
+            });
+        }
         View btnSettings = findViewById(R.id.btn_header_settings);
         if (btnSettings != null) {
             btnSettings.setOnClickListener(
                     v -> startActivity(new Intent(this, SettingsActivity.class)));
         }
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (searchShowing && searchView != null) {
+                    searchView.hide();
+                } else {
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        });
     }
 
     /**
-     * M3 Search: the bar expands the full-screen SearchView (back handling
-     * included via setupWithSearchBar). Typing filters the master lists into
-     * the SearchView's own result lists; the dashboard behind stays whole.
-     * The FAB hides while results cover the screen.
+     * M3 Search: the full-screen SearchView (toolbar back + field + clear
+     * built in), opened from the header search icon. Typing filters the
+     * master lists into its own result lists; the dashboard behind stays
+     * whole. The FAB hides while results cover the screen.
      */
     private void setupSearch() {
-        searchBar = findViewById(R.id.search_bar);
         searchView = findViewById(R.id.search_view);
-        if (searchBar == null || searchView == null) {
+        if (searchView == null) {
             return;
         }
 
@@ -277,7 +295,6 @@ public class MainActivity extends AppCompatActivity {
         emptySearchResults = findViewById(R.id.empty_search_results);
         emptySearchSub = findViewById(R.id.empty_search_sub);
 
-        searchView.setupWithSearchBar(searchBar);
         searchView.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -300,6 +317,9 @@ public class MainActivity extends AppCompatActivity {
                     toggleAddMenu();
                 }
                 setFabVisible(false);
+                // Re-filter on open (covers rotation restore: the query is
+                // set before show, masters load separately).
+                updateSearchResults();
             } else if (newState == SearchView.TransitionState.HIDDEN) {
                 searchShowing = false;
                 setFabVisible(true);
