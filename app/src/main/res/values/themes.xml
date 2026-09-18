@@ -12,10 +12,6 @@
     </style>
     <style name="Theme.AkinWallet" parent="Base.Theme.AkinWallet" />
 
-    <style name="NoIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">@color/brand_blue</item>
-    </style>
-
     <!-- True-circle overlay for the dashboard FAB (M3 default is a squircle). -->
     <style name="ShapeAppearanceOverlay.Circle" parent="">
         <item name="cornerFamily">rounded</item>
