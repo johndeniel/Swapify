@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.akin.wallet.R;
 import com.akin.wallet.adapter.PlatformSelectionAdapter;
 import com.akin.wallet.model.PlatformIcons;
+import com.google.android.material.appbar.MaterialToolbar;
 
 /**
  * Full-screen platform picker. Returns the chosen platform icon and name;
@@ -27,6 +28,9 @@ public class PlatformPickerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_social_platform);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         RecyclerView recyclerPlatforms = findViewById(R.id.recycler_platforms);
         recyclerPlatforms.setLayoutManager(new LinearLayoutManager(this));

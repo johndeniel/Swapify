@@ -26,6 +26,7 @@ import com.akin.wallet.R;
 import com.akin.wallet.adapter.BankCardDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
+import com.google.android.material.appbar.MaterialToolbar;
 
 public class BankCardFormActivity extends AppCompatActivity {
 
@@ -131,7 +132,8 @@ public class BankCardFormActivity extends AppCompatActivity {
 
         dbHelper = new AppDatabaseHelper(this);
 
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         if (savedInstanceState != null) {
             // Restore picker state before binding; invalid values fall back to 0.

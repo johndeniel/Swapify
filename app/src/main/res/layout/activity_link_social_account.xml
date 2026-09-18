@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/bg_dashboard_root"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:padding="24dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/dialog_link_title"
-        android:textColor="@color/text_primary"
-        android:textSize="20sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/dialog_link_subtitle"
-        android:textColor="@color/text_secondary"
-        android:textSize="14sp"
-        android:layout_marginBottom="16dp" />
+    <!-- M3 small top app bar: back plus the existing title block. -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="-12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@android:color/transparent"
+        app:contentInsetStart="0dp"
+        app:contentInsetStartWithNavigation="0dp"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:subtitle="@string/dialog_link_subtitle"
+        app:subtitleTextAppearance="@style/TextAppearance.Akin.ToolbarSubtitle"
+        app:title="@string/dialog_link_title"
+        app:titleMarginStart="12dp"
+        app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
 
     <!-- Search bar, identical sizing to the platform picker. -->
     <LinearLayout

@@ -31,6 +31,7 @@ import com.akin.wallet.adapter.IdCardDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.IdTypeSpec;
+import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -78,7 +79,8 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         dbHelper = new AppDatabaseHelper(this);
 
         // Back chevron, same as the bank card form: plain finish, no save.
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id == -1) {

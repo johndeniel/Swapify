@@ -14,6 +14,7 @@ import com.akin.wallet.R;
 import com.akin.wallet.adapter.LinkedAccountAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.CredentialItem;
+import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,9 @@ public class LinkAccountPickerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_link_social_account);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         int[] ids = getIntent().getIntArrayExtra(EXTRA_AVAILABLE_IDS);
 

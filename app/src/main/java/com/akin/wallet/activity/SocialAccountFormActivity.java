@@ -25,6 +25,7 @@ import com.akin.wallet.adapter.LinkedAccountAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.PlatformIcons;
+import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,7 +141,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         dbHelper = new AppDatabaseHelper(this);
 
         // Back chevron, same as the bank and government ID forms.
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         long id = getIntent().getLongExtra(EXTRA_LOGIN_ID, -1);
         if (id == -1) {
