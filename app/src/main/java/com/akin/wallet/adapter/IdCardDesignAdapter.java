@@ -38,7 +38,7 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         return types.size();
     }
 
-    public String getTypeAt(int position) {
+    private String getTypeAt(int position) {
         if (position < 0 || position >= types.size()) {
             return types.get(0).name;
         }
