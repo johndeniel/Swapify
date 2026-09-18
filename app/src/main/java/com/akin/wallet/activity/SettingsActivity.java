@@ -11,7 +11,6 @@ import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
 import com.akin.wallet.R;
-import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.security.AppLockManager;
 import com.google.android.material.appbar.MaterialToolbar;
 
@@ -27,22 +26,17 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView biometricStatus;
     private BiometricPrompt confirmPrompt;
     private boolean confirming;
-    private AppDatabaseHelper dbHelper;
-    private TextView trashCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        dbHelper = new AppDatabaseHelper(this);
-
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
         biometricSwitch = findViewById(R.id.switch_biometric);
         biometricStatus = findViewById(R.id.biometric_status);
-        trashCount = findViewById(R.id.trash_count);
 
         boolean available = AppLockManager.isBiometricAvailable(this);
         boolean enabled = AppLockManager.isBiometricEnabled(this) && available;
@@ -77,39 +71,6 @@ public class SettingsActivity extends AppCompatActivity {
         findViewById(R.id.row_terms).setOnClickListener(v ->
                 startActivity(new Intent(this, PolicyActivity.class)
                         .putExtra(PolicyActivity.EXTRA_TYPE, PolicyActivity.TYPE_TERMS)));
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        refreshTrashCount();
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (dbHelper != null) {
-            dbHelper.close();
-        }
-        super.onDestroy();
-    }
-
-    /** Trash badge: live count so users see restorable items at a glance. */
-    private void refreshTrashCount() {
-        if (trashCount == null || dbHelper == null) {
-            return;
-        }
-        int count = 0;
-        try {
-            count = dbHelper.getTrashCount();
-        } catch (Exception ignored) {
-        }
-        if (count <= 0) {
-            trashCount.setText(R.string.settings_trash_empty);
-        } else if (count == 1) {
-            trashCount.setText("1 item");
-        } else {
-            trashCount.setText(count + " items");
-        }
     }
 
     @Override

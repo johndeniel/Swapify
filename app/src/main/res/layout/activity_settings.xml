@@ -223,15 +223,6 @@
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/trash_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/settings_trash_sub"
-                    android:textColor="@color/dashboard_muted"
-                    android:textSize="12sp" />
-
             </LinearLayout>
 
             <ImageView
@@ -305,14 +296,6 @@
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/settings_privacy_sub"
-                    android:textColor="@color/dashboard_muted"
-                    android:textSize="12sp" />
-
             </LinearLayout>
 
             <ImageView
@@ -368,14 +351,6 @@
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/settings_terms_sub"
-                    android:textColor="@color/dashboard_muted"
-                    android:textSize="12sp" />
 
             </LinearLayout>
 

@@ -30,8 +30,6 @@
             app:contentInsetStart="0dp"
             app:contentInsetStartWithNavigation="0dp"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:subtitle="@string/policy_updated"
-            app:subtitleTextAppearance="@style/TextAppearance.Akin.ToolbarSubtitle"
             app:title="@string/settings_privacy"
             app:titleMarginStart="12dp"
             app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />

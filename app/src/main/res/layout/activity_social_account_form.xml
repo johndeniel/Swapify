@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Social account form: dashboard-navy theme (bg_dashboard_root,
      bg_dashboard_card rows, dashboard_muted labels) shared with the bank and
-     government ID forms. Back chevron on top, no title block — the platform
-     row names the account. Twin outline action row (save + edit-only delete)
+     government ID forms. M3 toolbar with back + title, same insets as
+     Settings. Twin outline action row (save + edit-only delete)
      copied from the bank card form; keep the rows in sync. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -21,7 +21,8 @@
     android:paddingTop="16dp"
     android:paddingBottom="24dp">
 
-    <!-- M3 small top app bar, back action only: no title text. -->
+    <!-- M3 small top app bar: 64dp, nav icon + title. Same insets as Settings
+         so all headers match. -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -30,7 +31,10 @@
         android:background="@android:color/transparent"
         app:contentInsetStart="0dp"
         app:contentInsetStartWithNavigation="0dp"
-        app:navigationIcon="@drawable/ic_arrow_back" />
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/dialog_social_title"
+        app:titleMarginStart="12dp"
+        app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
 
     <TextView
         android:layout_width="wrap_content"

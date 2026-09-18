@@ -16,7 +16,8 @@
         android:paddingTop="16dp"
         android:paddingBottom="24dp">
 
-        <!-- M3 small top app bar, back action only: no title text. -->
+        <!-- M3 small top app bar: 64dp, nav icon + title. Same insets as Settings
+             so all headers match. -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -25,7 +26,10 @@
             android:background="@android:color/transparent"
             app:contentInsetStart="0dp"
             app:contentInsetStartWithNavigation="0dp"
-            app:navigationIcon="@drawable/ic_arrow_back" />
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:title="@string/dialog_bank_title"
+            app:titleMarginStart="12dp"
+            app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_card_design"
