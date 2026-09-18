@@ -35,7 +35,7 @@
     <!-- Search -->
     <string name="search_hint">Search account\u2026</string>
     <string name="hint_search_platforms">Search platforms…</string>
-
+    <string name="hint_search_accounts">Search accounts…</string>
     <!-- Bottom-sheet titles and subtitles -->
     <!-- Bank card -->
     <string name="dialog_bank_title">Bank Card</string>
@@ -62,6 +62,7 @@
     <string name="field_username">Username</string>
     <string name="field_password">Password</string>
     <string name="field_pin">PIN</string>
+    <string name="field_mobile">Mobile Number</string>
     <string name="field_card_type">Card Type</string>
     <string name="field_card_network">Card Network</string>
     <string name="field_bank_name">Bank Name</string>
@@ -77,6 +78,7 @@
     <string name="hint_card_number">1234 5678 9012 1233</string>
     <string name="hint_expiry">MMYY</string>
     <string name="hint_cvv">123</string>
+    <string name="hint_mobile">09XX XXX XXXX</string>
     <string name="default_card_type">Debit</string>
     <string name="default_card_network">Visa</string>
 

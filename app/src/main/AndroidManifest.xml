@@ -22,10 +22,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SocialAccountActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
             android:name=".SocialAccountFormActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />

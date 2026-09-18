@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -42,6 +43,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     public static final String EXTRA_USERNAME = "extra_username";
     public static final String EXTRA_PASSWORD = "extra_password";
     public static final String EXTRA_PIN = "extra_pin";
+    public static final String EXTRA_MOBILE = "extra_mobile";
     public static final String EXTRA_ICON_RES = "extra_icon_res";
     public static final String EXTRA_CREATED_AT = "extra_created_at";
     public static final String EXTRA_UPDATED_AT = "extra_updated_at";
@@ -51,7 +53,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
     /**
      * Intent that opens this form to edit an existing credential. Single
-     * packing site so Dashboard and View All can't drift apart.
+     * packing site so all callers carry the same extras (timestamps ride
+     * top-level, never inside another field).
      */
     public static Intent editIntent(@NonNull Context context,
                                     @NonNull CredentialItem item) {
@@ -61,6 +64,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         edit.putExtra(EXTRA_USERNAME, item.getUsername());
         edit.putExtra(EXTRA_PASSWORD, item.getPassword());
         edit.putExtra(EXTRA_PIN, item.getPin());
+        edit.putExtra(EXTRA_MOBILE, item.getMobile());
         edit.putExtra(EXTRA_ICON_RES, item.getIconRes());
         edit.putExtra(EXTRA_CREATED_AT, item.getCreatedAt());
         edit.putExtra(EXTRA_UPDATED_AT, item.getUpdatedAt());
@@ -73,6 +77,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     private ImageView platformIcon;
     private TextView platformName;
     private LinearLayout associateSection;
+    private RecyclerView recyclerLinked;
+    private TextView emptyLinked;
     private List<CredentialItem> linkPool = new ArrayList<>();
     private List<CredentialItem> linkedItems = new ArrayList<>();
     private LinkedAccountAdapter linkedAdapter;
@@ -117,11 +123,10 @@ public class SocialAccountFormActivity extends AppCompatActivity {
                         if (!dup) {
                             linkedItems.add(c);
                             if (linkedAdapter != null) {
+                                linkedAdapter.onExternalAdd(c);
                                 linkedAdapter.notifyItemInserted(linkedItems.size() - 1);
                             }
-                            if (associateSection != null) {
-                                associateSection.setVisibility(View.VISIBLE);
-                            }
+                            refreshLinkedVisibility();
                         }
                         break;
                     }
@@ -135,6 +140,9 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
         dbHelper = new AppDatabaseHelper(this);
 
+        // Back chevron, same as the bank and government ID forms.
+        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+
         long id = getIntent().getLongExtra(EXTRA_LOGIN_ID, -1);
         if (id == -1) {
             bindAddForm();
@@ -147,6 +155,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
                     getIntent().getStringExtra(EXTRA_PIN),
                     getIntent().getIntExtra(EXTRA_ICON_RES,
                             PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME)),
+                    getIntent().getStringExtra(EXTRA_MOBILE),
                     getIntent().getLongExtra(EXTRA_CREATED_AT, 0),
                     getIntent().getLongExtra(EXTRA_UPDATED_AT, 0));
             bindEditForm(item);
@@ -189,18 +198,29 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
         setupAssociateSection(dbHelper.getAllLogins(), -1);
 
+        // Add mode keeps a single full-width Save button, same as the bank
+        // form: the delete view is GONE, so its row margin is dropped.
+        View btnSaveAdd = findViewById(R.id.btn_save);
+        LinearLayout.LayoutParams saveParams =
+                (LinearLayout.LayoutParams) btnSaveAdd.getLayoutParams();
+        saveParams.setMarginEnd(0);
+        btnSaveAdd.setLayoutParams(saveParams);
+
         findViewById(R.id.btn_save).setOnClickListener(v -> {
             EditText inputUsername = findViewById(R.id.input_username);
             String username = inputUsername.getText().toString().trim();
             String password = inputPassword.getText().toString().trim();
             String pin = inputPin.getText().toString().trim();
+            EditText inputMobile = findViewById(R.id.input_mobile);
+            String mobile = inputMobile.getText().toString().trim();
 
             if (username.isEmpty()) {
                 inputUsername.setError("Username required");
                 return;
             }
 
-                CredentialItem newitem = new CredentialItem(selectedName, username, password, pin, selectedIcon);
+                CredentialItem newitem = new CredentialItem(selectedName, username, password, pin,
+                        selectedIcon, mobile, 0, 0);
                 long newId = dbHelper.insertLogin(newitem);
 
                 for (CredentialItem linked : linkedItems) {
@@ -221,7 +241,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         linkSelfId = selfId;
         linkedItems = new ArrayList<>();
         associateSection = findViewById(R.id.associate_section);
-        RecyclerView recyclerLinked = findViewById(R.id.recycler_linked);
+        recyclerLinked = findViewById(R.id.recycler_linked);
+        emptyLinked = findViewById(R.id.empty_linked);
 
         if (selfId != -1) {
             List<Integer> currentAssocIds = dbHelper.getAssociations(selfId);
@@ -235,50 +256,62 @@ public class SocialAccountFormActivity extends AppCompatActivity {
             }
         }
 
-        if (linkPool.isEmpty()) {
-            associateSection.setVisibility(View.GONE);
-        } else {
-            associateSection.setVisibility(View.VISIBLE);
+        // The section always stays on screen: an empty link set shows the
+        // muted empty line inside the card (Add stays reachable) instead of
+        // the whole section vanishing.
+        associateSection.setVisibility(View.VISIBLE);
 
-            linkedAdapter = new LinkedAccountAdapter(linkedItems, true, (linkedItem, isRemove) -> {
-                if (linkedItems.isEmpty()) {
-                    associateSection.setVisibility(View.GONE);
+        linkedAdapter = new LinkedAccountAdapter(linkedItems, true,
+                (linkedItem, isRemove) -> refreshLinkedVisibility());
+        recyclerLinked.setLayoutManager(new LinearLayoutManager(this));
+        recyclerLinked.setAdapter(linkedAdapter);
+        refreshLinkedVisibility();
+
+        findViewById(R.id.btn_add_associate).setOnClickListener(v -> {
+            List<CredentialItem> available = new ArrayList<>();
+            for (CredentialItem existing : linkPool) {
+                if (existing.getId() == linkSelfId) {
+                    continue;
                 }
-            });
-            recyclerLinked.setLayoutManager(new LinearLayoutManager(this));
-            recyclerLinked.setAdapter(linkedAdapter);
-
-            findViewById(R.id.btn_add_associate).setOnClickListener(v -> {
-                List<CredentialItem> available = new ArrayList<>();
-                for (CredentialItem existing : linkPool) {
-                    if (existing.getId() == linkSelfId) {
-                        continue;
-                    }
-                    boolean alreadyLinked = false;
-                    for (CredentialItem linked : linkedItems) {
-                        if (linked.getId() == existing.getId()) {
-                            alreadyLinked = true;
-                            break;
-                        }
-                    }
-                    if (!alreadyLinked) {
-                        available.add(existing);
+                boolean alreadyLinked = false;
+                for (CredentialItem linked : linkedItems) {
+                    if (linked.getId() == existing.getId()) {
+                        alreadyLinked = true;
+                        break;
                     }
                 }
-
-                if (available.isEmpty()) {
-                    Toast.makeText(this, "All accounts already linked", Toast.LENGTH_SHORT).show();
-                    return;
+                if (!alreadyLinked) {
+                    available.add(existing);
                 }
+            }
 
-                int[] ids = new int[available.size()];
-                for (int i = 0; i < available.size(); i++) {
-                    ids[i] = available.get(i).getId();
-                }
-                Intent link = new Intent(this, LinkAccountPickerActivity.class);
-                link.putExtra(LinkAccountPickerActivity.EXTRA_AVAILABLE_IDS, ids);
-                linkPickerLauncher.launch(link);
-            });
+            if (available.isEmpty()) {
+                Toast.makeText(this, "All accounts already linked", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int[] ids = new int[available.size()];
+            for (int i = 0; i < available.size(); i++) {
+                ids[i] = available.get(i).getId();
+            }
+            Intent link = new Intent(this, LinkAccountPickerActivity.class);
+            link.putExtra(LinkAccountPickerActivity.EXTRA_AVAILABLE_IDS, ids);
+            linkPickerLauncher.launch(link);
+        });
+    }
+
+    /**
+     * Empty-state toggle for the associate card: muted line when nothing is
+     * linked, rows otherwise. The section header (and its Add pill) stays
+     * visible in both states.
+     */
+    private void refreshLinkedVisibility() {
+        boolean empty = linkedItems == null || linkedItems.isEmpty();
+        if (emptyLinked != null) {
+            emptyLinked.setVisibility(empty ? View.VISIBLE : View.GONE);
+        }
+        if (recyclerLinked != null) {
+            recyclerLinked.setVisibility(empty ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -287,12 +320,13 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
         platformIcon = findViewById(R.id.platform_icon);
         platformName = findViewById(R.id.platform_name);
-        TextView btnSave = findViewById(R.id.btn_save);
+        TextView textSaveLabel = findViewById(R.id.text_save_label);
         EditText inputUsername = findViewById(R.id.input_username);
         EditText inputPassword = findViewById(R.id.input_password);
         EditText inputPin = findViewById(R.id.input_pin);
+        EditText inputMobile = findViewById(R.id.input_mobile);
 
-        btnSave.setText("Update");
+        textSaveLabel.setText("Update");
 
         selectedIcon = PlatformIcons.iconFor(item.getPlatform(), item.getIconRes());
         selectedName = item.getPlatform();
@@ -301,6 +335,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         inputUsername.setText(item.getUsername());
         inputPassword.setText(item.getPassword());
         inputPin.setText(item.getPin());
+        inputMobile.setText(item.getMobile());
 
         findViewById(R.id.platform_selector).setOnClickListener(v ->
                 platformPickerLauncher.launch(new Intent(this, PlatformPickerActivity.class)));
@@ -329,6 +364,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
             String username = inputUsername.getText().toString().trim();
             String password = inputPassword.getText().toString().trim();
             String pin = inputPin.getText().toString().trim();
+            String mobile = inputMobile.getText().toString().trim();
 
             if (username.isEmpty()) {
                 inputUsername.setError("Username required");
@@ -340,7 +376,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
             // Edit is delete+reinsert (new row id): carry createdAt across so
             // history survives; updatedAt=0 tells insert to stamp now.
             CredentialItem updated = new CredentialItem(selectedName, username, password, pin,
-                    selectedIcon, item.getCreatedAt(), 0);
+                    selectedIcon, mobile, item.getCreatedAt(), 0);
             long newId = dbHelper.insertLogin(updated);
 
             for (CredentialItem linked : linkedItems) {
@@ -351,6 +387,25 @@ public class SocialAccountFormActivity extends AppCompatActivity {
             finish();
             Toast.makeText(context, "Updated Successfully", Toast.LENGTH_SHORT).show();
         });
+
+        // Delete lives here in edit mode (the standalone list screen is gone),
+        // same in-row outline-red pattern as the bank and government ID forms.
+        // deleteLogin also clears this account's associations.
+        View btnDelete = findViewById(R.id.btn_delete);
+        btnDelete.setVisibility(View.VISIBLE);
+        btnDelete.setOnClickListener(v -> new AlertDialog.Builder(SocialAccountFormActivity.this)
+                .setTitle("Delete Account")
+                .setMessage("Are you sure you want to delete this "
+                        + item.getPlatform() + " account?")
+                .setPositiveButton("Delete", (d, which) -> {
+                    dbHelper.deleteLogin(item.getId());
+                    setResult(RESULT_OK);
+                    finish();
+                    Toast.makeText(SocialAccountFormActivity.this,
+                            "Deleted Successfully", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show());
 
     }
 }

@@ -2,6 +2,9 @@ package com.akin.wallet;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -46,11 +49,22 @@ public class LinkAccountPickerActivity extends AppCompatActivity {
 
         RecyclerView recyclerAccounts = findViewById(R.id.recycler_accounts);
         recyclerAccounts.setLayoutManager(new LinearLayoutManager(this));
-        recyclerAccounts.setAdapter(new LinkedAccountAdapter(shown, false, (pickedItem, isRemove) -> {
+        LinkedAccountAdapter linkAdapter = new LinkedAccountAdapter(shown, false, (pickedItem, isRemove) -> {
             Intent data = new Intent();
             data.putExtra(EXTRA_ACCOUNT_ID, pickedItem.getId());
             setResult(RESULT_OK, data);
             finish();
-        }));
+        });
+        recyclerAccounts.setAdapter(linkAdapter);
+
+        // Search mirrors the platform picker: case-insensitive filter on tap.
+        EditText searchAccounts = findViewById(R.id.search_accounts);
+        searchAccounts.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                linkAdapter.getFilter().filter(s);
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
     }
 }

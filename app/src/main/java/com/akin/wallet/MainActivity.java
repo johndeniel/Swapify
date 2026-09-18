@@ -73,8 +73,6 @@ public class MainActivity extends AppCompatActivity {
         setupSocialAccounts();
         setupAddMenu();
 
-        findViewById(R.id.btn_view_all_social).setOnClickListener(v -> goTo(R.id.nav_social_account));
-
         refreshDashboard();
     }
 
@@ -124,13 +122,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /** Social Account lives outside the single-screen host: open it directly. */
-    private void goTo(int navId) {
-        if (navId == R.id.nav_social_account) {
-            startActivity(new Intent(this, SocialAccountActivity.class));
-        }
-    }
-
     /** Extended FAB: round main button expanding the 3-option menu above it. */
     private void setupAddMenu() {
         fabAdd = findViewById(R.id.fab_add);
@@ -149,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
         }
         findViewById(R.id.fab_option_id).setOnClickListener(v -> openIdCreator());
         findViewById(R.id.fab_option_card).setOnClickListener(v -> openBankCreator());
-        findViewById(R.id.fab_option_login).setOnClickListener(v -> addNew(R.id.nav_social_account));
+        findViewById(R.id.fab_option_login).setOnClickListener(v -> openSocialCreator());
     }
 
     private void toggleAddMenu() {
@@ -205,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /** Opens a social edit form directly (only View All opens the account screen). */
+    /** Opens a social edit form directly (dashboard rows open the editor). */
     private void openSocialEditor(CredentialItem item) {
         dbHelper.touchLoginUpdatedAt(item.getId());
         startActivity(SocialAccountFormActivity.editIntent(this, item));
@@ -249,14 +240,12 @@ public class MainActivity extends AppCompatActivity {
         startActivity(BankCardFormActivity.editIntent(this, item));
     }
 
-    /** Opens the login creation form directly (full screen, no navigation). */
-    private void addNew(int navId) {
+    /** Opens the login creation form directly (dashboard rows open the editor). */
+    private void openSocialCreator() {
         if (isFabMenuOpen) {
             toggleAddMenu();
         }
-        if (navId == R.id.nav_social_account) {
-            startActivity(new Intent(this, SocialAccountFormActivity.class));
-        }
+        startActivity(new Intent(this, SocialAccountFormActivity.class));
     }
 
     /** Horizontal snap carousel rendering the user's real bank cards. */
@@ -381,13 +370,13 @@ public class MainActivity extends AppCompatActivity {
         recyclerSocialAccounts = findViewById(R.id.recycler_social_accounts);
         emptySocialAccounts = findViewById(R.id.empty_social_accounts);
 
-        // Row taps intentionally do nothing for now (edit flow to be decided later).
-        socialAdapter = new DashboardSocialAccountAdapter(item -> { });
+        // Row taps open the account's edit form, same as the IDs and cards above.
+        socialAdapter = new DashboardSocialAccountAdapter(this::openSocialEditor);
         recyclerSocialAccounts.setLayoutManager(new LinearLayoutManager(this));
         recyclerSocialAccounts.setAdapter(socialAdapter);
 
         if (emptySocialAccounts != null) {
-            emptySocialAccounts.setOnClickListener(v -> addNew(R.id.nav_social_account));
+            emptySocialAccounts.setOnClickListener(v -> openSocialCreator());
         }
     }
 

@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/dark_bg"
+    android:background="@drawable/bg_dashboard_root"
     android:padding="24dp">
 
     <TextView

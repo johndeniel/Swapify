@@ -17,7 +17,8 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "akin_wallet.db";
     // v7 adds audit timestamps to id_cards (created_at/updated_at), mirroring
     // bank_cards (v5) and logins (v6), so Government IDs sort newest-first.
-    private static final int DATABASE_VERSION = 7;
+    // v8 adds the mobile column to logins (contact number beside PIN).
+    private static final int DATABASE_VERSION = 8;
 
     private static final String TABLE_LOGINS = "logins";
     private static final String COL_ID = "id";
@@ -26,6 +27,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_PASSWORD = "password";
     private static final String COL_PIN = "pin";
     private static final String COL_ICON_RES = "icon_res";
+    private static final String COL_MOBILE = "mobile";
 
     private static final String TABLE_ASSOCIATIONS = "associations";
     private static final String COL_LOGIN_ID = "login_id";
@@ -65,6 +67,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_PASSWORD + " TEXT, "
                 + COL_PIN + " TEXT, "
                 + COL_ICON_RES + " INTEGER, "
+                + COL_MOBILE + " TEXT DEFAULT '', "
                 + COL_CREATED_AT + " INTEGER DEFAULT 0, "
                 + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ASSOCIATIONS + " ("
@@ -109,6 +112,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_PASSWORD + " TEXT, "
                 + COL_PIN + " TEXT, "
                 + COL_ICON_RES + " INTEGER, "
+                + COL_MOBILE + " TEXT DEFAULT '', "
                 + COL_CREATED_AT + " INTEGER DEFAULT 0, "
                 + COL_UPDATED_AT + " INTEGER DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ASSOCIATIONS + " ("
@@ -159,8 +163,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         }
 
         // v7: audit timestamps on id_cards. ALTER is idempotent via
-        // addColumnIfMissing; backfill keeps legacy IDs sortable instead of
-        // sinking to the bottom with 0 stamps.
+        // addColumnIfMissing; backfill stamps old rows so sort/display works.
         if (oldVersion < 7) {
             addColumnIfMissing(db, TABLE_ID_CARDS, COL_CREATED_AT);
             addColumnIfMissing(db, TABLE_ID_CARDS, COL_UPDATED_AT);
@@ -171,6 +174,11 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("UPDATE " + TABLE_ID_CARDS
                     + " SET " + COL_UPDATED_AT + "=? WHERE " + COL_UPDATED_AT + " IS NULL OR "
                     + COL_UPDATED_AT + "=0", new Object[]{now});
+        }
+
+        // v8: mobile column on logins (contact number beside PIN).
+        if (oldVersion < 8) {
+            addTextColumnIfMissing(db, TABLE_LOGINS, COL_MOBILE);
         }
     }
 
@@ -191,6 +199,23 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /** TEXT variant of the idempotent ADD COLUMN above (defaults to ''). */
+    private static void addTextColumnIfMissing(SQLiteDatabase db, String table, String column) {
+        boolean missing = true;
+        try (android.database.Cursor c = db.rawQuery("PRAGMA table_info(" + table + ")", null)) {
+            int nameIdx = c.getColumnIndexOrThrow("name");
+            while (c.moveToNext()) {
+                if (column.equals(c.getString(nameIdx))) {
+                    missing = false;
+                    break;
+                }
+            }
+        }
+        if (missing) {
+            db.execSQL("ALTER TABLE " + table + " ADD COLUMN " + column + " TEXT DEFAULT ''");
+        }
+    }
+
     public long insertLogin(CredentialItem item) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -199,6 +224,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_PASSWORD, item.getPassword());
         cv.put(COL_PIN, item.getPin());
         cv.put(COL_ICON_RES, item.getIconRes());
+        cv.put(COL_MOBILE, item.getMobile() != null ? item.getMobile() : "");
         // Functional timestamps: a fresh row is both created and updated now.
         // Honour caller-supplied values (edit reinsert) when present.
         long now = System.currentTimeMillis();
@@ -220,6 +246,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
             // in a test harness; fall back to 0 instead of crashing.
             int createdIdx = cursor.getColumnIndex(COL_CREATED_AT);
             int updatedIdx = cursor.getColumnIndex(COL_UPDATED_AT);
+            int mobileIdx = cursor.getColumnIndex(COL_MOBILE);
             do {
                 list.add(new CredentialItem(
                         cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
@@ -228,6 +255,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_PASSWORD)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_PIN)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(COL_ICON_RES)),
+                        mobileIdx != -1 ? cursor.getString(mobileIdx) : "",
                         createdIdx != -1 ? cursor.getLong(createdIdx) : 0,
                         updatedIdx != -1 ? cursor.getLong(updatedIdx) : 0
                 ));
