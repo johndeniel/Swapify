@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsetsController;
 import android.graphics.Color;
-import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
@@ -35,12 +34,13 @@ import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.search.SearchView;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Dashboard (Home) — single-screen host, no fragments. Shows live Government
@@ -54,18 +54,23 @@ public class MainActivity extends AppCompatActivity {
     private AppDatabaseHelper dbHelper;
     private DashboardCardAdapter cardAdapter;
     private RecyclerView recyclerCarousel;
-    private LinearLayoutManager carouselLayoutManager;
-    private PagerSnapHelper carouselSnapHelper;
     private View emptyCards;
     private DashboardIdCardAdapter idAdapter;
     private RecyclerView recyclerIdsCarousel;
-    private LinearLayoutManager idsLayoutManager;
-    private PagerSnapHelper idsSnapHelper;
     private View emptyIds;
     private DashboardSocialAccountAdapter socialAdapter;
     private View cardSocialAccounts;
     private RecyclerView recyclerSocialAccounts;
     private View emptySocialAccounts;
+
+    /** Single-thread vault I/O: keeps SQLCipher off the UI thread, in order. */
+    private final ExecutorService dbIo = Executors.newSingleThreadExecutor();
+    /** Drops stale loads (rotation / rapid resume) — only the latest binds. */
+    private int loadGeneration;
+    /** One stateless 12dp gap shared by every carousel (never per-item state). */
+    private RecyclerView.ItemDecoration sharedGap;
+    private static final DecelerateInterpolator MENU_INTERPOLATOR =
+            new DecelerateInterpolator();
 
     /** Credit-card ratio shared with the carousel faces (width : height). */
     private static final float CARD_ASPECT_RATIO = 1.586f;
@@ -119,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         setupSystemBars();
 
         dbHelper = new AppDatabaseHelper(this);
+        sharedGap = gapDecoration();
 
         setupHeader();
         setupCardCarousel();
@@ -129,8 +135,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             // Rotation: restore the query and re-open the SearchView exactly
-            // as left (masters load below in refreshDashboard, which
-            // re-filters into the results).
+            // as left (masters load async in onResume, which re-filters into
+            // the results).
             currentQuery = savedInstanceState.getString(KEY_SEARCH_QUERY, "");
             boolean open = savedInstanceState.getBoolean(KEY_SEARCH_OPEN, false);
             if (open && searchView != null) {
@@ -141,21 +147,14 @@ public class MainActivity extends AppCompatActivity {
                 searchView.post(() -> searchView.show());
             }
         }
-
-        refreshDashboard();
+        // No refresh here: onResume always follows onCreate and owns loading.
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         refreshDashboard();
-        // Form confirms stash their message and finish; show it here where
-        // the user actually lands (a Snackbar there would die unseen).
-        int pending = Ui.takePendingMessage();
-        if (pending != 0) {
-            Snackbar.make(findViewById(android.R.id.content), pending,
-                    Snackbar.LENGTH_SHORT).show();
-        }
+        Ui.showPendingMessage(this);
     }
 
     @Override
@@ -191,6 +190,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        // Animators hold child views; cancel so a mid-entrance finish cannot leak them.
+        cancelMenuEntrance();
+        dbIo.shutdownNow();
         // SQLiteOpenHelper holds a pooled connection; release it with the screen.
         if (dbHelper != null) {
             dbHelper.close();
@@ -212,7 +214,6 @@ public class MainActivity extends AppCompatActivity {
      * transiently (e.g. after a fullscreen intent returns).
      */
     private void setupSystemBars() {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setStatusBarColor(getColor(R.color.dashboard_bg_start));
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -283,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerSearchIds.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerSearchIds.setAdapter(searchIdAdapter);
-        recyclerSearchIds.addItemDecoration(gapDecoration());
+        recyclerSearchIds.addItemDecoration(sharedGap);
         searchHeaderIds = findViewById(R.id.search_header_ids);
 
         searchCardAdapter = new DashboardCardAdapter(this::openBankEditor);
@@ -291,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerSearchCards.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerSearchCards.setAdapter(searchCardAdapter);
-        recyclerSearchCards.addItemDecoration(gapDecoration());
+        recyclerSearchCards.addItemDecoration(sharedGap);
         searchHeaderCards = findViewById(R.id.search_header_cards);
 
         // Row taps open the account's edit form, same as the dashboard list.
@@ -340,6 +341,9 @@ public class MainActivity extends AppCompatActivity {
     /** 12dp inter-card gap shared by the dashboard and search carousels. */
     private RecyclerView.ItemDecoration gapDecoration() {
         return new RecyclerView.ItemDecoration() {
+            // Offset is a constant: computed once, not per child per layout.
+            private int cachedGap = -1;
+
             @Override
             public void getItemOffsets(@NonNull Rect outRect, @NonNull View child,
                                        @NonNull RecyclerView parent,
@@ -347,7 +351,10 @@ public class MainActivity extends AppCompatActivity {
                 int position = parent.getChildAdapterPosition(child);
                 if (position != RecyclerView.NO_POSITION
                         && position < state.getItemCount() - 1) {
-                    outRect.right = dp(12);
+                    if (cachedGap < 0) {
+                        cachedGap = Ui.dp(parent.getContext(), 12);
+                    }
+                    outRect.right = cachedGap;
                 }
             }
         };
@@ -402,8 +409,8 @@ public class MainActivity extends AppCompatActivity {
         emptySearchResults.setVisibility(
                 searching && allEmpty ? View.VISIBLE : View.GONE);
         if (searching && allEmpty && emptySearchSub != null) {
-            emptySearchSub.setText(
-                    getString(R.string.search_empty_sub) + " for \"" + currentQuery.trim() + "\"");
+            emptySearchSub.setText(getString(R.string.search_empty_sub_for,
+                    getString(R.string.search_empty_sub), currentQuery.trim()));
         }
     }
 
@@ -487,9 +494,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-        findViewById(R.id.fab_option_id).setOnClickListener(v -> openIdCreator());
-        findViewById(R.id.fab_option_card).setOnClickListener(v -> openBankCreator());
-        findViewById(R.id.fab_option_login).setOnClickListener(v -> openSocialCreator());
+        setMenuOption(R.id.fab_option_id, this::openIdCreator);
+        setMenuOption(R.id.fab_option_card, this::openBankCreator);
+        setMenuOption(R.id.fab_option_login, this::openSocialCreator);
+    }
+
+    private void setMenuOption(int viewId, Runnable action) {
+        View option = findViewById(viewId);
+        if (option != null) {
+            option.setOnClickListener(v -> action.run());
+        }
     }
 
     private void toggleAddMenu() {
@@ -517,7 +531,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         ViewGroup menu = (ViewGroup) fabAddMenu;
-        float rise = dp(10);
+        float rise = Ui.dp(this, 10);
         for (int i = 0; i < menu.getChildCount(); i++) {
             View child = menu.getChildAt(i);
             child.setAlpha(0f);
@@ -527,7 +541,7 @@ public class MainActivity extends AppCompatActivity {
                     .translationY(0f)
                     .setStartDelay(i * 45L)
                     .setDuration(180L)
-                    .setInterpolator(new DecelerateInterpolator())
+                    .setInterpolator(MENU_INTERPOLATOR)
                     .start();
         }
     }
@@ -547,7 +561,9 @@ public class MainActivity extends AppCompatActivity {
 
     /** Opens a social edit form directly (dashboard rows open the editor). */
     private void openSocialEditor(CredentialItem item) {
-        dbHelper.touchLoginUpdatedAt(item.getId());
+        // Recency bump rides the I/O thread; navigation never waits for it.
+        final int id = item.getId();
+        dbIo.execute(() -> dbHelper.touchLoginUpdatedAt(id));
         startActivity(SocialAccountFormActivity.editIntent(this, item));
     }
 
@@ -566,7 +582,8 @@ public class MainActivity extends AppCompatActivity {
      * No immediate refresh here; onResume re-queries after the editor closes.
      */
     private void openIdEditor(IdCardItem item) {
-        dbHelper.touchIdCardUpdatedAt(item.getId());
+        final int id = item.getId();
+        dbIo.execute(() -> dbHelper.touchIdCardUpdatedAt(id));
         startActivity(GovermentIDFormActivity.editIntent(this, item));
     }
 
@@ -585,7 +602,8 @@ public class MainActivity extends AppCompatActivity {
      * refresh here; onResume already re-queries after the editor closes.
      */
     private void openBankEditor(BankCardItem item) {
-        dbHelper.touchBankCardUpdatedAt(item.getId());
+        final int id = item.getId();
+        dbIo.execute(() -> dbHelper.touchBankCardUpdatedAt(id));
         startActivity(BankCardFormActivity.editIntent(this, item));
     }
 
@@ -603,13 +621,11 @@ public class MainActivity extends AppCompatActivity {
         emptyCards = findViewById(R.id.empty_cards);
 
         cardAdapter = new DashboardCardAdapter(this::openBankEditor);
-        carouselLayoutManager =
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        recyclerCarousel.setLayoutManager(carouselLayoutManager);
+        recyclerCarousel.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerCarousel.setAdapter(cardAdapter);
-        recyclerCarousel.addItemDecoration(gapDecoration());
-        carouselSnapHelper = new PagerSnapHelper();
-        carouselSnapHelper.attachToRecyclerView(recyclerCarousel);
+        recyclerCarousel.addItemDecoration(sharedGap);
+        new PagerSnapHelper().attachToRecyclerView(recyclerCarousel);
 
         if (emptyCards != null) {
             emptyCards.setOnClickListener(v -> openBankCreator());
@@ -645,7 +661,16 @@ public class MainActivity extends AppCompatActivity {
      * always measures zero.
      */
     private void matchEmptyHeightToCards(@NonNull RecyclerView carousel, @NonNull View empty) {
-        empty.post(() -> {
+        // One pending measure per view: a second refresh supersedes the first
+        // instead of stacking posts that outlive the screen.
+        Runnable pending = (Runnable) empty.getTag(R.id.tag_measure);
+        if (pending != null) {
+            empty.removeCallbacks(pending);
+        }
+        Runnable measure = () -> {
+            if (isFinishing()) {
+                return;
+            }
             int contentWidth = empty.getWidth();
             if (contentWidth <= 0) {
                 return;
@@ -655,13 +680,15 @@ public class MainActivity extends AppCompatActivity {
             if (viewport <= 0) {
                 return;
             }
-            int pageHeight = (int) ((viewport * DashboardCardAdapter.PAGE_WIDTH_RATIO - dp(8))
+            int pageHeight = (int) ((viewport * DashboardCardAdapter.PAGE_WIDTH_RATIO - Ui.dp(empty.getContext(), 8))
                     / CARD_ASPECT_RATIO);
             if (pageHeight > 0 && empty.getLayoutParams().height != pageHeight) {
                 empty.getLayoutParams().height = pageHeight;
                 empty.requestLayout();
             }
-        });
+        };
+        empty.setTag(R.id.tag_measure, measure);
+        empty.post(measure);
     }
 
     /** Horizontal snap carousel rendering the user's real government IDs. */
@@ -670,13 +697,11 @@ public class MainActivity extends AppCompatActivity {
         emptyIds = findViewById(R.id.empty_ids);
 
         idAdapter = new DashboardIdCardAdapter(this::openIdEditor);
-        idsLayoutManager =
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        recyclerIdsCarousel.setLayoutManager(idsLayoutManager);
+        recyclerIdsCarousel.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerIdsCarousel.setAdapter(idAdapter);
-        recyclerIdsCarousel.addItemDecoration(gapDecoration());
-        idsSnapHelper = new PagerSnapHelper();
-        idsSnapHelper.attachToRecyclerView(recyclerIdsCarousel);
+        recyclerIdsCarousel.addItemDecoration(sharedGap);
+        new PagerSnapHelper().attachToRecyclerView(recyclerIdsCarousel);
 
         if (emptyIds != null) {
             emptyIds.setOnClickListener(v -> openIdCreator());
@@ -746,22 +771,31 @@ public class MainActivity extends AppCompatActivity {
         if (dbHelper == null) {
             return;
         }
-        allIds = dbHelper.getAllIdCards();
-        allCards = dbHelper.getAllBankCards();
-        allAccounts = dbHelper.getAllLogins();
+        // Vault reads (decrypt + 3 queries) ride the I/O thread; only the
+        // latest generation binds, so rotation/rapid resume cannot show
+        // stale rows or touch a dead activity.
+        final int generation = ++loadGeneration;
+        dbIo.execute(() -> {
+            final List<IdCardItem> ids = dbHelper.getAllIdCards();
+            final List<BankCardItem> cards = dbHelper.getAllBankCards();
+            final List<CredentialItem> accounts = dbHelper.getAllLogins();
+            runOnUiThread(() -> {
+                if (generation != loadGeneration || isFinishing()) {
+                    return;
+                }
+                allIds = ids;
+                allCards = cards;
+                allAccounts = accounts;
 
-        refreshIdsCarousel(allIds);
-        refreshCardCarousel(allCards);
-        refreshSocialAccounts(allAccounts);
+                refreshIdsCarousel(allIds);
+                refreshCardCarousel(allCards);
+                refreshSocialAccounts(allAccounts);
 
-        // Editors close back here: re-filter open results off fresh masters.
-        if (searchShowing) {
-            updateSearchResults();
-        }
-    }
-
-    private int dp(int value) {
-        float density = getResources().getDisplayMetrics().density;
-        return (int) (value * density);
+                // Editors close back here: re-filter open results off fresh masters.
+                if (searchShowing) {
+                    updateSearchResults();
+                }
+            });
+        });
     }
 }

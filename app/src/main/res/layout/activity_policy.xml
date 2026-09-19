@@ -23,16 +23,9 @@
              set per type by PolicyActivity; same insets as Settings. -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
+            style="@style/Widget.Akin.Toolbar"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_marginStart="-12dp"
-            android:background="@android:color/transparent"
-            app:contentInsetStart="0dp"
-            app:contentInsetStartWithNavigation="0dp"
-            app:navigationIcon="@drawable/ic_arrow_back"
-            app:title="@string/settings_privacy"
-            app:titleMarginStart="12dp"
-            app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
+            app:title="@string/settings_privacy" />
 
         <LinearLayout
             android:id="@+id/policy_sections"

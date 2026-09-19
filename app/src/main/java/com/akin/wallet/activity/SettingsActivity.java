@@ -14,7 +14,6 @@ import com.akin.wallet.security.AppLockManager;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.materialswitch.MaterialSwitch;
-import com.google.android.material.snackbar.Snackbar;
 
 /**
  * Settings — security preferences behind the app lock. Biometric unlock is
@@ -28,6 +27,7 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView biometricStatus;
     private BiometricPrompt confirmPrompt;
     private boolean confirming;
+    private boolean biometricAvailable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,21 +39,17 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Version footer stamps the installed version (falls back to 1.0).
         TextView settingsVersion = findViewById(R.id.settings_version);
-        String version = "1.0";
-        try {
-            version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-        } catch (Exception ignored) {
-        }
-        settingsVersion.setText(getString(R.string.settings_version_format, version));
+        settingsVersion.setText(
+                getString(R.string.settings_version_format, Ui.versionName(this)));
 
         biometricSwitch = findViewById(R.id.switch_biometric);
         biometricStatus = findViewById(R.id.biometric_status);
 
-        boolean available = AppLockManager.isBiometricAvailable(this);
-        boolean enabled = AppLockManager.isBiometricEnabled(this) && available;
+        biometricAvailable = AppLockManager.isBiometricAvailable(this);
+        boolean enabled = AppLockManager.isBiometricEnabled(this) && biometricAvailable;
         biometricSwitch.setChecked(enabled);
-        biometricSwitch.setEnabled(available);
-        refreshBiometricStatus(available, enabled);
+        biometricSwitch.setEnabled(biometricAvailable);
+        refreshBiometricStatus(biometricAvailable, enabled);
 
         biometricSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             // Programmatic setChecked (e.g. reverting) must not re-trigger.
@@ -64,7 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
                 confirmBiometric();
             } else {
                 AppLockManager.setBiometricEnabled(this, false);
-                refreshBiometricStatus(true, false);
+                refreshBiometricStatus(biometricAvailable, false);
             }
         });
 
@@ -93,11 +89,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onResume();
         // The PIN-change screen stashes its confirmation and finishes; show
         // it here where the user actually lands.
-        int pending = Ui.takePendingMessage();
-        if (pending != 0) {
-            Snackbar.make(findViewById(android.R.id.content), pending,
-                    Snackbar.LENGTH_SHORT).show();
-        }
+        Ui.showPendingMessage(this);
     }
 
     @Override
@@ -148,7 +140,7 @@ public class SettingsActivity extends AppCompatActivity {
                         AppLockManager.setBiometricEnabled(
                                 SettingsActivity.this, true);
                         biometricSwitch.setChecked(true);
-                        refreshBiometricStatus(true, true);
+                        refreshBiometricStatus(biometricAvailable, true);
                     }
 
                     @Override
@@ -160,7 +152,7 @@ public class SettingsActivity extends AppCompatActivity {
                         }
                         // Any cancel/failure reverts: ON is never stored blind.
                         biometricSwitch.setChecked(false);
-                        refreshBiometricStatus(true, false);
+                        refreshBiometricStatus(biometricAvailable, false);
                     }
                 });
         confirmPrompt.authenticate(info);

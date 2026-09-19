@@ -22,6 +22,7 @@
     <string name="msg_updated">Updated Successfully</string>
     <string name="msg_deleted">Deleted Successfully</string>
     <string name="err_username_required">Username required</string>
+    <string name="err_save_failed">Couldn\'t save. Please try again</string>
     <string name="msg_account_saved">Account Saved</string>
     <string name="msg_card_saved">Card Saved</string>
     <string name="msg_id_saved">ID Saved</string>
@@ -31,11 +32,11 @@
     <string name="action_delete">Delete</string>
 
     <!-- Search -->
-    <string name="search_hint">Search account\u2026</string>
     <string name="hint_search_platforms">Search platforms…</string>
     <string name="hint_search_accounts">Search accounts…</string>
     <string name="search_empty_title">No results found</string>
     <string name="search_empty_sub">Try a different keyword</string>
+    <string name="search_empty_sub_for">%1$s for \u201c%2$s\u201d</string>
     <!-- App lock (first-run PIN setup, PIN entry, fingerprint unlock) -->
     <string name="lock_sub_create">Create a 4-digit PIN</string>
     <string name="lock_sub_confirm">Confirm your 4-digit PIN</string>
@@ -66,15 +67,14 @@
     <string name="settings_version_format">Version %1$s</string>
     <!-- Trash (soft-deleted vault items) -->
     <string name="settings_trash">Trash</string>
-    <string name="settings_trash_empty">Empty</string>
     <string name="trash_title">Trash</string>
     <string name="trash_section_ids">Government ID</string>
     <string name="trash_section_cards">Bank Card</string>
     <string name="trash_section_social">Social Account</string>
     <string name="trash_restore">Restore</string>
+    <string name="trash_header_count">\u2022 %1$d</string>
+    <string name="err_trash_load">Couldn\'t load Trash. Please try again</string>
     <string name="trash_delete_forever">Delete</string>
-    <string name="trash_restored">Restored</string>
-    <string name="trash_deleted_forever">Permanently deleted</string>
     <!-- Trash gallery: multi-select grid of soft-deleted items -->
     <string name="trash_empty_title">Trash is empty</string>
     <string name="trash_empty_sub">Items you delete will appear here</string>
@@ -100,8 +100,18 @@
     <!-- Government ID -->
     <string name="dialog_id_title">Government ID</string>
     <!-- Picker toolbar title -->
-    <string name="picker_linked_title">Linked Account</string>
 
+    <!-- Dashboard empty states -->
+    <string name="empty_ids_title">No government IDs</string>
+    <string name="empty_ids_sub">An ID you add will appear here</string>
+    <string name="empty_cards_title">No bank card</string>
+    <string name="empty_cards_sub">A card you add will appear here</string>
+    <string name="empty_social_title">No social account</string>
+    <string name="empty_social_sub">An account you add will appear here</string>
+    <!-- Picker empty states -->
+    <string name="empty_associated">No associated accounts</string>
+    <string name="empty_platforms">No platforms found</string>
+    <string name="empty_accounts">No accounts found</string>
     <!-- Form sections -->
     <string name="section_account_details">Account Details</string>
     <string name="section_associated_accounts">Associated Accounts</string>
@@ -135,6 +145,9 @@
     <string name="mask_password">••••••••</string>
     <string name="mask_pin">••••</string>
     <string name="empty_value">—</string>
+    <!-- Document face field labels -->
+    <string name="label_date_of_birth">DATE OF BIRTH</string>
+    <string name="label_expiry_date">EXPIRY DATE</string>
 
     <!-- Card faces (design-time placeholders, rebound at runtime) -->
     <!-- Bank card -->
@@ -165,5 +178,5 @@
     <string name="cd_card_chip">Card chip</string>
     <string name="cd_id_photo">ID photo placeholder</string>
     <string name="cd_back">Back</string>
-    <string name="cd_clear">Clear search</string>
+    <string name="cd_platform">Platform</string>
 </resources>

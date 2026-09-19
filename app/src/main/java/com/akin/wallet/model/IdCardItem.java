@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Government ID entry. Variable per-type fields are stored as a JSON object
@@ -33,21 +34,12 @@ public class IdCardItem {
         this(-1, idType, fields, design, 0, 0);
     }
 
-    public IdCardItem(int id, String idType, Map<String, String> fields, int design) {
-        this(id, idType, fields, design, 0, 0);
-    }
-
     /**
      * Full constructor carrying audit timestamps alongside the row identity.
-     * Callers creating a new entry pass {@code 0, 0} and let the DB stamp
-     * {@code now}; callers updating preserve {@code createdAt} and pass
-     * {@code 0} for {@code updatedAt} so the DB bumps recency.
+     * New entries pass {@code 0, 0} and let the DB stamp {@code now};
+     * updates preserve {@code createdAt} and pass {@code 0} for
+     * {@code updatedAt} so the DB bumps recency.
      */
-    public IdCardItem(String idType, Map<String, String> fields, int design,
-                      long createdAt, long updatedAt) {
-        this(-1, idType, fields, design, createdAt, updatedAt);
-    }
-
     public IdCardItem(int id, String idType, Map<String, String> fields, int design,
                       long createdAt, long updatedAt) {
         this.id = id;
@@ -101,8 +93,7 @@ public class IdCardItem {
     }
 
     /** Parse JSON string from SQLite. Never throws — returns empty map on bad input. */
-    public static Map<String, String> parseFieldsJson(String json) {
-        Map<String, String> map = new LinkedHashMap<>();
+    public static Map<String, String> parseFieldsJson(String json) {        Map<String, String> map = new LinkedHashMap<>();
         if (json == null || json.trim().isEmpty()) {
             return map;
         }
@@ -116,5 +107,28 @@ public class IdCardItem {
         } catch (JSONException ignored) {
         }
         return map;
+    }
+
+    /** Value equality across every column (backs DiffUtil content checks). */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof IdCardItem)) {
+            return false;
+        }
+        IdCardItem that = (IdCardItem) o;
+        return id == that.id
+                && design == that.design
+                && createdAt == that.createdAt
+                && updatedAt == that.updatedAt
+                && Objects.equals(idType, that.idType)
+                && Objects.equals(fields, that.fields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, idType, fields, design, createdAt, updatedAt);
     }
 }

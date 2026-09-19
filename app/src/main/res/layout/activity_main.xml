@@ -41,18 +41,13 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar_dashboard"
+                style="@style/Widget.Akin.Toolbar"
                 android:layout_width="0dp"
-                android:layout_height="64dp"
-                android:layout_marginStart="-12dp"
                 android:layout_weight="1"
-                android:background="@android:color/transparent"
-                app:contentInsetStart="0dp"
-                app:contentInsetStartWithNavigation="0dp"
+                app:navigationIcon="@null"
                 app:subtitle="@string/header_tagline"
                 app:subtitleTextAppearance="@style/TextAppearance.Akin.ToolbarSubtitle"
-                app:title="@string/app_name"
-                app:titleMarginStart="12dp"
-                app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
+                app:title="@string/app_name" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_header_search"
@@ -110,7 +105,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Government ID"
+                android:text="@string/trash_section_ids"
                 android:textAppearance="@style/TextAppearance.Akin.SectionTitle" />
 
         </LinearLayout>
@@ -152,7 +147,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="No goverment"
+                    android:text="@string/empty_ids_title"
                     android:textAppearance="@style/TextAppearance.Akin.CardTitle" />
 
                 <TextView
@@ -160,7 +155,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:gravity="center"
-                    android:text="An ID you add will appear here"
+                    android:text="@string/empty_ids_sub"
                     android:textAppearance="@style/TextAppearance.Akin.BodyMuted" />
 
                 <com.google.android.material.button.MaterialButton
@@ -192,7 +187,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bank Card"
+                android:text="@string/trash_section_cards"
                 android:textAppearance="@style/TextAppearance.Akin.SectionTitle" />
 
         </LinearLayout>
@@ -233,7 +228,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="No bank card"
+                    android:text="@string/empty_cards_title"
                     android:textAppearance="@style/TextAppearance.Akin.CardTitle" />
 
                 <TextView
@@ -241,7 +236,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:gravity="center"
-                    android:text="A card you add will appear here"
+                    android:text="@string/empty_cards_sub"
                     android:textAppearance="@style/TextAppearance.Akin.BodyMuted" />
 
                 <com.google.android.material.button.MaterialButton
@@ -273,7 +268,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Social Account"
+                android:text="@string/trash_section_social"
                 android:textAppearance="@style/TextAppearance.Akin.SectionTitle" />
 
         </LinearLayout>
@@ -327,7 +322,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="No social account"
+                    android:text="@string/empty_social_title"
                     android:textAppearance="@style/TextAppearance.Akin.CardTitle" />
 
                 <TextView
@@ -335,7 +330,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:gravity="center"
-                    android:text="An account you add will appear here"
+                    android:text="@string/empty_social_sub"
                     android:textAppearance="@style/TextAppearance.Akin.BodyMuted" />
 
                 <com.google.android.material.button.MaterialButton
@@ -470,7 +465,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Government ID"
+                        android:text="@string/trash_section_ids"
                         android:textAppearance="@style/TextAppearance.Akin.SectionTitle" />
 
                 </LinearLayout>
@@ -495,7 +490,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Bank Card"
+                        android:text="@string/trash_section_cards"
                         android:textAppearance="@style/TextAppearance.Akin.SectionTitle" />
 
                 </LinearLayout>
@@ -520,7 +515,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Social Account"
+                        android:text="@string/trash_section_social"
                         android:textAppearance="@style/TextAppearance.Akin.SectionTitle" />
 
                 </LinearLayout>

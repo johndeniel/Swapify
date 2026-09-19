@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
@@ -35,11 +36,32 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
     }
 
     public void updateData(List<IdCardItem> newItems) {
+        List<IdCardItem> next =
+                newItems != null ? new ArrayList<>(newItems) : new ArrayList<>();
+        DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return items.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return next.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldPos, int newPos) {
+                return items.get(oldPos).getId() == next.get(newPos).getId();
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldPos, int newPos) {
+                return items.get(oldPos).equals(next.get(newPos));
+            }
+        });
         items.clear();
-        if (newItems != null) {
-            items.addAll(newItems);
-        }
-        notifyDataSetChanged();
+        items.addAll(next);
+        diff.dispatchUpdatesTo(this);
     }
 
     @NonNull
@@ -51,7 +73,10 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
         ViewGroup.LayoutParams lp = view.getLayoutParams();
         int parentWidth = parent.getMeasuredWidth();
         if (parentWidth <= 0) {
-            parentWidth = parent.getResources().getDisplayMetrics().widthPixels;
+            // Pre-layout inflation: display width minus carousel padding, the
+            // same viewport the dashboard measures pages against.
+            parentWidth = parent.getResources().getDisplayMetrics().widthPixels
+                    - parent.getPaddingStart() - parent.getPaddingEnd();
         }
         if (lp != null && parentWidth > 0) {
             lp.width = (int) (parentWidth * DashboardCardAdapter.PAGE_WIDTH_RATIO);

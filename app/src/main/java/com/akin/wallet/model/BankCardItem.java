@@ -1,5 +1,7 @@
 package com.akin.wallet.model;
 
+import java.util.Objects;
+
 public class BankCardItem {
     private final int id;
     private final String cardType;
@@ -19,12 +21,6 @@ public class BankCardItem {
     public BankCardItem(String cardType, String cardNetwork, String bankName, String holderName,
                         String cardNumber, String expiry, String cvv, String pin, int design) {
         this(cardType, cardNetwork, bankName, holderName,
-                cardNumber, expiry, cvv, pin, design, 0, 0);
-    }
-
-    public BankCardItem(int id, String cardType, String cardNetwork, String bankName, String holderName,
-                        String cardNumber, String expiry, String cvv, String pin, int design) {
-        this(id, cardType, cardNetwork, bankName, holderName,
                 cardNumber, expiry, cvv, pin, design, 0, 0);
     }
 
@@ -108,5 +104,35 @@ public class BankCardItem {
 
     public long getUpdatedAt() {
         return updatedAt;
+    }
+
+    /** Value equality across every column (backs DiffUtil content checks). */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BankCardItem)) {
+            return false;
+        }
+        BankCardItem that = (BankCardItem) o;
+        return id == that.id
+                && design == that.design
+                && createdAt == that.createdAt
+                && updatedAt == that.updatedAt
+                && Objects.equals(cardType, that.cardType)
+                && Objects.equals(cardNetwork, that.cardNetwork)
+                && Objects.equals(bankName, that.bankName)
+                && Objects.equals(holderName, that.holderName)
+                && Objects.equals(cardNumber, that.cardNumber)
+                && Objects.equals(expiry, that.expiry)
+                && Objects.equals(cvv, that.cvv)
+                && Objects.equals(pin, that.pin);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, cardType, cardNetwork, bankName, holderName,
+                cardNumber, expiry, cvv, pin, design, createdAt, updatedAt);
     }
 }

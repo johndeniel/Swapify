@@ -42,36 +42,19 @@ import java.util.List;
 public class SocialAccountFormActivity extends AppCompatActivity {
 
     public static final String EXTRA_LOGIN_ID = "extra_login_id";
-    public static final String EXTRA_PLATFORM = "extra_platform";
-    public static final String EXTRA_USERNAME = "extra_username";
-    public static final String EXTRA_PASSWORD = "extra_password";
-    public static final String EXTRA_PIN = "extra_pin";
-    public static final String EXTRA_MOBILE = "extra_mobile";
-    public static final String EXTRA_ICON_RES = "extra_icon_res";
-    public static final String EXTRA_CREATED_AT = "extra_created_at";
-    public static final String EXTRA_UPDATED_AT = "extra_updated_at";
 
     /** Default pick for a fresh form (also the icon fallback for stored rows). */
     public static final String DEFAULT_PLATFORM_NAME = "Google";
 
     /**
-     * Intent that opens this form to edit an existing credential. Single
-     * packing site so all callers carry the same extras (timestamps ride
-     * top-level, never inside another field).
+     * Intent that opens this form to edit an existing credential. Carries the
+     * row id only — the form re-queries the vault, so secrets never travel
+     * as Intent extras (recents/dumps) and edits always start current.
      */
     public static Intent editIntent(@NonNull Context context,
                                     @NonNull CredentialItem item) {
-        Intent edit = new Intent(context, SocialAccountFormActivity.class);
-        edit.putExtra(EXTRA_LOGIN_ID, (long) item.getId());
-        edit.putExtra(EXTRA_PLATFORM, item.getPlatform());
-        edit.putExtra(EXTRA_USERNAME, item.getUsername());
-        edit.putExtra(EXTRA_PASSWORD, item.getPassword());
-        edit.putExtra(EXTRA_PIN, item.getPin());
-        edit.putExtra(EXTRA_MOBILE, item.getMobile());
-        edit.putExtra(EXTRA_ICON_RES, item.getIconRes());
-        edit.putExtra(EXTRA_CREATED_AT, item.getCreatedAt());
-        edit.putExtra(EXTRA_UPDATED_AT, item.getUpdatedAt());
-        return edit;
+        return new Intent(context, SocialAccountFormActivity.class)
+                .putExtra(EXTRA_LOGIN_ID, (long) item.getId());
     }
 
     private AppDatabaseHelper dbHelper;
@@ -92,6 +75,9 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     // picks the platform and closes it (no separate activity).
     private static final String KEY_PLATFORM_QUERY = "platform_search_query";
     private static final String KEY_PLATFORM_OPEN = "platform_search_open";
+    private static final String KEY_SELECTED_ICON = "selected_icon";
+    private static final String KEY_SELECTED_NAME = "selected_name";
+    private static final String KEY_LINKED_IDS = "linked_ids";
     private SearchView platformSearchView;
     private PlatformSelectionAdapter platformAdapter;
     private RecyclerView recyclerPlatformSearch;
@@ -111,6 +97,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     private View emptyLinkResults;
     private String linkQuery = "";
     private boolean linkSearchOpen = false;
+    /** Owned delete dialog: dismissed in onDestroy so rotation cannot leak it. */
+    private androidx.appcompat.app.AlertDialog deleteDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,30 +117,80 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         if (id == -1) {
             bindAddForm();
         } else {
-            CredentialItem item = new CredentialItem(
-                    (int) id,
-                    getIntent().getStringExtra(EXTRA_PLATFORM),
-                    getIntent().getStringExtra(EXTRA_USERNAME),
-                    getIntent().getStringExtra(EXTRA_PASSWORD),
-                    getIntent().getStringExtra(EXTRA_PIN),
-                    getIntent().getIntExtra(EXTRA_ICON_RES,
-                            PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME)),
-                    getIntent().getStringExtra(EXTRA_MOBILE),
-                    getIntent().getLongExtra(EXTRA_CREATED_AT, 0),
-                    getIntent().getLongExtra(EXTRA_UPDATED_AT, 0));
+            // Re-query by id: secrets never ride the Intent, and a row
+            // deleted elsewhere opens nothing instead of a stale copy.
+            CredentialItem item = dbHelper.getLoginById((int) id);
+            if (item == null) {
+                finish();
+                return;
+            }
             bindEditForm(item);
+        }
+        if (savedInstanceState != null) {
+            restoreTransientState(savedInstanceState);
         }
         // Link pool is ready only after the bind above ran.
         setupLinkSearch(savedInstanceState);
     }
 
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
+    protected void onSaveInstanceState(@NonNull Bundle outState) {        super.onSaveInstanceState(outState);
         outState.putString(KEY_PLATFORM_QUERY, platformQuery);
         outState.putBoolean(KEY_PLATFORM_OPEN, platformSearchOpen);
         outState.putString(KEY_LINK_QUERY, linkQuery);
         outState.putBoolean(KEY_LINK_OPEN, linkSearchOpen);
+        // EditTexts restore their own text; the picker + links do not.
+        outState.putInt(KEY_SELECTED_ICON, selectedIcon);
+        outState.putString(KEY_SELECTED_NAME, selectedName);
+        if (linkedItems != null && !linkedItems.isEmpty()) {
+            int[] ids = new int[linkedItems.size()];
+            for (int i = 0; i < linkedItems.size(); i++) {
+                ids[i] = linkedItems.get(i).getId();
+            }
+            outState.putIntArray(KEY_LINKED_IDS, ids);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (deleteDialog != null && deleteDialog.isShowing()) {
+            deleteDialog.dismiss();
+        }
+        deleteDialog = null;
+        if (dbHelper != null) {
+            dbHelper.close();
+        }
+        super.onDestroy();
+    }
+
+    /** Re-applies picker + link picks that views cannot restore themselves. */
+    private void restoreTransientState(@NonNull Bundle savedInstanceState) {
+        selectedIcon = savedInstanceState.getInt(KEY_SELECTED_ICON, selectedIcon);
+        String name = savedInstanceState.getString(KEY_SELECTED_NAME, null);
+        if (name != null) {
+            selectedName = name;
+        }
+        if (platformIcon != null) {
+            PlatformIcons.bindIcon(platformIcon, selectedName, selectedIcon);
+        }
+        if (platformName != null) {
+            platformName.setText(selectedName);
+        }
+        int[] ids = savedInstanceState.getIntArray(KEY_LINKED_IDS);
+        if (ids != null && ids.length > 0 && linkedAdapter != null) {
+            // In-place: the adapter shares this list reference for save.
+            linkedItems.clear();
+            for (int linkId : ids) {
+                for (CredentialItem candidate : linkPool) {
+                    if (candidate.getId() == linkId) {
+                        linkedItems.add(candidate);
+                        break;
+                    }
+                }
+            }
+            linkedAdapter.onExternalRestore(linkedItems);
+            refreshLinkedVisibility();
+        }
     }
 
     /**
@@ -173,7 +211,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
                     selectedIcon = iconRes;
                     selectedName = name;
                     if (platformIcon != null) {
-                        platformIcon.setImageResource(selectedIcon);
+                        PlatformIcons.bindIcon(platformIcon, selectedName, selectedIcon);
                     }
                     if (platformName != null) {
                         platformName.setText(selectedName);
@@ -344,12 +382,11 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     private void bindAddForm() {
         selectedIcon = PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME);
         selectedName = DEFAULT_PLATFORM_NAME;
-        final Context context = this;
 
         platformIcon = findViewById(R.id.platform_icon);
         platformName = findViewById(R.id.platform_name);
 
-        platformIcon.setImageResource(selectedIcon);
+        PlatformIcons.bindIcon(platformIcon, selectedName, selectedIcon);
         platformName.setText(selectedName);
 
         findViewById(R.id.platform_selector).setOnClickListener(v -> openPlatformSearch());
@@ -375,8 +412,10 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         findViewById(R.id.btn_save).setOnClickListener(v -> {
             EditText inputUsername = findViewById(R.id.input_username);
             String username = inputUsername.getText().toString().trim();
-            String password = inputPassword.getText().toString().trim();
-            String pin = inputPin.getText().toString().trim();
+            // Secrets are stored verbatim: trimming would silently mutate
+            // credentials with significant leading/trailing spaces.
+            String password = inputPassword.getText().toString();
+            String pin = inputPin.getText().toString();
             EditText inputMobile = findViewById(R.id.input_mobile);
             String mobile = inputMobile.getText().toString().trim();
 
@@ -385,13 +424,19 @@ public class SocialAccountFormActivity extends AppCompatActivity {
                 return;
             }
 
-                CredentialItem newitem = new CredentialItem(selectedName, username, password, pin,
-                        selectedIcon, mobile, 0, 0);
-                long newId = dbHelper.insertLogin(newitem);
-
-                for (CredentialItem linked : linkedItems) {
-                    dbHelper.insertAssociation(newId, linked.getId());
-                }
+            List<Integer> assocIds = new ArrayList<>(linkedItems.size());
+            for (CredentialItem linked : linkedItems) {
+                assocIds.add(linked.getId());
+            }
+            long newId = dbHelper.saveLoginWithAssociations(
+                    new CredentialItem(selectedName, username, password, pin,
+                            selectedIcon, mobile, 0, 0),
+                    assocIds);
+            if (newId < 0) {
+                Snackbar.make(findViewById(android.R.id.content),
+                        R.string.err_save_failed, Snackbar.LENGTH_SHORT).show();
+                return;
+            }
 
             setResult(RESULT_OK);
             finish();
@@ -452,8 +497,6 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     }
 
     private void bindEditForm(@NonNull CredentialItem item) {
-        final Context context = this;
-
         platformIcon = findViewById(R.id.platform_icon);
         platformName = findViewById(R.id.platform_name);
         TextView textSaveLabel = findViewById(R.id.text_save_label);
@@ -466,7 +509,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
         selectedIcon = PlatformIcons.iconFor(item.getPlatform(), item.getIconRes());
         selectedName = item.getPlatform();
-        platformIcon.setImageResource(selectedIcon);
+        PlatformIcons.bindIcon(platformIcon, selectedName, selectedIcon);
         platformName.setText(item.getPlatform());
         inputUsername.setText(item.getUsername());
         inputPassword.setText(item.getPassword());
@@ -485,8 +528,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_save).setOnClickListener(v -> {
             String username = inputUsername.getText().toString().trim();
-            String password = inputPassword.getText().toString().trim();
-            String pin = inputPin.getText().toString().trim();
+            String password = inputPassword.getText().toString();
+            String pin = inputPin.getText().toString();
             String mobile = inputMobile.getText().toString().trim();
 
             if (username.isEmpty()) {
@@ -494,16 +537,20 @@ public class SocialAccountFormActivity extends AppCompatActivity {
                 return;
             }
 
-            dbHelper.deleteLogin(item.getId());
-
-            // Edit is delete+reinsert (new row id): carry createdAt across so
-            // history survives; updatedAt=0 tells insert to stamp now.
-            CredentialItem updated = new CredentialItem(selectedName, username, password, pin,
-                    selectedIcon, mobile, item.getCreatedAt(), 0);
-            long newId = dbHelper.insertLogin(updated);
-
+            // In-place update: same row id, so reverse links from other
+            // accounts survive; the whole save is one transaction.
+            List<Integer> assocIds = new ArrayList<>(linkedItems.size());
             for (CredentialItem linked : linkedItems) {
-                dbHelper.insertAssociation(newId, linked.getId());
+                assocIds.add(linked.getId());
+            }
+            long savedId = dbHelper.saveLoginWithAssociations(
+                    new CredentialItem(item.getId(), selectedName, username, password, pin,
+                            selectedIcon, mobile, item.getCreatedAt(), 0),
+                    assocIds);
+            if (savedId < 0) {
+                Snackbar.make(findViewById(android.R.id.content),
+                        R.string.err_save_failed, Snackbar.LENGTH_SHORT).show();
+                return;
             }
 
             setResult(RESULT_OK);
@@ -518,16 +565,21 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         // edit reinsert + Trash permanent delete only.
         View btnDelete = findViewById(R.id.btn_delete);
         btnDelete.setVisibility(View.VISIBLE);
-        btnDelete.setOnClickListener(v -> Dialogs.confirmDelete(SocialAccountFormActivity.this,
-                "Delete Account",
-                "Are you sure you want to delete this "
-                        + item.getPlatform() + " account?",
-                () -> {
-                    dbHelper.moveLoginToTrash(item.getId());
-                    setResult(RESULT_OK);
-                    finish();
-                    Ui.notifyOnReturn(R.string.msg_deleted);
-                }));
+        btnDelete.setOnClickListener(v -> {
+            if (deleteDialog != null && deleteDialog.isShowing()) {
+                deleteDialog.dismiss();
+            }
+            deleteDialog = Dialogs.confirmDelete(SocialAccountFormActivity.this,
+                    "Delete Account",
+                    "Are you sure you want to delete this "
+                            + item.getPlatform() + " account?",
+                    () -> {
+                        dbHelper.moveLoginToTrash(item.getId());
+                        setResult(RESULT_OK);
+                        finish();
+                        Ui.notifyOnReturn(R.string.msg_deleted);
+                    });
+        });
 
     }
 }

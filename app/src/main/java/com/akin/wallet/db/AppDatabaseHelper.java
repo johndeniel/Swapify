@@ -23,8 +23,10 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     // encrypted (AES-256) with a Keystore-wrapped random key. The table/column
     // set is identical to v10, so the upgrade step below is unchanged apart
     // from the version gate; plaintext installs convert on first open.
+    // v12 adds query indexes only (no columns) for the dashboard/trash
+    // ordering and the associations join.
     // No per-version legacy paths are kept.
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 12;
 
     /** Guards first-open plaintext conversion against concurrent helpers. */
     private static final Object ENCRYPTION_LOCK = new Object();
@@ -156,6 +158,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         createAllTables(db);
+        createIndexes(db);
     }
 
     /** Full v10 schema. Shared by onCreate and onUpgrade so both land identical. */
@@ -201,13 +204,28 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_DELETED_AT + " INTEGER DEFAULT 0)");
     }
 
+    /** v12: indexes for the dashboard/trash ordering and association joins. */
+    private static void createIndexes(SQLiteDatabase db) {
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_logins_active ON " + TABLE_LOGINS
+                + " (" + COL_DELETED_AT + ", " + COL_UPDATED_AT + " DESC, " + COL_ID + " DESC)");
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_bank_cards_active ON " + TABLE_BANK_CARDS
+                + " (" + COL_DELETED_AT + ", " + COL_UPDATED_AT + " DESC, " + COL_CARD_ID + " DESC)");
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_id_cards_active ON " + TABLE_ID_CARDS
+                + " (" + COL_DELETED_AT + ", " + COL_UPDATED_AT + " DESC, " + COL_ID_CARD_ID + " DESC)");
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_assoc_login ON " + TABLE_ASSOCIATIONS
+                + " (" + COL_LOGIN_ID + ")");
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_assoc_associated ON " + TABLE_ASSOCIATIONS
+                + " (" + COL_ASSOCIATED_ID + ")");
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Single consolidated migration, non-destructive (never drops data):
         // bring every older install to the exact v10/v11 column set. Missing
         // tables are created; any missing column is added in place. v11 adds
         // no columns — it is the encryption envelope (handled on open above).
-        // No per-version branches, no backfills, no legacy fallbacks anywhere.
+        // v12 adds indexes only. No per-version branches, no backfills,
+        // no legacy fallbacks anywhere.
         createAllTables(db);
         if (oldVersion < 11) {
             ensureColumn(db, TABLE_LOGINS, COL_CREATED_AT, "INTEGER DEFAULT 0");
@@ -220,6 +238,9 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
             ensureColumn(db, TABLE_ID_CARDS, COL_CREATED_AT, "INTEGER DEFAULT 0");
             ensureColumn(db, TABLE_ID_CARDS, COL_UPDATED_AT, "INTEGER DEFAULT 0");
             ensureColumn(db, TABLE_ID_CARDS, COL_DELETED_AT, "INTEGER DEFAULT 0");
+        }
+        if (oldVersion < 12) {
+            createIndexes(db);
         }
     }
 
@@ -237,8 +258,56 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
     }
 
-    public long insertLogin(CredentialItem item) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    // ---- Shared row mapping (single definition per table) ----
+
+    private static CredentialItem mapLogin(Cursor cursor) {
+        return new CredentialItem(
+                cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_PLATFORM)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_USERNAME)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_PASSWORD)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_PIN)),
+                cursor.getInt(cursor.getColumnIndexOrThrow(COL_ICON_RES)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_MOBILE)),
+                cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
+                cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT)));
+    }
+
+    private static BankCardItem mapBankCard(Cursor cursor) {
+        return new BankCardItem(
+                cursor.getInt(cursor.getColumnIndexOrThrow(COL_CARD_ID)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_TYPE)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_NETWORK)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_BANK_NAME)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_HOLDER_NAME)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_NUMBER)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_EXPIRY)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_CVV)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_PIN)),
+                cursor.getInt(cursor.getColumnIndexOrThrow(COL_DESIGN)),
+                cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
+                cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT)));
+    }
+
+    private static IdCardItem mapIdCard(Cursor cursor) {
+        return new IdCardItem(
+                cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_CARD_ID)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_TYPE)),
+                IdCardItem.parseFieldsJson(
+                        cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_FIELDS_JSON))),
+                cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_DESIGN)),
+                cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
+                cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT)));
+    }
+
+    private static final String ACTIVE_LOGINS_WHERE =
+            "(" + COL_DELETED_AT + " IS NULL OR " + COL_DELETED_AT + "=0)";
+    private static final String TRASHED_WHERE =
+            COL_DELETED_AT + " IS NOT NULL AND " + COL_DELETED_AT + " != 0";
+
+    // ---- Logins ----
+
+    private static ContentValues loginValues(CredentialItem item, long now, boolean fresh) {
         ContentValues cv = new ContentValues();
         cv.put(COL_PLATFORM, item.getPlatform());
         cv.put(COL_USERNAME, item.getUsername());
@@ -246,59 +315,183 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_PIN, item.getPin());
         cv.put(COL_ICON_RES, item.getIconRes());
         cv.put(COL_MOBILE, item.getMobile() != null ? item.getMobile() : "");
-        // Functional timestamps: a fresh row is both created and updated now.
-        // Honour caller-supplied values (edit reinsert) when present.
-        long now = System.currentTimeMillis();
-        cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
-        cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
-        // Fresh rows are always active (not in Trash).
-        cv.put(COL_DELETED_AT, 0);
-        long id = db.insert(TABLE_LOGINS, null, cv);
-        db.close();
-        return id;
+        if (fresh) {
+            // Fresh rows are both created and updated now; honour
+            // caller-supplied values (edit reinsert) when present.
+            cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
+            cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
+            cv.put(COL_DELETED_AT, 0);
+        } else {
+            // created_at is immutable; every edit bumps updated_at.
+            cv.put(COL_UPDATED_AT,
+                    item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
+        }
+        return cv;
+    }
+
+    private static long insertLogin(SQLiteDatabase db, CredentialItem item) {
+        return db.insert(TABLE_LOGINS, null,
+                loginValues(item, System.currentTimeMillis(), true));
+    }
+
+    public long insertLogin(CredentialItem item) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            return insertLogin(db, item);
+        } finally {
+            db.close();
+        }
+    }
+
+    /**
+     * In-place update: preserves row id, created_at and every reverse link
+     * pointing at this account. Prefer over delete+reinsert for edits.
+     */
+    public int updateLogin(CredentialItem item) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            return updateLogin(db, item);
+        } finally {
+            db.close();
+        }
+    }
+
+    private static int updateLogin(SQLiteDatabase db, CredentialItem item) {
+        return db.update(TABLE_LOGINS,
+                loginValues(item, System.currentTimeMillis(), false),
+                COL_ID + "=?", new String[]{String.valueOf(item.getId())});
+    }
+
+    /**
+     * Atomic save: insert-or-update the row plus its forward links in one
+     * transaction on one connection. Reverse links from other accounts are
+     * untouched (only this row's outgoing edges are replaced).
+     *
+     * @return the row id (existing id for edits, new id for adds).
+     */
+    public long saveLoginWithAssociations(CredentialItem item, List<Integer> associatedIds) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            long id;
+            if (item.getId() > 0) {
+                updateLogin(db, item);
+                id = item.getId();
+            } else {
+                id = insertLogin(db, item);
+                if (id < 0) {
+                    return -1;
+                }
+            }
+            String[] args = {String.valueOf(id)};
+            db.delete(TABLE_ASSOCIATIONS, COL_LOGIN_ID + "=?", args);
+            if (associatedIds != null) {
+                for (Integer assocId : associatedIds) {
+                    if (assocId == null || assocId == id) {
+                        continue;
+                    }
+                    ContentValues cv = new ContentValues();
+                    cv.put(COL_LOGIN_ID, id);
+                    cv.put(COL_ASSOCIATED_ID, assocId);
+                    db.insert(TABLE_ASSOCIATIONS, null, cv);
+                }
+            }
+            db.setTransactionSuccessful();
+            return id;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+    }
+
+    public CredentialItem getLoginById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_LOGINS
+                    + " WHERE " + COL_ID + "=?", new String[]{String.valueOf(id)});
+            if (cursor.moveToFirst()) {
+                return mapLogin(cursor);
+            }
+            return null;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
     }
 
     public List<CredentialItem> getAllLogins() {
         List<CredentialItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        // Active rows only: trashed rows live in Trash (Settings).
-        // Newest-first by recency; id breaks ties on equal stamps.
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_LOGINS
-                + " WHERE " + COL_DELETED_AT + " IS NULL OR " + COL_DELETED_AT + "=0"
-                + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_ID + " DESC", null);
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(new CredentialItem(
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_PLATFORM)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_USERNAME)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_PASSWORD)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_PIN)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ICON_RES)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_MOBILE)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT))
-                ));
-            } while (cursor.moveToNext());
+        Cursor cursor = null;
+        try {
+            // Active rows only: trashed rows live in Trash (Settings).
+            // Newest-first by recency; id breaks ties on equal stamps.
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_LOGINS
+                    + " WHERE " + ACTIVE_LOGINS_WHERE
+                    + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_ID + " DESC", null);
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(mapLogin(cursor));
+                } while (cursor.moveToNext());
+            }
+            return list;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-        cursor.close();
-        db.close();
-        return list;
     }
 
     /**
      * Permanent delete: removes the row plus every association touching it.
-     * Used by Trash "delete forever" and by the social edit save
-     * (delete+reinsert). User-facing deletes must call
+     * Used by Trash "delete forever". User-facing deletes must call
      * {@link #moveLoginToTrash(int)} instead so the item lands in Trash.
      */
     public int deleteLogin(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_ASSOCIATIONS, COL_LOGIN_ID + "=? OR " + COL_ASSOCIATED_ID + "=?",
-                new String[]{String.valueOf(id), String.valueOf(id)});
-        int rows = db.delete(TABLE_LOGINS, COL_ID + "=?", new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        db.beginTransaction();
+        try {
+            db.delete(TABLE_ASSOCIATIONS, COL_LOGIN_ID + "=? OR " + COL_ASSOCIATED_ID + "=?",
+                    new String[]{String.valueOf(id), String.valueOf(id)});
+            int rows = db.delete(TABLE_LOGINS, COL_ID + "=?",
+                    new String[]{String.valueOf(id)});
+            db.setTransactionSuccessful();
+            return rows;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+    }
+
+    /** Permanent delete for a set of ids in one transaction. */
+    public int deleteLogins(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            int total = 0;
+            for (Integer id : ids) {
+                if (id == null) {
+                    continue;
+                }
+                String[] both = {String.valueOf(id), String.valueOf(id)};
+                db.delete(TABLE_ASSOCIATIONS,
+                        COL_LOGIN_ID + "=? OR " + COL_ASSOCIATED_ID + "=?", both);
+                total += db.delete(TABLE_LOGINS, COL_ID + "=?",
+                        new String[]{String.valueOf(id)});
+            }
+            db.setTransactionSuccessful();
+            return total;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
     }
 
     /**
@@ -308,51 +501,76 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
      */
     public int moveLoginToTrash(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_DELETED_AT, System.currentTimeMillis());
-        int rows = db.update(TABLE_LOGINS, cv, COL_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_DELETED_AT, System.currentTimeMillis());
+            return db.update(TABLE_LOGINS, cv, COL_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
+    }
+
+    /** Restores trashed accounts back to the dashboard (deleted_at = 0). */
+    public int restoreLogins(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_DELETED_AT, 0);
+            int total = 0;
+            for (Integer id : ids) {
+                if (id == null) {
+                    continue;
+                }
+                total += db.update(TABLE_LOGINS, cv, COL_ID + "=?",
+                        new String[]{String.valueOf(id)});
+            }
+            db.setTransactionSuccessful();
+            return total;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
     }
 
     /** Restores a trashed account back to the dashboard (deleted_at = 0). */
     public int restoreLogin(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_DELETED_AT, 0);
-        int rows = db.update(TABLE_LOGINS, cv, COL_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_DELETED_AT, 0);
+            return db.update(TABLE_LOGINS, cv, COL_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
     }
 
     /** Trashed social accounts, newest-deleted first. */
     public List<CredentialItem> getTrashedLogins() {
         List<CredentialItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_LOGINS
-                + " WHERE " + COL_DELETED_AT + " IS NOT NULL AND "
-                + COL_DELETED_AT + " != 0"
-                + " ORDER BY " + COL_DELETED_AT + " DESC, " + COL_ID + " DESC", null);
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(new CredentialItem(
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_PLATFORM)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_USERNAME)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_PASSWORD)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_PIN)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ICON_RES)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_MOBILE)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT))
-                ));
-            } while (cursor.moveToNext());
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_LOGINS
+                    + " WHERE " + TRASHED_WHERE
+                    + " ORDER BY " + COL_DELETED_AT + " DESC, " + COL_ID + " DESC", null);
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(mapLogin(cursor));
+                } while (cursor.moveToNext());
+            }
+            return list;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-        cursor.close();
-        db.close();
-        return list;
     }
 
     /**
@@ -362,25 +580,31 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
      */
     public int touchLoginUpdatedAt(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_UPDATED_AT, System.currentTimeMillis());
-        int rows = db.update(TABLE_LOGINS, cv, COL_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_UPDATED_AT, System.currentTimeMillis());
+            return db.update(TABLE_LOGINS, cv, COL_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
     }
 
     public void insertAssociation(long loginId, long associatedId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_LOGIN_ID, loginId);
-        cv.put(COL_ASSOCIATED_ID, associatedId);
-        db.insert(TABLE_ASSOCIATIONS, null, cv);
-        db.close();
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_LOGIN_ID, loginId);
+            cv.put(COL_ASSOCIATED_ID, associatedId);
+            db.insert(TABLE_ASSOCIATIONS, null, cv);
+        } finally {
+            db.close();
+        }
     }
 
-    public long insertBankCard(BankCardItem item) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    // ---- Bank cards ----
+
+    private static ContentValues bankCardValues(BankCardItem item, long now, boolean fresh) {
         ContentValues cv = new ContentValues();
         cv.put(COL_CARD_TYPE, item.getCardType());
         cv.put(COL_CARD_NETWORK, item.getCardNetwork());
@@ -391,75 +615,115 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_CVV, item.getCvv());
         cv.put(COL_CARD_PIN, item.getPin());
         cv.put(COL_DESIGN, item.getDesign());
-        // Functional timestamps: a fresh row is both created and updated now.
-        // Honour caller-supplied values (e.g. imports) when present.
-        long now = System.currentTimeMillis();
-        cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
-        cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
-        cv.put(COL_DELETED_AT, 0);
-        long id = db.insert(TABLE_BANK_CARDS, null, cv);
-        db.close();
-        return id;
+        if (fresh) {
+            // Fresh rows are both created and updated now; honour
+            // caller-supplied values (e.g. imports) when present.
+            cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
+            cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
+            cv.put(COL_DELETED_AT, 0);
+        } else {
+            // created_at is immutable: never overwritten.
+            cv.put(COL_UPDATED_AT,
+                    item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
+        }
+        return cv;
+    }
+
+    public long insertBankCard(BankCardItem item) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            return db.insert(TABLE_BANK_CARDS, null,
+                    bankCardValues(item, System.currentTimeMillis(), true));
+        } finally {
+            db.close();
+        }
+    }
+
+    public BankCardItem getBankCardById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS
+                    + " WHERE " + COL_CARD_ID + "=?", new String[]{String.valueOf(id)});
+            if (cursor.moveToFirst()) {
+                return mapBankCard(cursor);
+            }
+            return null;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
     }
 
     public List<BankCardItem> getAllBankCards() {
         List<BankCardItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        // Active rows only; trashed cards live in Trash.
-        // Newest-first by recency; id breaks ties on equal stamps.
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS
-                + " WHERE " + COL_DELETED_AT + " IS NULL OR " + COL_DELETED_AT + "=0"
-                + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_CARD_ID + " DESC", null);
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(new BankCardItem(
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_CARD_ID)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_TYPE)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_NETWORK)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_BANK_NAME)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_HOLDER_NAME)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_NUMBER)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_EXPIRY)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CVV)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_PIN)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_DESIGN)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT))
-                ));
-            } while (cursor.moveToNext());
+        Cursor cursor = null;
+        try {
+            // Active rows only; trashed cards live in Trash.
+            // Newest-first by recency; id breaks ties on equal stamps.
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS
+                    + " WHERE " + ACTIVE_LOGINS_WHERE
+                    + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_CARD_ID + " DESC", null);
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(mapBankCard(cursor));
+                } while (cursor.moveToNext());
+            }
+            return list;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-        cursor.close();
-        db.close();
-        return list;
     }
 
     public int updateBankCard(BankCardItem item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_CARD_TYPE, item.getCardType());
-        cv.put(COL_CARD_NETWORK, item.getCardNetwork());
-        cv.put(COL_BANK_NAME, item.getBankName());
-        cv.put(COL_HOLDER_NAME, item.getHolderName());
-        cv.put(COL_CARD_NUMBER, item.getCardNumber());
-        cv.put(COL_EXPIRY, item.getExpiry());
-        cv.put(COL_CVV, item.getCvv());
-        cv.put(COL_CARD_PIN, item.getPin());
-        cv.put(COL_DESIGN, item.getDesign());
-        // created_at is immutable: never overwritten, so creation order is kept.
-        // Every edit bumps updated_at; honour an explicit value if the caller set one.
-        cv.put(COL_UPDATED_AT,
-                item.getUpdatedAt() > 0 ? item.getUpdatedAt() : System.currentTimeMillis());
-        int rows = db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
-                new String[]{String.valueOf(item.getId())});
-        db.close();
-        return rows;
+        try {
+            return db.update(TABLE_BANK_CARDS,
+                    bankCardValues(item, System.currentTimeMillis(), false),
+                    COL_CARD_ID + "=?", new String[]{String.valueOf(item.getId())});
+        } finally {
+            db.close();
+        }
     }
 
     public int deleteBankCard(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        int rows = db.delete(TABLE_BANK_CARDS, COL_CARD_ID + "=?", new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            return db.delete(TABLE_BANK_CARDS, COL_CARD_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
+    }
+
+    /** Permanent delete for a set of ids in one transaction. */
+    public int deleteBankCards(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            int total = 0;
+            for (Integer id : ids) {
+                if (id == null) {
+                    continue;
+                }
+                total += db.delete(TABLE_BANK_CARDS, COL_CARD_ID + "=?",
+                        new String[]{String.valueOf(id)});
+            }
+            db.setTransactionSuccessful();
+            return total;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
     }
 
     /**
@@ -468,54 +732,76 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
      */
     public int moveBankCardToTrash(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_DELETED_AT, System.currentTimeMillis());
-        int rows = db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_DELETED_AT, System.currentTimeMillis());
+            return db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
+    }
+
+    /** Restores trashed cards back to the dashboard. */
+    public int restoreBankCards(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_DELETED_AT, 0);
+            int total = 0;
+            for (Integer id : ids) {
+                if (id == null) {
+                    continue;
+                }
+                total += db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
+                        new String[]{String.valueOf(id)});
+            }
+            db.setTransactionSuccessful();
+            return total;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
     }
 
     /** Restores a trashed card back to the dashboard. */
     public int restoreBankCard(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_DELETED_AT, 0);
-        int rows = db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_DELETED_AT, 0);
+            return db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
     }
 
     /** Trashed bank cards, newest-deleted first. */
     public List<BankCardItem> getTrashedBankCards() {
         List<BankCardItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS
-                + " WHERE " + COL_DELETED_AT + " IS NOT NULL AND "
-                + COL_DELETED_AT + " != 0"
-                + " ORDER BY " + COL_DELETED_AT + " DESC, " + COL_CARD_ID + " DESC", null);
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(new BankCardItem(
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_CARD_ID)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_TYPE)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_NETWORK)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_BANK_NAME)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_HOLDER_NAME)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_NUMBER)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_EXPIRY)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CVV)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_CARD_PIN)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_DESIGN)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT))
-                ));
-            } while (cursor.moveToNext());
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_BANK_CARDS
+                    + " WHERE " + TRASHED_WHERE
+                    + " ORDER BY " + COL_DELETED_AT + " DESC, " + COL_CARD_ID + " DESC", null);
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(mapBankCard(cursor));
+                } while (cursor.moveToNext());
+            }
+            return list;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-        cursor.close();
-        db.close();
-        return list;
     }
 
     /**
@@ -525,73 +811,99 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
      */
     public int touchBankCardUpdatedAt(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_UPDATED_AT, System.currentTimeMillis());
-        int rows = db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_UPDATED_AT, System.currentTimeMillis());
+            return db.update(TABLE_BANK_CARDS, cv, COL_CARD_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
     }
 
-    public long insertIdCard(IdCardItem item) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    // ---- ID cards ----
+
+    private static ContentValues idCardValues(IdCardItem item, long now, boolean fresh) {
         ContentValues cv = new ContentValues();
         cv.put(COL_ID_TYPE, item.getIdType());
         cv.put(COL_ID_FIELDS_JSON, item.getFieldsJson());
         cv.put(COL_ID_DESIGN, item.getDesign());
-        // Functional timestamps: a fresh row is both created and updated now.
-        // Honour caller-supplied values (e.g. imports) when present. The JSON
-        // blob is untouched — stamps live in their own columns.
-        long now = System.currentTimeMillis();
-        cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
-        cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
-        cv.put(COL_DELETED_AT, 0);
-        long id = db.insert(TABLE_ID_CARDS, null, cv);
-        db.close();
-        return id;
+        if (fresh) {
+            // Honour caller-supplied values (e.g. imports) when present.
+            // The JSON blob is untouched — stamps live in their own columns.
+            cv.put(COL_CREATED_AT, item.getCreatedAt() > 0 ? item.getCreatedAt() : now);
+            cv.put(COL_UPDATED_AT, item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
+            cv.put(COL_DELETED_AT, 0);
+        } else {
+            // created_at is immutable: never overwritten.
+            cv.put(COL_UPDATED_AT,
+                    item.getUpdatedAt() > 0 ? item.getUpdatedAt() : now);
+        }
+        return cv;
+    }
+
+    public long insertIdCard(IdCardItem item) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            return db.insert(TABLE_ID_CARDS, null,
+                    idCardValues(item, System.currentTimeMillis(), true));
+        } finally {
+            db.close();
+        }
+    }
+
+    public IdCardItem getIdCardById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS
+                    + " WHERE " + COL_ID_CARD_ID + "=?", new String[]{String.valueOf(id)});
+            if (cursor.moveToFirst()) {
+                return mapIdCard(cursor);
+            }
+            return null;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
     }
 
     public List<IdCardItem> getAllIdCards() {
         List<IdCardItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        // Active rows only; trashed IDs live in Trash.
-        // Newest-first by recency, matching bank cards and logins; id breaks
-        // ties on equal stamps.
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS
-                + " WHERE " + COL_DELETED_AT + " IS NULL OR " + COL_DELETED_AT + "=0"
-                + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_ID_CARD_ID + " DESC", null);
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(new IdCardItem(
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_CARD_ID)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_TYPE)),
-                        IdCardItem.parseFieldsJson(
-                                cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_FIELDS_JSON))),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_DESIGN)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT))
-                ));
-            } while (cursor.moveToNext());
+        Cursor cursor = null;
+        try {
+            // Active rows only; trashed IDs live in Trash.
+            // Newest-first by recency, matching bank cards and logins; id breaks
+            // ties on equal stamps.
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS
+                    + " WHERE " + ACTIVE_LOGINS_WHERE
+                    + " ORDER BY " + COL_UPDATED_AT + " DESC, " + COL_ID_CARD_ID + " DESC", null);
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(mapIdCard(cursor));
+                } while (cursor.moveToNext());
+            }
+            return list;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-        cursor.close();
-        db.close();
-        return list;
     }
 
     public int updateIdCard(IdCardItem item) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_ID_TYPE, item.getIdType());
-        cv.put(COL_ID_FIELDS_JSON, item.getFieldsJson());
-        cv.put(COL_ID_DESIGN, item.getDesign());
-        // created_at is immutable: never overwritten, so creation order is kept.
-        // Every edit bumps updated_at; honour an explicit value if the caller set one.
-        cv.put(COL_UPDATED_AT,
-                item.getUpdatedAt() > 0 ? item.getUpdatedAt() : System.currentTimeMillis());
-        int rows = db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
-                new String[]{String.valueOf(item.getId())});
-        db.close();
-        return rows;
+        try {
+            return db.update(TABLE_ID_CARDS,
+                    idCardValues(item, System.currentTimeMillis(), false),
+                    COL_ID_CARD_ID + "=?", new String[]{String.valueOf(item.getId())});
+        } finally {
+            db.close();
+        }
     }
 
     /**
@@ -602,19 +914,48 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
      */
     public int touchIdCardUpdatedAt(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_UPDATED_AT, System.currentTimeMillis());
-        int rows = db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_UPDATED_AT, System.currentTimeMillis());
+            return db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
     }
 
     public int deleteIdCard(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        int rows = db.delete(TABLE_ID_CARDS, COL_ID_CARD_ID + "=?", new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            return db.delete(TABLE_ID_CARDS, COL_ID_CARD_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
+    }
+
+    /** Permanent delete for a set of ids in one transaction. */
+    public int deleteIdCards(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            int total = 0;
+            for (Integer id : ids) {
+                if (id == null) {
+                    continue;
+                }
+                total += db.delete(TABLE_ID_CARDS, COL_ID_CARD_ID + "=?",
+                        new String[]{String.valueOf(id)});
+            }
+            db.setTransactionSuccessful();
+            return total;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
     }
 
     /**
@@ -623,70 +964,120 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
      */
     public int moveIdCardToTrash(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_DELETED_AT, System.currentTimeMillis());
-        int rows = db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_DELETED_AT, System.currentTimeMillis());
+            return db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
+    }
+
+    /** Restores trashed IDs back to the dashboard. */
+    public int restoreIdCards(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_DELETED_AT, 0);
+            int total = 0;
+            for (Integer id : ids) {
+                if (id == null) {
+                    continue;
+                }
+                total += db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
+                        new String[]{String.valueOf(id)});
+            }
+            db.setTransactionSuccessful();
+            return total;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
     }
 
     /** Restores a trashed ID back to the dashboard. */
     public int restoreIdCard(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_DELETED_AT, 0);
-        int rows = db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return rows;
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_DELETED_AT, 0);
+            return db.update(TABLE_ID_CARDS, cv, COL_ID_CARD_ID + "=?",
+                    new String[]{String.valueOf(id)});
+        } finally {
+            db.close();
+        }
     }
 
     /** Trashed government IDs, newest-deleted first. */
     public List<IdCardItem> getTrashedIdCards() {
         List<IdCardItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS
-                + " WHERE " + COL_DELETED_AT + " IS NOT NULL AND "
-                + COL_DELETED_AT + " != 0"
-                + " ORDER BY " + COL_DELETED_AT + " DESC, " + COL_ID_CARD_ID + " DESC", null);
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(new IdCardItem(
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_CARD_ID)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_TYPE)),
-                        IdCardItem.parseFieldsJson(
-                                cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_FIELDS_JSON))),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_DESIGN)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
-                        cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT))
-                ));
-            } while (cursor.moveToNext());
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_ID_CARDS
+                    + " WHERE " + TRASHED_WHERE
+                    + " ORDER BY " + COL_DELETED_AT + " DESC, " + COL_ID_CARD_ID + " DESC", null);
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(mapIdCard(cursor));
+                } while (cursor.moveToNext());
+            }
+            return list;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-        cursor.close();
-        db.close();
-        return list;
     }
 
     /** Total items currently in Trash (all three vault tables). */
     public int getTrashCount() {
-        return getTrashedLogins().size()
-                + getTrashedBankCards().size()
-                + getTrashedIdCards().size();
+        SQLiteDatabase db = this.getReadableDatabase();
+        try {
+            return countWhere(db, TABLE_LOGINS) + countWhere(db, TABLE_BANK_CARDS)
+                    + countWhere(db, TABLE_ID_CARDS);
+        } finally {
+            db.close();
+        }
+    }
+
+    private static int countWhere(SQLiteDatabase db, String table) {
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT COUNT(*) FROM " + table
+                    + " WHERE " + TRASHED_WHERE, null);
+            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
     }
 
     public List<Integer> getAssociations(long loginId) {
         List<Integer> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT " + COL_ASSOCIATED_ID + " FROM " + TABLE_ASSOCIATIONS
-                + " WHERE " + COL_LOGIN_ID + "=?", new String[]{String.valueOf(loginId)});
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(cursor.getInt(0));
-            } while (cursor.moveToNext());
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT " + COL_ASSOCIATED_ID + " FROM " + TABLE_ASSOCIATIONS
+                    + " WHERE " + COL_LOGIN_ID + "=?", new String[]{String.valueOf(loginId)});
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(cursor.getInt(0));
+                } while (cursor.moveToNext());
+            }
+            return list;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-        cursor.close();
-        db.close();
-        return list;
     }
 }

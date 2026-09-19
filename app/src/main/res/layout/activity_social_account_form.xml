@@ -31,16 +31,9 @@
          so all headers match. -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
+        style="@style/Widget.Akin.Toolbar"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_marginStart="-12dp"
-        android:background="@android:color/transparent"
-        app:contentInsetStart="0dp"
-        app:contentInsetStartWithNavigation="0dp"
-        app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="@string/dialog_social_title"
-        app:titleMarginStart="12dp"
-        app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
+        app:title="@string/dialog_social_title" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -404,7 +397,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="No associated accounts"
+                android:text="@string/empty_associated"
                 android:textColor="@color/dashboard_muted"
                 android:textSize="12sp"
                 android:visibility="gone" />
@@ -415,71 +408,7 @@
 
     <!-- Save/Delete action row, same twin-outline pattern as the bank and
          government ID forms. Delete shows in edit mode only. -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:id="@+id/btn_save"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:background="@drawable/bg_button_outline"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:contentDescription="@string/action_save"
-                android:src="@drawable/ic_edit" />
-
-            <TextView
-                android:id="@+id/text_save_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:text="@string/action_save"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/btn_delete"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/bg_button_outline_red"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:contentDescription="@string/action_delete"
-                android:src="@drawable/ic_delete" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:text="@string/action_delete"
-                android:textColor="@color/danger"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-
-    </LinearLayout>
+    <include layout="@layout/form_action_row" />
 
 </LinearLayout>
 
@@ -531,7 +460,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="No platforms found"
+                        android:text="@string/empty_platforms"
                         android:textAppearance="@style/TextAppearance.Akin.CardTitle" />
 
                     <TextView
@@ -597,7 +526,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="No accounts found"
+                        android:text="@string/empty_accounts"
                         android:textAppearance="@style/TextAppearance.Akin.CardTitle" />
 
                     <TextView

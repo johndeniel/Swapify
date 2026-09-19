@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
@@ -47,11 +48,32 @@ public class DashboardCardAdapter extends RecyclerView.Adapter<DashboardCardAdap
     }
 
     public void updateData(List<BankCardItem> newItems) {
+        List<BankCardItem> next =
+                newItems != null ? new ArrayList<>(newItems) : new ArrayList<>();
+        DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return items.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return next.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldPos, int newPos) {
+                return items.get(oldPos).getId() == next.get(newPos).getId();
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldPos, int newPos) {
+                return items.get(oldPos).equals(next.get(newPos));
+            }
+        });
         items.clear();
-        if (newItems != null) {
-            items.addAll(newItems);
-        }
-        notifyDataSetChanged();
+        items.addAll(next);
+        diff.dispatchUpdatesTo(this);
     }
 
     @NonNull
@@ -64,7 +86,10 @@ public class DashboardCardAdapter extends RecyclerView.Adapter<DashboardCardAdap
         ViewGroup.LayoutParams lp = view.getLayoutParams();
         int parentWidth = parent.getMeasuredWidth();
         if (parentWidth <= 0) {
-            parentWidth = parent.getResources().getDisplayMetrics().widthPixels;
+            // Pre-layout inflation: display width minus carousel padding, the
+            // same viewport the dashboard measures pages against.
+            parentWidth = parent.getResources().getDisplayMetrics().widthPixels
+                    - parent.getPaddingStart() - parent.getPaddingEnd();
         }
         if (lp != null && parentWidth > 0) {
             lp.width = (int) (parentWidth * PAGE_WIDTH_RATIO);
@@ -82,12 +107,12 @@ public class DashboardCardAdapter extends RecyclerView.Adapter<DashboardCardAdap
             design = 0;
         }
         holder.cardRoot.setBackgroundResource(backgrounds[design]);
-        holder.bank.setText(CardText.safe(item.getBankName(), "YOUR BANK").toUpperCase());
-        holder.holder.setText(CardText.safe(item.getHolderName(), "CARDHOLDER NAME").toUpperCase());
+        holder.bank.setText(CardText.safe(item.getBankName(), "YOUR BANK").toUpperCase(java.util.Locale.ROOT));
+        holder.holder.setText(CardText.safe(item.getHolderName(), "CARDHOLDER NAME").toUpperCase(java.util.Locale.ROOT));
         holder.number.setText("•••• •••• •••• " + CardText.last4(item.getCardNumber()));
         holder.expiry.setText(CardText.formatExpiry(item.getExpiry()));
         BankCardDesignAdapter.applyNetworkLogo(holder.network, item.getCardNetwork());
-        holder.type.setText(CardText.safe(item.getCardType(), "DEBIT").toUpperCase());
+        holder.type.setText(CardText.safe(item.getCardType(), "DEBIT").toUpperCase(java.util.Locale.ROOT));
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {

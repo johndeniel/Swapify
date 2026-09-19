@@ -54,7 +54,8 @@ public final class DbKeyManager {
     @NonNull
     public static synchronized char[] getPassphrase(@NonNull Context context) {
         if (cachedPassphrase != null) {
-            return cachedPassphrase;
+            // Defensive copy: callers must not mutate the cached key.
+            return cachedPassphrase.clone();
         }
         Context app = context.getApplicationContext();
         SharedPreferences prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE);

@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.akin.wallet.R;
+import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
 
 /**
@@ -31,18 +32,27 @@ public class PolicyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_policy);
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar == null) {
+            finish();
+            return;
+        }
         toolbar.setNavigationOnClickListener(v -> finish());
 
         LinearLayout sections = findViewById(R.id.policy_sections);
+        if (sections == null) {
+            finish();
+            return;
+        }
 
+        String type = getIntent().getStringExtra(EXTRA_TYPE);
         String body;
-        if (TYPE_TERMS.equals(getIntent().getStringExtra(EXTRA_TYPE))) {
+        if (TYPE_TERMS.equals(type)) {
             toolbar.setTitle(R.string.settings_terms);
             body = getString(R.string.policy_terms_body);
-        } else if (TYPE_ABOUT.equals(getIntent().getStringExtra(EXTRA_TYPE))) {
+        } else if (TYPE_ABOUT.equals(type)) {
             toolbar.setTitle(R.string.settings_about);
             body = getString(R.string.policy_about_body)
-                    .replace("{version}", versionName());
+                    .replace("{version}", Ui.versionName(this));
         } else {
             toolbar.setTitle(R.string.settings_privacy);
             body = getString(R.string.policy_privacy_body);
@@ -50,22 +60,11 @@ public class PolicyActivity extends AppCompatActivity {
         renderSections(sections, body);
     }
 
-    /** Installed version stamped on the About page (falls back to 1.0). */
-    private String versionName() {
-        try {
-            return getPackageManager()
-                    .getPackageInfo(getPackageName(), 0).versionName;
-        } catch (Exception e) {
-            return "1.0";
-        }
-    }
-
     /** Splits "HEADING\nbody\n\n..." into styled heading + body view pairs. */
     private void renderSections(LinearLayout container, String body) {
         if (body == null || body.trim().isEmpty()) {
             return;
         }
-        float density = getResources().getDisplayMetrics().density;
         boolean first = true;
         for (String chunk : body.split("\n\n")) {
             String section = chunk.trim();
@@ -84,7 +83,7 @@ public class PolicyActivity extends AppCompatActivity {
             headingView.setLetterSpacing(0.06f);
             LinearLayout.LayoutParams headingParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            headingParams.topMargin = first ? 0 : (int) (20 * density);
+            headingParams.topMargin = first ? 0 : Ui.dp(this, 20);
             headingView.setLayoutParams(headingParams);
             container.addView(headingView);
 
@@ -96,7 +95,7 @@ public class PolicyActivity extends AppCompatActivity {
                 bodyView.setLineSpacing(0, 1.25f);
                 LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                bodyParams.topMargin = (int) (6 * density);
+                bodyParams.topMargin = Ui.dp(this, 6);
                 bodyView.setLayoutParams(bodyParams);
                 container.addView(bodyView);
             }

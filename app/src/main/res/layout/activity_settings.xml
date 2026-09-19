@@ -24,16 +24,9 @@
          zeroed so the title sits a fixed 12dp past the arrow. -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
+        style="@style/Widget.Akin.Toolbar"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_marginStart="-12dp"
-        android:background="@android:color/transparent"
-        app:contentInsetStart="0dp"
-        app:contentInsetStartWithNavigation="0dp"
-        app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="@string/settings_title"
-        app:titleMarginStart="12dp"
-        app:titleTextAppearance="@style/TextAppearance.Akin.ToolbarTitle" />
+        app:title="@string/settings_title" />
 
     <TextView
         android:layout_width="wrap_content"

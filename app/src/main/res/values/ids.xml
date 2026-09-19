@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- View-tag key for the pending empty-state measure runnable. -->
+    <item name="tag_measure" type="id" />
+    <!-- View-tag key for the last applied network logo (icon + height). -->
+    <item name="tag_network" type="id" />
+</resources>

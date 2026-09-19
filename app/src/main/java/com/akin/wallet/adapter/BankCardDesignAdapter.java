@@ -34,12 +34,28 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
 
     public void updatePreview(String bankName, String holderName, String last4,
                               String expiry, String cardType, String cardNetwork) {
-        this.bankName = bankName != null ? bankName : "";
-        this.holderName = holderName != null ? holderName : "";
-        this.last4 = last4 != null ? last4 : "";
-        this.expiry = expiry != null ? expiry : "";
-        this.cardType = cardType != null ? cardType : "";
-        this.cardNetwork = cardNetwork != null ? cardNetwork : "";
+        String nextBank = bankName != null ? bankName : "";
+        String nextHolder = holderName != null ? holderName : "";
+        String nextLast4 = last4 != null ? last4 : "";
+        String nextExpiry = expiry != null ? expiry : "";
+        String nextType = cardType != null ? cardType : "";
+        String nextNetwork = cardNetwork != null ? cardNetwork : "";
+        if (nextBank.equals(this.bankName)
+                && nextHolder.equals(this.holderName)
+                && nextLast4.equals(this.last4)
+                && nextExpiry.equals(this.expiry)
+                && nextType.equals(this.cardType)
+                && nextNetwork.equals(this.cardNetwork)) {
+            // Typing that changes nothing visible (e.g. beyond max length)
+            // skips the full carousel rebind.
+            return;
+        }
+        this.bankName = nextBank;
+        this.holderName = nextHolder;
+        this.last4 = nextLast4;
+        this.expiry = nextExpiry;
+        this.cardType = nextType;
+        this.cardNetwork = nextNetwork;
         notifyDataSetChanged();
     }
 
@@ -54,7 +70,10 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         ViewGroup.LayoutParams lp = view.getLayoutParams();
         int parentWidth = parent.getMeasuredWidth();
         if (parentWidth <= 0) {
-            parentWidth = parent.getResources().getDisplayMetrics().widthPixels;
+            // Pre-layout inflation: display width minus carousel padding, the
+            // same viewport the dashboard measures pages against.
+            parentWidth = parent.getResources().getDisplayMetrics().widthPixels
+                    - parent.getPaddingStart() - parent.getPaddingEnd();
         }
         if (lp != null && parentWidth > 0) {
             lp.width = (int) (parentWidth * DashboardCardAdapter.PAGE_WIDTH_RATIO);
@@ -67,12 +86,12 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
         applyCardOutline(holder.cardRoot);
         holder.cardRoot.setBackgroundResource(backgrounds[position]);
-        holder.bank.setText(bankName.isEmpty() ? "YOUR BANK" : bankName.toUpperCase());
-        holder.holder.setText(holderName.isEmpty() ? "CARDHOLDER NAME" : holderName.toUpperCase());
+        holder.bank.setText(bankName.isEmpty() ? "YOUR BANK" : bankName.toUpperCase(java.util.Locale.ROOT));
+        holder.holder.setText(holderName.isEmpty() ? "CARDHOLDER NAME" : holderName.toUpperCase(java.util.Locale.ROOT));
         holder.number.setText("•••• •••• •••• " + (last4.isEmpty() ? "••••" : last4));
         holder.expiry.setText(expiry.isEmpty() ? "MM/YY" : expiry);
         applyNetworkLogo(holder.network, cardNetwork);
-        holder.type.setText(cardType.isEmpty() ? "DEBIT" : cardType.toUpperCase());
+        holder.type.setText(cardType.isEmpty() ? "DEBIT" : cardType.toUpperCase(java.util.Locale.ROOT));
     }
 
     @Override
@@ -80,19 +99,26 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         return backgrounds.length;
     }
 
+    /** One outline provider for every card: radius resolves per view, no per-bind allocation. */
+    private static final android.view.ViewOutlineProvider CARD_OUTLINE =
+            new android.view.ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, android.graphics.Outline outline) {
+                    float density = view.getResources().getDisplayMetrics().density;
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(),
+                            16 * density);
+                }
+            };
+
     static void applyCardOutline(View cardRoot) {
-        float density = cardRoot.getResources().getDisplayMetrics().density;
-        cardRoot.setOutlineProvider(new android.view.ViewOutlineProvider() {
-            @Override
-            public void getOutline(View view, android.graphics.Outline outline) {
-                outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), 16 * density);
-            }
-        });
-        cardRoot.setClipToOutline(true);
+        if (cardRoot.getOutlineProvider() != CARD_OUTLINE) {
+            cardRoot.setOutlineProvider(CARD_OUTLINE);
+            cardRoot.setClipToOutline(true);
+        }
     }
 
     static void applyNetworkLogo(ImageView logoView, String network) {
-        String name = network != null ? network.trim().toLowerCase() : "visa";
+        String name = network != null ? network.trim().toLowerCase(java.util.Locale.ROOT) : "visa";
         int icon;
         int heightDp;
         if ("mastercard".equals(name)) {
@@ -102,11 +128,19 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
             icon = R.drawable.visa;
             heightDp = 11;
         }
+        // setLayoutParams triggers a full measure/layout pass: only pay it
+        // when the logo or its height actually changed.
+        Object tag = logoView.getTag(com.akin.wallet.R.id.tag_network);
+        int key = icon * 100 + heightDp;
+        if (tag instanceof Integer && ((Integer) tag).intValue() == key) {
+            return;
+        }
         logoView.setImageResource(icon);
         float density = logoView.getResources().getDisplayMetrics().density;
         android.view.ViewGroup.LayoutParams params = logoView.getLayoutParams();
-        params.height = (int) (heightDp * density);
+        params.height = Math.round(heightDp * density);
         logoView.setLayoutParams(params);
+        logoView.setTag(com.akin.wallet.R.id.tag_network, key);
     }
 
     static class CardViewHolder extends RecyclerView.ViewHolder {

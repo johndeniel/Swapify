@@ -81,15 +81,55 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             return !header;
         }
 
-        /** Stable selection key across reloads (kind + row id). */
-        public String key() {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Entry)) {
+                return false;
+            }
+            Entry that = (Entry) o;
+            if (header != that.header || kind != that.kind) {
+                return false;
+            }
+            if (header) {
+                return headerCount == that.headerCount
+                        && java.util.Objects.equals(headerTitle, that.headerTitle);
+            }
             switch (kind) {
                 case KIND_ID:
-                    return "id:" + id.getId();
+                    return java.util.Objects.equals(id, that.id);
                 case KIND_CARD:
-                    return "card:" + card.getId();
+                    return java.util.Objects.equals(card, that.card);
                 case KIND_SOCIAL:
-                    return "social:" + account.getId();
+                    return java.util.Objects.equals(account, that.account);
+                default:
+                    return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            if (header) {
+                return java.util.Objects.hash(kind, headerTitle, headerCount);
+            }
+            Object item = kind == KIND_ID ? id : kind == KIND_CARD ? card : account;
+            return java.util.Objects.hash(kind, item);
+        }
+
+        /** Stable selection key across reloads (kind + row id). */
+        public String key() {
+            if (header) {
+                return "header:" + headerTitle;
+            }
+            switch (kind) {
+                case KIND_ID:
+                    return "id:" + (id != null ? id.getId() : -1);
+                case KIND_CARD:
+                    return "card:" + (card != null ? card.getId() : -1);
+                case KIND_SOCIAL:
+                    return "social:" + (account != null ? account.getId() : -1);
                 default:
                     return "header:" + headerTitle;
             }
@@ -109,12 +149,72 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public void updateData(List<Entry> newEntries) {
+        List<Entry> next = newEntries != null ? new ArrayList<>(newEntries) : new ArrayList<>();
+        androidx.recyclerview.widget.DiffUtil.DiffResult diff =
+                androidx.recyclerview.widget.DiffUtil.calculateDiff(
+                        new androidx.recyclerview.widget.DiffUtil.Callback() {
+                            @Override
+                            public int getOldListSize() {
+                                return entries.size();
+                            }
+
+                            @Override
+                            public int getNewListSize() {
+                                return next.size();
+                            }
+
+                            @Override
+                            public boolean areItemsTheSame(int oldPos, int newPos) {
+                                return entries.get(oldPos).key().equals(next.get(newPos).key());
+                            }
+
+                            @Override
+                            public boolean areContentsTheSame(int oldPos, int newPos) {
+                                return entries.get(oldPos).equals(next.get(newPos));
+                            }
+                        });
         entries.clear();
-        if (newEntries != null) {
-            entries.addAll(newEntries);
+        entries.addAll(next);
+        // Keep selections that still exist (rotation-safe reloads); drop the rest.
+        if (!selectedKeys.isEmpty()) {
+            Set<String> live = new HashSet<>();
+            for (Entry e : entries) {
+                if (e.isSelectable()) {
+                    live.add(e.key());
+                }
+            }
+            selectedKeys.retainAll(live);
         }
+        diff.dispatchUpdatesTo(this);
+        emitSelection();
+    }
+
+    /** Selection keys for rotation save/restore. */
+    @NonNull
+    public ArrayList<String> saveSelection() {
+        return new ArrayList<>(selectedKeys);
+    }
+
+    public void restoreSelection(List<String> keys) {
         selectedKeys.clear();
-        notifyDataSetChanged();
+        if (keys != null) {
+            for (String key : keys) {
+                if (key != null) {
+                    selectedKeys.add(key);
+                }
+            }
+        }
+        // Prune keys with no matching row, then repaint only if selecting.
+        Set<String> live = new HashSet<>();
+        for (Entry e : entries) {
+            if (e.isSelectable()) {
+                live.add(e.key());
+            }
+        }
+        selectedKeys.retainAll(live);
+        if (!selectedKeys.isEmpty()) {
+            notifyDataSetChanged();
+        }
         emitSelection();
     }
 
@@ -130,7 +230,8 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public int getSelectedCount() {
-        return selectedEntries().size();
+        // Keys only ever hold selectable tiles (toggle/selectAll guard it).
+        return selectedKeys.size();
     }
 
     public int getSelectableCount() {
@@ -170,6 +271,9 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemViewType(int position) {
+        if (position < 0 || position >= entries.size()) {
+            return TYPE_HEADER;
+        }
         return entries.get(position).header ? TYPE_HEADER : TYPE_TILE;
     }
 
@@ -190,7 +294,8 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         if (holder instanceof HeaderHolder) {
             HeaderHolder h = (HeaderHolder) holder;
             h.title.setText(entry.headerTitle);
-            h.count.setText("• " + entry.headerCount);
+            h.count.setText(h.itemView.getContext()
+                    .getString(R.string.trash_header_count, entry.headerCount));
             return;
         }
         TileHolder h = (TileHolder) holder;
@@ -215,28 +320,38 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             h.sub.setText(username.isEmpty() ? "Social Login" : username);
             PlatformIcons.bindIcon(h.icon, entry.account.getPlatform(), entry.account.getIconRes());
         }
-        bindSelectable(h.card, h.badge, entry, position);
+        bindSelectable(h, entry);
     }
 
     /** Tap toggles selection: badge + blue stroke on, hairline off. */
-    private void bindSelectable(MaterialCardView card, View badge, Entry entry, int position) {
+    private void bindSelectable(TileHolder h, Entry entry) {
+        MaterialCardView card = h.card;
+        View badge = h.badge;
         boolean selected = selectedKeys.contains(entry.key());
         badge.setVisibility(selected ? View.VISIBLE : View.GONE);
+        float density = card.getResources().getDisplayMetrics().density;
         if (selected) {
             card.setStrokeColor(card.getContext().getColor(R.color.brand_blue));
-            card.setStrokeWidth((int) (2 * card.getResources().getDisplayMetrics().density));
+            card.setStrokeWidth(Math.round(2 * density));
         } else {
             card.setStrokeColor(card.getContext().getColor(R.color.dashboard_surface_border));
-            card.setStrokeWidth((int) (1 * card.getResources().getDisplayMetrics().density));
+            card.setStrokeWidth(Math.round(1 * density));
         }
         card.setOnClickListener(v -> {
-            String key = entry.key();
+            // Position resolved at click time: bind-time positions go stale
+            // after reloads/removals.
+            int pos = h.getAdapterPosition();
+            if (pos == RecyclerView.NO_POSITION
+                    || pos < 0 || pos >= entries.size()) {
+                return;
+            }
+            String key = entries.get(pos).key();
             if (selectedKeys.contains(key)) {
                 selectedKeys.remove(key);
             } else {
                 selectedKeys.add(key);
             }
-            notifyItemChanged(position);
+            notifyItemChanged(pos);
             emitSelection();
         });
     }

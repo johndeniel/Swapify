@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
@@ -30,37 +29,15 @@ import com.google.android.material.appbar.MaterialToolbar;
 public class BankCardFormActivity extends AppCompatActivity {
 
     public static final String EXTRA_ID = "extra_id";
-    public static final String EXTRA_TYPE = "extra_type";
-    public static final String EXTRA_NETWORK = "extra_network";
-    public static final String EXTRA_BANK = "extra_bank";
-    public static final String EXTRA_HOLDER = "extra_holder";
-    public static final String EXTRA_NUMBER = "extra_number";
-    public static final String EXTRA_EXPIRY = "extra_expiry";
-    public static final String EXTRA_CVV = "extra_cvv";
-    public static final String EXTRA_PIN = "extra_pin";
-    public static final String EXTRA_DESIGN = "extra_design";
-    public static final String EXTRA_CREATED_AT = "extra_created_at";
-    public static final String EXTRA_UPDATED_AT = "extra_updated_at";
 
     /**
-     * Intent that opens this form to edit an existing card. Single packing
-     * site so callers can't drift (a missed extra silently becomes a default).
+     * Intent that opens this form to edit an existing card. Carries the row
+     * id only — the form re-queries the vault, so secrets never travel as
+     * Intent extras and edits always start current.
      */
     public static Intent editIntent(@NonNull Context context, @NonNull BankCardItem item) {
-        Intent edit = new Intent(context, BankCardFormActivity.class);
-        edit.putExtra(EXTRA_ID, item.getId());
-        edit.putExtra(EXTRA_TYPE, item.getCardType());
-        edit.putExtra(EXTRA_NETWORK, item.getCardNetwork());
-        edit.putExtra(EXTRA_BANK, item.getBankName());
-        edit.putExtra(EXTRA_HOLDER, item.getHolderName());
-        edit.putExtra(EXTRA_NUMBER, item.getCardNumber());
-        edit.putExtra(EXTRA_EXPIRY, item.getExpiry());
-        edit.putExtra(EXTRA_CVV, item.getCvv());
-        edit.putExtra(EXTRA_PIN, item.getPin());
-        edit.putExtra(EXTRA_DESIGN, item.getDesign());
-        edit.putExtra(EXTRA_CREATED_AT, item.getCreatedAt());
-        edit.putExtra(EXTRA_UPDATED_AT, item.getUpdatedAt());
-        return edit;
+        return new Intent(context, BankCardFormActivity.class)
+                .putExtra(EXTRA_ID, item.getId());
     }
 
     // Fixed option sets. Order doubles as the persisted design/type index, so
@@ -118,11 +95,17 @@ public class BankCardFormActivity extends AppCompatActivity {
     private LinearLayoutManager designLayoutManager;
     private PagerSnapHelper designSnapHelper;
     private LinearLayout dotsContainer;
+    /** True once the initial scroll-to-design has settled; onScrolled before
+     * that is layout noise that must not overwrite the restored design. */
+    private boolean carouselSettled;
 
     // Re-entrancy guards for the formatting watchers. Without these, setText
     // inside afterTextChanged would recurse until a stack overflow.
     private boolean isFormattingNumber;
     private boolean isFormattingExpiry;
+    /** Owned dialogs: dismissed in onDestroy so rotation cannot leak windows. */
+    private androidx.appcompat.app.AlertDialog choiceDialog;
+    private androidx.appcompat.app.AlertDialog deleteDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,7 +126,18 @@ public class BankCardFormActivity extends AppCompatActivity {
             selectedDesign = Math.max(0, savedInstanceState.getInt(KEY_SELECTED_DESIGN, 0));
         }
 
-        bindForm(resolveEditingItem(savedInstanceState != null));
+        BankCardItem existing = resolveEditingItem(savedInstanceState != null);
+        if (isFinishing()) {
+            // Row vanished mid-edit (deleted elsewhere): nothing to bind.
+            return;
+        }
+        bindForm(existing);
+    }
+
+    private void clampDesign() {
+        if (designAdapter != null) {
+            selectedDesign = sanitizeIndex(selectedDesign, designAdapter.getDesignCount());
+        }
     }
 
     @Override
@@ -156,6 +150,10 @@ public class BankCardFormActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        dismissDialog(choiceDialog);
+        choiceDialog = null;
+        dismissDialog(deleteDialog);
+        deleteDialog = null;
         // SQLiteOpenHelper holds a pooled connection; release it with the screen.
         if (dbHelper != null) {
             dbHelper.close();
@@ -163,12 +161,19 @@ public class BankCardFormActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    private static void dismissDialog(androidx.appcompat.app.AlertDialog dialog) {
+        if (dialog != null && dialog.isShowing()) {
+            dialog.dismiss();
+        }
+    }
+
     /**
-     * Rebuilds the editing item from the launch intent. Returns null for add
-     * mode (no id extra), which drives every isEdit branch downstream.
+     * Rebuilds the editing item from the vault by id. Returns null for add
+     * mode (no id extra), which drives every isEdit branch downstream. A row
+     * deleted elsewhere resolves to null id-side and finishes in onCreate.
      *
      * @param restored true when pickers were already restored from rotation and
-     *                 must not be overwritten by intent defaults
+     *                 must not be overwritten by stored defaults
      */
     @Nullable
     private BankCardItem resolveEditingItem(boolean restored) {
@@ -176,19 +181,11 @@ public class BankCardFormActivity extends AppCompatActivity {
         if (id == -1) {
             return null;
         }
-        BankCardItem item = new BankCardItem(
-                id,
-                getIntent().getStringExtra(EXTRA_TYPE),
-                getIntent().getStringExtra(EXTRA_NETWORK),
-                getIntent().getStringExtra(EXTRA_BANK),
-                getIntent().getStringExtra(EXTRA_HOLDER),
-                getIntent().getStringExtra(EXTRA_NUMBER),
-                getIntent().getStringExtra(EXTRA_EXPIRY),
-                getIntent().getStringExtra(EXTRA_CVV),
-                getIntent().getStringExtra(EXTRA_PIN),
-                getIntent().getIntExtra(EXTRA_DESIGN, 0),
-                getIntent().getLongExtra(EXTRA_CREATED_AT, 0),
-                getIntent().getLongExtra(EXTRA_UPDATED_AT, 0));
+        BankCardItem item = dbHelper.getBankCardById(id);
+        if (item == null) {
+            finish();
+            return null;
+        }
         if (!restored) {
             // Fresh launch: seed pickers from the stored card; rotation keeps
             // the user's in-progress picks instead.
@@ -208,6 +205,9 @@ public class BankCardFormActivity extends AppCompatActivity {
 
         cacheViews();
         setupDesignCarousel();
+        // Clamp once the adapter (and its page count) exists, covering both
+        // restored add-mode picks and stale stored designs.
+        clampDesign();
         if (isEdit) {
             prefillEditMode(existing);
         } else {
@@ -255,8 +255,7 @@ public class BankCardFormActivity extends AppCompatActivity {
                 int position = parent.getChildAdapterPosition(child);
                 if (position != RecyclerView.NO_POSITION
                         && position < state.getItemCount() - 1) {
-                    float density = parent.getResources().getDisplayMetrics().density;
-                    outRect.right = (int) (12 * density);
+                    outRect.right = Ui.dp(parent.getContext(), 12);
                 }
             }
         });
@@ -267,9 +266,15 @@ public class BankCardFormActivity extends AppCompatActivity {
         updateDots(dotsContainer, selectedDesign);
 
         // PagerSnapHelper reports the centered page; that page is the design.
+        // Ignored until the initial scroll settles so layout noise at
+        // position 0 cannot clobber the restored pick.
+        carouselSettled = false;
         recyclerDesign.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (!carouselSettled) {
+                    return;
+                }
                 View snapView = designSnapHelper.findSnapView(designLayoutManager);
                 if (snapView != null) {
                     int pos = designLayoutManager.getPosition(snapView);
@@ -304,6 +309,7 @@ public class BankCardFormActivity extends AppCompatActivity {
         recyclerDesign.post(() -> {
             recyclerDesign.scrollToPosition(scrollTo);
             updateDots(dotsContainer, scrollTo);
+            recyclerDesign.post(() -> carouselSettled = true);
         });
     }
 
@@ -317,6 +323,7 @@ public class BankCardFormActivity extends AppCompatActivity {
                 (LinearLayout.LayoutParams) btnSave.getLayoutParams();
         saveParams.setMarginEnd(0);
         btnSave.setLayoutParams(saveParams);
+        recyclerDesign.post(() -> carouselSettled = true);
     }
 
     /** Live card-face preview; also clears stale errors as the user types. */
@@ -493,15 +500,18 @@ public class BankCardFormActivity extends AppCompatActivity {
             return;
         }
         btnDelete.setVisibility(View.VISIBLE);
-        btnDelete.setOnClickListener(v -> Dialogs.confirmDelete(this,
-                "Delete Card",
-                "Are you sure you want to delete this card?",
-                () -> {
-                    dbHelper.moveBankCardToTrash(editingItem.getId());
-                    setResult(RESULT_OK);
-                    finish();
-                    Ui.notifyOnReturn(R.string.msg_deleted);
-                }));
+        btnDelete.setOnClickListener(v -> {
+            dismissDialog(deleteDialog);
+            deleteDialog = Dialogs.confirmDelete(this,
+                    "Delete Card",
+                    "Are you sure you want to delete this card?",
+                    () -> {
+                        dbHelper.moveBankCardToTrash(editingItem.getId());
+                        setResult(RESULT_OK);
+                        finish();
+                        Ui.notifyOnReturn(R.string.msg_deleted);
+                    });
+        });
     }
 
     // ------------------------------------------------------------------
@@ -631,22 +641,15 @@ public class BankCardFormActivity extends AppCompatActivity {
     }
 
     private void showChoiceDialog(String title, String[] options, int checked, OnChoiceListener listener) {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(title)
-                .setSingleChoiceItems(options, checked, (d, which) -> {
-                    listener.onChoice(which);
-                    d.dismiss();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        dismissDialog(choiceDialog);
+        choiceDialog = Dialogs.singleChoice(this, title, options, checked, listener::onChoice);
     }
 
     /** Builds dots once; use updateDots() on scroll to avoid view churn. */
     private void createDots(LinearLayout container, int count) {
         container.removeAllViews();
-        float density = getResources().getDisplayMetrics().density;
-        int size = (int) (8 * density);
-        int margin = (int) (4 * density);
+        int size = Ui.dp(this, 8);
+        int margin = Ui.dp(this, 4);
         for (int i = 0; i < count; i++) {
             View dot = new View(this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);

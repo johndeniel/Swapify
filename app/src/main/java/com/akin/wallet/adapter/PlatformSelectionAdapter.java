@@ -16,6 +16,7 @@ import android.widget.Filterable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelectionAdapter.PlatformViewHolder> implements Filterable {
 
@@ -51,8 +52,11 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
         holder.icon.setImageResource(item.getIconRes());
         holder.name.setText(item.getName());
         holder.url.setText(item.getUrl());
-        holder.itemView.setOnClickListener(v ->
-                listener.onPlatformSelected(item.getIconRes(), item.getName(), item.getUrl()));
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onPlatformSelected(item.getIconRes(), item.getName(), item.getUrl());
+            }
+        });
     }
 
     @Override
@@ -72,10 +76,10 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
             if (constraint == null || constraint.length() == 0) {
                 filtered.addAll(platformsFull);
             } else {
-                String filterPattern = constraint.toString().toLowerCase().trim();
+                String filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim();
                 for (PlatformIcons.Option item : platformsFull) {
-                    if (item.getName().toLowerCase().contains(filterPattern)
-                            || item.getUrl().toLowerCase().contains(filterPattern)) {
+                    if (item.getName().toLowerCase(Locale.ROOT).contains(filterPattern)
+                            || item.getUrl().toLowerCase(Locale.ROOT).contains(filterPattern)) {
                         filtered.add(item);
                     }
                 }

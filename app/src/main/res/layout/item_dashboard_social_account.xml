@@ -4,6 +4,7 @@
      Hairline divider below every row except the last (toggled by adapter). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clickable="true"
@@ -26,7 +27,7 @@
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:background="@color/white"
-            android:contentDescription="Platform"
+            android:contentDescription="@string/cd_platform"
             android:scaleType="fitCenter"
             android:src="@drawable/google"
             app:contentPadding="5dp"
@@ -46,8 +47,8 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:singleLine="true"
-            android:text="Platform"
-            android:textAppearance="@style/TextAppearance.Akin.CardTitle" />
+            android:textAppearance="@style/TextAppearance.Akin.CardTitle"
+            tools:text="Platform" />
 
             <TextView
                 android:id="@+id/social_sub"
@@ -57,8 +58,8 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:text="username"
-                android:textAppearance="@style/TextAppearance.Akin.BodyMuted" />
+                android:textAppearance="@style/TextAppearance.Akin.BodyMuted"
+                tools:text="username" />
 
         </LinearLayout>
 
@@ -67,7 +68,7 @@
             android:layout_height="20dp"
             android:layout_marginStart="8dp"
             android:alpha="0.6"
-            android:contentDescription="Platform"
+            android:contentDescription="@null"
             android:src="@drawable/ic_chevron_right"
             android:tint="@color/dashboard_muted" />
 

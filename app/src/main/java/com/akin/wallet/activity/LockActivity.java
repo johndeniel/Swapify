@@ -49,6 +49,15 @@ public class LockActivity extends AppCompatActivity {
     private String firstPin;
     private boolean submitting;
 
+    private static final String KEY_MODE = "lock_mode";
+    private static final String KEY_SCREEN = "lock_screen";
+    private static final String KEY_ENTRY = "lock_entry";
+    private static final String KEY_FIRST_PIN = "lock_first_pin";
+
+    /** Delayed biometric ask / entry submit, removable on pause/destroy. */
+    private final Runnable autoBiometric = this::startBiometric;
+    private final Runnable pendingEntry = this::processEntry;
+
     private TextView error;
     private TextView tagline;
     private View dotsRow;
@@ -99,10 +108,37 @@ public class LockActivity extends AppCompatActivity {
         wireKeypad();
         // Keypad fingerprint key — same design, just asks the system
         // prompt. The keypad never switches screens.
-        bioKey.setOnClickListener(v -> startBiometric());
+        if (bioKey != null) {
+            bioKey.setOnClickListener(v -> startBiometric());
+        }
 
         biometricPrompt = new BiometricPrompt(this,
                 ContextCompat.getMainExecutor(this), biometricCallback());
+
+        if (savedInstanceState != null) {
+            // Rotation: resume exactly where the user was (prompt itself is
+            // recreated below; the typed digits and setup progress survive).
+            String savedMode = savedInstanceState.getString(KEY_MODE, null);
+            if (savedMode != null) {
+                mode = savedMode;
+            }
+            try {
+                screen = Screen.valueOf(
+                        savedInstanceState.getString(KEY_SCREEN, Screen.PIN.name()));
+            } catch (IllegalArgumentException ignored) {
+                screen = Screen.PIN;
+            }
+            entry.setLength(0);
+            String savedEntry = savedInstanceState.getString(KEY_ENTRY, "");
+            if (savedEntry.length() <= AppLockManager.PIN_LENGTH) {
+                entry.append(savedEntry);
+            }
+            firstPin = savedInstanceState.getString(KEY_FIRST_PIN, null);
+            submitting = false;
+            restoreScreen();
+            renderDots();
+            return;
+        }
 
         if (!AppLockManager.isPinSet(this)) {
             showCreateScreen();
@@ -112,9 +148,49 @@ public class LockActivity extends AppCompatActivity {
             showPinScreen(null);
             // Biometric available: ask via system prompt over the same keypad.
             if (AppLockManager.canUseBiometric(this)) {
-                keypad.postDelayed(this::startBiometric, 400);
+                keypad.postDelayed(autoBiometric, 400);
             }
         }
+    }
+
+    /** Re-renders the current screen after a rotation (no state reset). */
+    private void restoreScreen() {
+        // The show* calls reset entry/firstPin by design — snapshot first,
+        // re-render, then put the in-progress typing back.
+        String savedDigits = entry.toString();
+        String savedFirst = firstPin;
+        switch (screen) {
+            case CREATE:
+                showCreateScreen();
+                break;
+            case CONFIRM:
+                showCreateScreen();
+                firstPin = savedFirst;
+                showConfirmScreen();
+                break;
+            case VERIFY:
+                showVerifyScreen();
+                break;
+            case PIN:
+            default:
+                showPinScreen(null);
+                break;
+        }
+        entry.setLength(0);
+        if (savedDigits.length() <= AppLockManager.PIN_LENGTH) {
+            entry.append(savedDigits);
+        }
+        submitting = false;
+        renderDots();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_MODE, mode);
+        outState.putString(KEY_SCREEN, screen.name());
+        outState.putString(KEY_ENTRY, entry.toString());
+        outState.putString(KEY_FIRST_PIN, firstPin);
     }
 
     @Override
@@ -136,8 +212,27 @@ public class LockActivity extends AppCompatActivity {
     protected void onPause() {
         paused = true;
         cancelBiometric();
+        if (keypad != null) {
+            keypad.removeCallbacks(autoBiometric);
+        }
+        if (dotsRow != null) {
+            dotsRow.removeCallbacks(pendingEntry);
+        }
+        submitting = false;
         lockoutHandler.removeCallbacks(lockoutTicker);
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (keypad != null) {
+            keypad.removeCallbacks(autoBiometric);
+        }
+        if (dotsRow != null) {
+            dotsRow.removeCallbacks(pendingEntry);
+        }
+        lockoutHandler.removeCallbacks(lockoutTicker);
+        super.onDestroy();
     }
 
     // ------------------------------------------------------------------
@@ -238,9 +333,15 @@ public class LockActivity extends AppCompatActivity {
         for (int i = 0; i < keyIds.length; i++) {
             // i = 0..8 -> '1'..'9', i = 9 -> '0'.
             final char d = i == 9 ? '0' : (char) ('1' + i);
-            findViewById(keyIds[i]).setOnClickListener(v -> onDigit(d));
+            View key = findViewById(keyIds[i]);
+            if (key != null) {
+                key.setOnClickListener(v -> onDigit(d));
+            }
         }
-        findViewById(R.id.key_back).setOnClickListener(v -> onBackspace());
+        View backKey = findViewById(R.id.key_back);
+        if (backKey != null) {
+            backKey.setOnClickListener(v -> onBackspace());
+        }
     }
 
     private void onDigit(char digit) {
@@ -259,7 +360,7 @@ public class LockActivity extends AppCompatActivity {
         renderDots();
         if (entry.length() == AppLockManager.PIN_LENGTH) {
             submitting = true;
-            dotsRow.postDelayed(this::processEntry, 120);
+            dotsRow.postDelayed(pendingEntry, 120);
         }
     }
 
@@ -272,6 +373,12 @@ public class LockActivity extends AppCompatActivity {
     }
 
     private void processEntry() {
+        // Dropped when the screen went away mid-delay (back/rotate): the user
+        // simply retypes; nothing half-applied ever runs on a dead screen.
+        if (isFinishing() || paused) {
+            submitting = false;
+            return;
+        }
         String pin = entry.toString();
         entry.setLength(0);
         switch (screen) {
@@ -338,7 +445,8 @@ public class LockActivity extends AppCompatActivity {
     // ------------------------------------------------------------------
 
     private void startBiometric() {
-        if (promptActive || isFinishing() || !AppLockManager.canUseBiometric(this)) {
+        if (promptActive || paused || isFinishing()
+                || !AppLockManager.canUseBiometric(this)) {
             return;
         }
         if (AppLockManager.isLockedOut(this)) {
@@ -373,7 +481,8 @@ public class LockActivity extends AppCompatActivity {
             public void onAuthenticationSucceeded(
                     @NonNull BiometricPrompt.AuthenticationResult result) {
                 promptActive = false;
-                if (!isFinishing() && !paused) {
+                if (!isFinishing() && !paused
+                        && !AppLockManager.isLockedOut(LockActivity.this)) {
                     AppLockManager.resetFailures(LockActivity.this);
                     unlockSuccess();
                 }

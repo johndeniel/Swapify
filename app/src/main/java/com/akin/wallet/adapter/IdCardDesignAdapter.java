@@ -46,7 +46,13 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
     }
 
     public void updatePreview(Map<String, String> fields) {
-        this.fields = fields != null ? new LinkedHashMap<>(fields) : new LinkedHashMap<>();
+        Map<String, String> next =
+                fields != null ? new LinkedHashMap<>(fields) : new LinkedHashMap<>();
+        if (next.equals(this.fields)) {
+            // Keystroke changed nothing visible: skip the carousel rebind.
+            return;
+        }
+        this.fields = next;
         notifyDataSetChanged();
     }
 
@@ -60,7 +66,10 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
         ViewGroup.LayoutParams lp = view.getLayoutParams();
         int parentWidth = parent.getMeasuredWidth();
         if (parentWidth <= 0) {
-            parentWidth = parent.getResources().getDisplayMetrics().widthPixels;
+            // Pre-layout inflation: display width minus carousel padding, the
+            // same viewport the dashboard measures pages against.
+            parentWidth = parent.getResources().getDisplayMetrics().widthPixels
+                    - parent.getPaddingStart() - parent.getPaddingEnd();
         }
         if (lp != null && parentWidth > 0) {
             lp.width = (int) (parentWidth * DashboardCardAdapter.PAGE_WIDTH_RATIO);

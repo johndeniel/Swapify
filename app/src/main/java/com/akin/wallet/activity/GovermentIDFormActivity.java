@@ -20,7 +20,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
@@ -49,30 +48,31 @@ import java.util.Map;
 public class GovermentIDFormActivity extends AppCompatActivity {
 
     public static final String EXTRA_ID = "extra_id";
-    public static final String EXTRA_TYPE = "extra_type";
-    public static final String EXTRA_FIELDS_JSON = "extra_fields_json";
-    public static final String EXTRA_DESIGN = "extra_design";
-    public static final String EXTRA_CREATED_AT = "extra_created_at";
-    public static final String EXTRA_UPDATED_AT = "extra_updated_at";
 
     /**
-     * Intent that opens this form to edit an existing ID. Mirrors the bank and
-     * social factories: one packing site per form. Audit timestamps ride as
-     * top-level extras (never inside fields_json) so the edit round-trip
-     * preserves creation order.
+     * Intent that opens this form to edit an existing ID. Carries the row id
+     * only — the form re-queries the vault, so document data never travels
+     * as Intent extras and edits always start current.
      */
     public static Intent editIntent(@NonNull Context context, @NonNull IdCardItem item) {
-        Intent edit = new Intent(context, GovermentIDFormActivity.class);
-        edit.putExtra(EXTRA_ID, item.getId());
-        edit.putExtra(EXTRA_TYPE, item.getIdType());
-        edit.putExtra(EXTRA_FIELDS_JSON, item.getFieldsJson());
-        edit.putExtra(EXTRA_DESIGN, item.getDesign());
-        edit.putExtra(EXTRA_CREATED_AT, item.getCreatedAt());
-        edit.putExtra(EXTRA_UPDATED_AT, item.getUpdatedAt());
-        return edit;
+        return new Intent(context, GovermentIDFormActivity.class)
+                .putExtra(EXTRA_ID, item.getId());
     }
 
     private AppDatabaseHelper dbHelper;
+    /** Owned dialogs: dismissed in onDestroy so rotation cannot leak windows. */
+    private androidx.appcompat.app.AlertDialog activeDialog;
+
+    // Rotation state. Inputs are built programmatically (no view ids), so the
+    // draft + selected type are saved explicitly; bindForm seeds from them.
+    private static final String KEY_DRAFT = "draft_values";
+    private static final String KEY_SELECTED_TYPE = "selected_type";
+    private Map<String, String> savedDraft;
+    private int savedSelectedType;
+    private boolean hasSavedState;
+    // Live references for onSaveInstanceState (bindForm owns the locals).
+    private Map<String, String> currentDraft;
+    private int[] currentSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,23 +86,59 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> finish());
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
+        if (savedInstanceState != null) {
+            // Rotation: re-seed below from the user's in-progress draft.
+            hasSavedState = true;
+            savedSelectedType = savedInstanceState.getInt(KEY_SELECTED_TYPE, 0);
+            Object raw = savedInstanceState.getSerializable(KEY_DRAFT);
+            savedDraft = raw instanceof Map
+                    ? castStringMap((Map<?, ?>) raw)
+                    : new LinkedHashMap<>();
+        }
         if (id == -1) {
             bindForm(null);
         } else {
-            String json = getIntent().getStringExtra(EXTRA_FIELDS_JSON);
-            Map<String, String> fields = json != null
-                    ? IdCardItem.parseFieldsJson(json)
-                    : new LinkedHashMap<>();
-            // Timestamps arrive as sibling extras (same level as id), never
-            // parsed from the JSON blob; 0 is the default when absent.
-            bindForm(new IdCardItem(
-                    id,
-                    getIntent().getStringExtra(EXTRA_TYPE),
-                    fields,
-                    getIntent().getIntExtra(EXTRA_DESIGN, 0),
-                    getIntent().getLongExtra(EXTRA_CREATED_AT, 0),
-                    getIntent().getLongExtra(EXTRA_UPDATED_AT, 0)));
+            IdCardItem stored = dbHelper.getIdCardById(id);
+            if (stored == null) {
+                finish();
+                return;
+            }
+            bindForm(stored);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (currentDraft != null) {
+            outState.putSerializable(KEY_DRAFT, new LinkedHashMap<>(currentDraft));
+        }
+        if (currentSelected != null) {
+            outState.putInt(KEY_SELECTED_TYPE, currentSelected[0]);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> castStringMap(Map<?, ?> raw) {
+        Map<String, String> out = new LinkedHashMap<>();
+        for (Map.Entry<?, ?> e : raw.entrySet()) {
+            if (e.getKey() instanceof String && e.getValue() instanceof String) {
+                out.put((String) e.getKey(), (String) e.getValue());
+            }
+        }
+        return out;
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (activeDialog != null && activeDialog.isShowing()) {
+            activeDialog.dismiss();
+        }
+        activeDialog = null;
+        if (dbHelper != null) {
+            dbHelper.close();
+        }
+        super.onDestroy();
     }
 
     private void bindForm(@Nullable IdCardItem existing) {
@@ -121,14 +157,18 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         if (isEdit) {
             draftValues.putAll(existing.getFields());
         }
+        // Rotation: the user's in-progress draft wins over stored values.
+        if (hasSavedState && savedDraft != null) {
+            draftValues.putAll(savedDraft);
+        }
+        currentDraft = draftValues;
         final Map<String, EditText> textInputs = new LinkedHashMap<>();
         // Dropdown value texts, registered for setError like text inputs so a
         // failed save flags the value itself — same behavior as Date of Birth.
         final Map<String, TextView> dropdownValues = new LinkedHashMap<>();
 
         final int[] selectedType = {0};
-        // Fixed authentic design per ID type — no color picker. Column kept as 0.
-        final int fixedDesign = 0;
+        currentSelected = selectedType;
         final boolean[] knownType = {true};
 
         if (isEdit) {
@@ -148,6 +188,13 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                     (LinearLayout.LayoutParams) btnSave.getLayoutParams();
             saveParams.setMarginEnd(0);
             btnSave.setLayoutParams(saveParams);
+        }
+        if (hasSavedState) {
+            String[] names = IdTypeSpec.getTypeNames();
+            if (savedSelectedType >= 0 && savedSelectedType < names.length
+                    && (knownType[0] || !isEdit)) {
+                selectedType[0] = savedSelectedType;
+            }
         }
 
         final IdCardDesignAdapter[] adapterRef = new IdCardDesignAdapter[1];
@@ -235,7 +282,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         // Initial form for the selected (or edited) type. The header title is
         // gone by design — the carousel page itself names the type.
         rebuildForm(formContainer, currentSpec(selectedType[0], knownType[0],
-                isEdit ? existing : null, draftValues), draftValues, textInputs, dropdownValues,
+                isEdit ? existing : null), draftValues, textInputs, dropdownValues,
                 refreshPreview);
         refreshPreview.run();
 
@@ -252,7 +299,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             String typeName = currentTypeName(selectedType[0], knownType[0],
                     isEdit ? existing.getIdType() : null);
             IdTypeSpec.IdType spec = currentSpec(selectedType[0], knownType[0],
-                    isEdit ? existing : null, draftValues);
+                    isEdit ? existing : null);
 
             // Pull latest text (watchers already keep draftValues live; this is a safety net).
             for (Map.Entry<String, EditText> e : textInputs.entrySet()) {
@@ -267,18 +314,16 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             if (isEdit) {
                 // createdAt rides along untouched (creation order is immutable);
                 // updatedAt=0 tells the DB helper to stamp now on write.
+                // Known types may have been switched via selector; use the new
+                // name. Design is fixed per type (column kept as 0).
+                String finalType = knownType[0] ? typeName : existing.getIdType();
                 IdCardItem updated = new IdCardItem(
-                        existing.getId(), existing.getIdType(), filtered, fixedDesign,
+                        existing.getId(), finalType, filtered, 0,
                         existing.getCreatedAt(), 0);
-                // Known types may have been switched via selector; use the new name.
-                if (knownType[0]) {
-                    updated = new IdCardItem(existing.getId(), typeName, filtered, fixedDesign,
-                            existing.getCreatedAt(), 0);
-                }
                 dbHelper.updateIdCard(updated);
                 Ui.notifyOnReturn(R.string.msg_updated);
             } else {
-                IdCardItem newCard = new IdCardItem(typeName, filtered, fixedDesign);
+                IdCardItem newCard = new IdCardItem(typeName, filtered, 0);
                 dbHelper.insertIdCard(newCard);
                 Ui.notifyOnReturn(R.string.msg_id_saved);
             }
@@ -293,16 +338,21 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         View btnDelete = findViewById(R.id.btn_delete);
         if (isEdit) {
             btnDelete.setVisibility(View.VISIBLE);
-            btnDelete.setOnClickListener(v -> Dialogs.confirmDelete(GovermentIDFormActivity.this,
-                    "Delete ID",
-                    "Are you sure you want to delete this "
-                            + existing.getIdType() + "?",
-                    () -> {
-                        dbHelper.moveIdCardToTrash(existing.getId());
-                        setResult(RESULT_OK);
-                        finish();
-                        Ui.notifyOnReturn(R.string.msg_deleted);
-                    }));
+            btnDelete.setOnClickListener(v -> {
+                if (activeDialog != null && activeDialog.isShowing()) {
+                    activeDialog.dismiss();
+                }
+                activeDialog = Dialogs.confirmDelete(GovermentIDFormActivity.this,
+                        "Delete ID",
+                        "Are you sure you want to delete this "
+                                + existing.getIdType() + "?",
+                        () -> {
+                            dbHelper.moveIdCardToTrash(existing.getId());
+                            setResult(RESULT_OK);
+                            finish();
+                            Ui.notifyOnReturn(R.string.msg_deleted);
+                        });
+            });
         }
 
 
@@ -320,8 +370,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
     }
 
     private IdTypeSpec.IdType currentSpec(int selected, boolean known,
-                                          @Nullable IdCardItem existing,
-                                          Map<String, String> draft) {
+                                          @Nullable IdCardItem existing) {
         if (!known && existing != null) {
             return IdTypeSpec.genericType(existing.getIdType(), existing.getFields());
         }
@@ -416,19 +465,19 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         row.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rowParams.topMargin = dp(16);
+        rowParams.topMargin = Ui.dp(this, 16);
         row.setLayoutParams(rowParams);
 
         View left = buildFieldView(first, draft, textInputs, dropdownValues, onChanged);
         LinearLayout.LayoutParams leftParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        leftParams.setMarginEnd(dp(6));
+        leftParams.setMarginEnd(Ui.dp(this, 6));
         left.setLayoutParams(leftParams);
 
         View right = buildFieldView(second, draft, textInputs, dropdownValues, onChanged);
         LinearLayout.LayoutParams rightParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        rightParams.setMarginStart(dp(6));
+        rightParams.setMarginStart(Ui.dp(this, 6));
         right.setLayoutParams(rightParams);
 
         row.addView(left);
@@ -442,7 +491,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         wrap.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        wrapParams.topMargin = dp(16);
+        wrapParams.topMargin = Ui.dp(this, 16);
         wrap.setLayoutParams(wrapParams);
 
         TextView label = new TextView(GovermentIDFormActivity.this);
@@ -454,7 +503,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         EditText input = new EditText(GovermentIDFormActivity.this);
         LinearLayout.LayoutParams inputParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputParams.topMargin = dp(8);
+        inputParams.topMargin = Ui.dp(this, 8);
         input.setLayoutParams(inputParams);
         input.setBackgroundResource(R.drawable.bg_dashboard_card);
         input.setHint(field.hint);
@@ -466,8 +515,8 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         if (field.maxLength > 0) {
             input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(field.maxLength)});
         }
-        int h = dp(16);
-        int v = dp(14);
+        int h = Ui.dp(this, 16);
+        int v = Ui.dp(this, 14);
         input.setPadding(h, v, h, v);
         String current = draft.get(field.key);
         if (current != null && !current.isEmpty()) {
@@ -500,7 +549,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         wrap.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        wrapParams.topMargin = dp(16);
+        wrapParams.topMargin = Ui.dp(this, 16);
         wrap.setLayoutParams(wrapParams);
 
         TextView label = new TextView(GovermentIDFormActivity.this);
@@ -514,11 +563,11 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         row.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rowParams.topMargin = dp(8);
+        rowParams.topMargin = Ui.dp(this, 8);
         row.setLayoutParams(rowParams);
         row.setBackgroundResource(R.drawable.bg_dashboard_card);
-        int h = dp(16);
-        int padV = dp(14);
+        int h = Ui.dp(this, 16);
+        int padV = Ui.dp(this, 14);
         row.setPadding(h, padV, h, padV);
         row.setClickable(true);
         row.setFocusable(true);
@@ -550,7 +599,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
         ImageView chevron = new ImageView(GovermentIDFormActivity.this);
         chevron.setImageResource(R.drawable.ic_dropdown);
-        LinearLayout.LayoutParams chevParams = new LinearLayout.LayoutParams(dp(20), dp(20));
+        LinearLayout.LayoutParams chevParams = new LinearLayout.LayoutParams(Ui.dp(this, 20), Ui.dp(this, 20));
         chevron.setLayoutParams(chevParams);
         chevron.setContentDescription("Select " + field.label);
 
@@ -559,19 +608,18 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
         row.setOnClickListener(v -> {
             int checked = Ui.indexOfIgnoreCase(field.options, draft.get(field.key));
-            new MaterialAlertDialogBuilder(GovermentIDFormActivity.this)
-                    .setTitle(field.label)
-                    .setSingleChoiceItems(field.options, checked, (d, which) -> {
+            if (activeDialog != null && activeDialog.isShowing()) {
+                activeDialog.dismiss();
+            }
+            activeDialog = Dialogs.singleChoice(GovermentIDFormActivity.this,
+                    field.label, field.options, checked, which -> {
                         String picked = field.options[which];
                         draft.put(field.key, picked);
                         valueView.setText(picked);
                         valueView.setAlpha(1f);
                         hideFieldError(dropdownValues, field.key);
                         onChanged.run();
-                        d.dismiss();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+                    });
         });
 
         wrap.addView(row);
@@ -849,7 +897,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             return;
         }
         selectedType[0] = pos;
-        rebuildForm(formContainer, currentSpec(pos, true, null, draft),
+        rebuildForm(formContainer, currentSpec(pos, true, null),
                 draft, textInputs, dropdownValues, refreshPreview);
         if (dotsContainer != null && designAdapter != null) {
             setupDots(dotsContainer, designAdapter.getTypeCount(), pos);
@@ -859,9 +907,8 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
     private void setupDots(LinearLayout container, int count, int selected) {
         container.removeAllViews();
-        float density = getResources().getDisplayMetrics().density;
-        int size = (int) (8 * density);
-        int margin = (int) (4 * density);
+        int size = Ui.dp(this, 8);
+        int margin = Ui.dp(this, 4);
         for (int i = 0; i < count; i++) {
             View dot = new View(GovermentIDFormActivity.this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
@@ -871,10 +918,5 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             dot.setAlpha(i == selected ? 1f : 0.3f);
             container.addView(dot);
         }
-    }
-
-    private int dp(int value) {
-        float density = getResources().getDisplayMetrics().density;
-        return (int) (value * density);
     }
 }

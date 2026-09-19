@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
@@ -34,11 +35,36 @@ public class DashboardSocialAccountAdapter extends RecyclerView.Adapter<Dashboar
     }
 
     public void updateData(List<CredentialItem> newItems) {
+        List<CredentialItem> next =
+                newItems != null ? new ArrayList<>(newItems) : new ArrayList<>();
+        DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return items.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return next.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldPos, int newPos) {
+                return items.get(oldPos).getId() == next.get(newPos).getId();
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldPos, int newPos) {
+                if (!items.get(oldPos).equals(next.get(newPos))) {
+                    return false;
+                }
+                // Divider visibility is positional (hidden on the last row).
+                return (oldPos == items.size() - 1) == (newPos == next.size() - 1);
+            }
+        });
         items.clear();
-        if (newItems != null) {
-            items.addAll(newItems);
-        }
-        notifyDataSetChanged();
+        items.addAll(next);
+        diff.dispatchUpdatesTo(this);
     }
 
     @NonNull

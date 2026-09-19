@@ -18,6 +18,7 @@ import com.akin.wallet.model.PlatformIcons;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdapter.AssocViewHolder> implements Filterable {
 
@@ -112,6 +113,18 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
         }
     }
 
+    /**
+     * Replaces the whole set (rotation restore): the caller's list is mutated
+     * in place alongside the search source, so save still reads one list.
+     */
+    public void onExternalRestore(@NonNull List<CredentialItem> restored) {
+        items.clear();
+        items.addAll(restored);
+        itemsFull.clear();
+        itemsFull.addAll(restored);
+        notifyDataSetChanged();
+    }
+
     @Override
     public Filter getFilter() {
         return accountFilter;
@@ -126,12 +139,12 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
             if (constraint == null || constraint.length() == 0) {
                 filtered.addAll(itemsFull);
             } else {
-                String filterPattern = constraint.toString().toLowerCase().trim();
+                String filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim();
                 for (CredentialItem item : itemsFull) {
                     String platform = item.getPlatform() != null
-                            ? item.getPlatform().toLowerCase() : "";
+                            ? item.getPlatform().toLowerCase(Locale.ROOT) : "";
                     String username = item.getUsername() != null
-                            ? item.getUsername().toLowerCase() : "";
+                            ? item.getUsername().toLowerCase(Locale.ROOT) : "";
                     if (platform.contains(filterPattern) || username.contains(filterPattern)) {
                         filtered.add(item);
                     }
