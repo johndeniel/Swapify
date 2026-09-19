@@ -32,8 +32,10 @@ import com.akin.wallet.security.AppLockManager;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
+import com.akin.wallet.util.Ui;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.search.SearchView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,6 +149,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshDashboard();
+        // Form confirms stash their message and finish; show it here where
+        // the user actually lands (a Snackbar there would die unseen).
+        int pending = Ui.takePendingMessage();
+        if (pending != 0) {
+            Snackbar.make(findViewById(android.R.id.content), pending,
+                    Snackbar.LENGTH_SHORT).show();
+        }
     }
 
     @Override

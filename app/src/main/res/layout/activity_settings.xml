@@ -174,10 +174,19 @@
 
     <!-- Trash: soft-deleted IDs, bank cards and social accounts. Opens the
          Trash screen where items can be restored or deleted forever. -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:letterSpacing="0.08"
+        android:text="WALLET"
+        android:textColor="@color/dashboard_muted"
+        android:textSize="12sp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:background="@drawable/bg_dashboard_card"
         android:orientation="vertical"
         android:paddingStart="6dp"
@@ -363,6 +372,78 @@
 
         </LinearLayout>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/dashboard_surface_border" />
+
+        <LinearLayout
+            android:id="@+id/row_about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/bg_dashboard_icon_white"
+                android:contentDescription="@string/settings_about"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_info" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_about"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_chevron_right"
+                android:contentDescription="@string/settings_about" />
+
+        </LinearLayout>
+
     </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- App version footer, stamped at runtime (falls back to 1.0). -->
+    <TextView
+        android:id="@+id/settings_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:textColor="@color/dashboard_muted"
+        android:textSize="12sp" />
 
 </LinearLayout>

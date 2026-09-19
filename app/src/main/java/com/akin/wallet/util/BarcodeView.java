@@ -1,4 +1,4 @@
-package com.akin.wallet.widget;
+package com.akin.wallet.util;
 
 import android.content.Context;
 import android.graphics.Canvas;

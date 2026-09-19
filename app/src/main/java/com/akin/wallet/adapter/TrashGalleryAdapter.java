@@ -15,6 +15,7 @@ import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.IdTypeSpec;
 import com.akin.wallet.model.PlatformIcons;
+import com.akin.wallet.util.CardText;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
@@ -203,7 +204,7 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         } else if (entry.kind == KIND_CARD) {
             h.icon.setImageResource(R.drawable.chip);
             h.title.setText(cardTitle(entry.card));
-            h.sub.setText("•••• " + last4(entry.card.getCardNumber()));
+            h.sub.setText("•••• " + CardText.last4(entry.card.getCardNumber()));
         } else {
             String platform = entry.account.getPlatform() != null
                     && !entry.account.getPlatform().trim().isEmpty()
@@ -258,17 +259,6 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             return type;
         }
         return "Bank Card";
-    }
-
-    private static String last4(String number) {
-        if (number == null) {
-            return "••••";
-        }
-        String digits = number.replaceAll("\\D", "");
-        if (digits.isEmpty()) {
-            return "••••";
-        }
-        return digits.length() > 4 ? digits.substring(digits.length() - 4) : digits;
     }
 
     static class HeaderHolder extends RecyclerView.ViewHolder {

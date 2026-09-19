@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.animation.TranslateAnimation;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +16,7 @@ import androidx.core.content.ContextCompat;
 
 import com.akin.wallet.R;
 import com.akin.wallet.security.AppLockManager;
+import com.akin.wallet.util.Ui;
 
 /**
  * App lock — the launcher screen. First run walks 4-digit PIN setup
@@ -321,7 +321,7 @@ public class LockActivity extends AppCompatActivity {
         AppLockManager.setSessionUnlocked(true);
         cancelBiometric();
         if (MODE_CHANGE.equals(mode)) {
-            Toast.makeText(this, R.string.lock_pin_updated, Toast.LENGTH_SHORT).show();
+            Ui.notifyOnReturn(R.string.lock_pin_updated);
             setResult(RESULT_OK);
             finish();
         } else if (MODE_VERIFY.equals(mode)) {

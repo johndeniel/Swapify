@@ -104,7 +104,7 @@
 
                         </FrameLayout>
 
-                        <com.akin.wallet.widget.BarcodeView
+                        <com.akin.wallet.util.BarcodeView
                             android:id="@+id/preview_barcode"
                             android:layout_width="wrap_content"
                             android:layout_height="8dp"

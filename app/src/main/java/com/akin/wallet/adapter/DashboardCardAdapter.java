@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 import com.akin.wallet.model.BankCardItem;
+import com.akin.wallet.util.CardText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,12 +82,12 @@ public class DashboardCardAdapter extends RecyclerView.Adapter<DashboardCardAdap
             design = 0;
         }
         holder.cardRoot.setBackgroundResource(backgrounds[design]);
-        holder.bank.setText(safe(item.getBankName(), "YOUR BANK").toUpperCase());
-        holder.holder.setText(safe(item.getHolderName(), "CARDHOLDER NAME").toUpperCase());
-        holder.number.setText("•••• •••• •••• " + last4(item.getCardNumber()));
-        holder.expiry.setText(formatExpiry(item.getExpiry()));
+        holder.bank.setText(CardText.safe(item.getBankName(), "YOUR BANK").toUpperCase());
+        holder.holder.setText(CardText.safe(item.getHolderName(), "CARDHOLDER NAME").toUpperCase());
+        holder.number.setText("•••• •••• •••• " + CardText.last4(item.getCardNumber()));
+        holder.expiry.setText(CardText.formatExpiry(item.getExpiry()));
         BankCardDesignAdapter.applyNetworkLogo(holder.network, item.getCardNetwork());
-        holder.type.setText(safe(item.getCardType(), "DEBIT").toUpperCase());
+        holder.type.setText(CardText.safe(item.getCardType(), "DEBIT").toUpperCase());
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -98,32 +99,6 @@ public class DashboardCardAdapter extends RecyclerView.Adapter<DashboardCardAdap
     @Override
     public int getItemCount() {
         return items.size();
-    }
-
-    private static String safe(String value, String fallback) {
-        return value != null && !value.trim().isEmpty() ? value.trim() : fallback;
-    }
-
-    private static String last4(String number) {
-        if (number == null) {
-            return "••••";
-        }
-        String digits = number.replaceAll("\\D", "");
-        if (digits.isEmpty()) {
-            return "••••";
-        }
-        return digits.length() > 4 ? digits.substring(digits.length() - 4) : digits;
-    }
-
-    private static String formatExpiry(String expiry) {
-        if (expiry == null) {
-            return "MM/YY";
-        }
-        String digits = expiry.replaceAll("\\D", "");
-        if (digits.length() == 4) {
-            return digits.substring(0, 2) + "/" + digits.substring(2);
-        }
-        return digits.isEmpty() ? "MM/YY" : digits;
     }
 
     static class CardViewHolder extends RecyclerView.ViewHolder {

@@ -5,18 +5,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.HideReturnsTransformationMethod;
-import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,7 +24,10 @@ import com.akin.wallet.adapter.PlatformSelectionAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.PlatformIcons;
+import com.akin.wallet.util.Dialogs;
+import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.search.SearchView;
 
 import java.util.ArrayList;
@@ -298,7 +298,8 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         }
 
         if (available.isEmpty()) {
-            Toast.makeText(this, "All accounts already linked", Toast.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(android.R.id.content),
+                    "All accounts already linked", Snackbar.LENGTH_SHORT).show();
             return;
         }
 
@@ -354,24 +355,12 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         findViewById(R.id.platform_selector).setOnClickListener(v -> openPlatformSearch());
 
         EditText inputPassword = findViewById(R.id.input_password);
-        findViewById(R.id.btn_toggle_password).setOnClickListener(v -> {
-            if (inputPassword.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
-                inputPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-            } else {
-                inputPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-            }
-            inputPassword.setSelection(inputPassword.getText().length());
-        });
+        findViewById(R.id.btn_toggle_password).setOnClickListener(v ->
+                Ui.togglePasswordVisibility(inputPassword));
 
         EditText inputPin = findViewById(R.id.input_pin);
-        findViewById(R.id.btn_toggle_pin).setOnClickListener(v -> {
-            if (inputPin.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
-                inputPin.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-            } else {
-                inputPin.setTransformationMethod(PasswordTransformationMethod.getInstance());
-            }
-            inputPin.setSelection(inputPin.getText().length());
-        });
+        findViewById(R.id.btn_toggle_pin).setOnClickListener(v ->
+                Ui.togglePasswordVisibility(inputPin));
 
         setupAssociateSection(dbHelper.getAllLogins(), -1);
 
@@ -392,7 +381,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
             String mobile = inputMobile.getText().toString().trim();
 
             if (username.isEmpty()) {
-                inputUsername.setError("Username required");
+                inputUsername.setError(getString(R.string.err_username_required));
                 return;
             }
 
@@ -406,7 +395,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
             setResult(RESULT_OK);
             finish();
-            Toast.makeText(context, "Account Saved", Toast.LENGTH_SHORT).show();
+            Ui.notifyOnReturn(R.string.msg_account_saved);
         });
 
     }
@@ -486,23 +475,11 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
         findViewById(R.id.platform_selector).setOnClickListener(v -> openPlatformSearch());
 
-        findViewById(R.id.btn_toggle_password).setOnClickListener(v -> {
-            if (inputPassword.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
-                inputPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-            } else {
-                inputPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-            }
-            inputPassword.setSelection(inputPassword.getText().length());
-        });
+        findViewById(R.id.btn_toggle_password).setOnClickListener(v ->
+                Ui.togglePasswordVisibility(inputPassword));
 
-        findViewById(R.id.btn_toggle_pin).setOnClickListener(v -> {
-            if (inputPin.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
-                inputPin.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-            } else {
-                inputPin.setTransformationMethod(PasswordTransformationMethod.getInstance());
-            }
-            inputPin.setSelection(inputPin.getText().length());
-        });
+        findViewById(R.id.btn_toggle_pin).setOnClickListener(v ->
+                Ui.togglePasswordVisibility(inputPin));
 
         setupAssociateSection(dbHelper.getAllLogins(), item.getId());
 
@@ -513,7 +490,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
             String mobile = inputMobile.getText().toString().trim();
 
             if (username.isEmpty()) {
-                inputUsername.setError("Username required");
+                inputUsername.setError(getString(R.string.err_username_required));
                 return;
             }
 
@@ -531,7 +508,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
 
             setResult(RESULT_OK);
             finish();
-            Toast.makeText(context, "Updated Successfully", Toast.LENGTH_SHORT).show();
+            Ui.notifyOnReturn(R.string.msg_updated);
         });
 
         // Delete in edit mode (the standalone list screen is gone), same
@@ -541,19 +518,16 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         // edit reinsert + Trash permanent delete only.
         View btnDelete = findViewById(R.id.btn_delete);
         btnDelete.setVisibility(View.VISIBLE);
-        btnDelete.setOnClickListener(v -> new AlertDialog.Builder(SocialAccountFormActivity.this)
-                .setTitle("Delete Account")
-                .setMessage("Are you sure you want to delete this "
-                        + item.getPlatform() + " account?")
-                .setPositiveButton("Delete", (d, which) -> {
+        btnDelete.setOnClickListener(v -> Dialogs.confirmDelete(SocialAccountFormActivity.this,
+                "Delete Account",
+                "Are you sure you want to delete this "
+                        + item.getPlatform() + " account?",
+                () -> {
                     dbHelper.moveLoginToTrash(item.getId());
                     setResult(RESULT_OK);
                     finish();
-                    Toast.makeText(SocialAccountFormActivity.this,
-                            "Deleted Successfully", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show());
+                    Ui.notifyOnReturn(R.string.msg_deleted);
+                }));
 
     }
 }

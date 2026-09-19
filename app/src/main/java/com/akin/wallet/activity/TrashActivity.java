@@ -14,9 +14,9 @@ import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
+import com.akin.wallet.util.Dialogs;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
@@ -216,12 +216,12 @@ public class TrashActivity extends AppCompatActivity {
         if (selected.isEmpty() || dbHelper == null) {
             return;
         }
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.trash_delete_forever)
-                .setMessage(getString(R.string.trash_delete_many, selected.size()))
-                .setPositiveButton(R.string.trash_delete_forever, (d, which) -> {
-                    // Snapshot the keys: deletes mutate the backing rows while
-                    // the adapter still holds them.
+        Dialogs.confirmDelete(this,
+                getString(R.string.trash_delete_forever),
+                getString(R.string.trash_delete_many, selected.size()),
+                () -> {
+                    // Snapshot: deletes mutate the backing rows while the
+                    // adapter still holds them.
                     List<TrashGalleryAdapter.Entry> doomed =
                             new ArrayList<>(galleryAdapter.selectedEntries());
                     for (TrashGalleryAdapter.Entry entry : doomed) {
@@ -238,8 +238,6 @@ public class TrashActivity extends AppCompatActivity {
                     Snackbar.make(findViewById(android.R.id.content),
                             getString(R.string.trash_deleted_count, count),
                             Snackbar.LENGTH_SHORT).show();
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+                });
     }
 }

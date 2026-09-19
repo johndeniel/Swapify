@@ -23,11 +23,6 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
         void onPlatformSelected(int iconRes, String name, String url);
     }
 
-    /** Fired after every filter pass so hosts can toggle an empty state. */
-    public interface OnCountChangedListener {
-        void onCountChanged(int count);
-    }
-
     private final List<PlatformIcons.Option> platforms;
     private final List<PlatformIcons.Option> platformsFull;
     private final OnPlatformSelectedListener listener;

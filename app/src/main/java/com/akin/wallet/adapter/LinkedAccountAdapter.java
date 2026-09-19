@@ -25,11 +25,6 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
         void onAction(CredentialItem item, boolean isRemove);
     }
 
-    /** Fired after every filter pass so hosts can toggle an empty state. */
-    public interface OnCountChangedListener {
-        void onCountChanged(int count);
-    }
-
     private final List<CredentialItem> items;
     // Unfiltered source for search. Displayed items mutate in place (remove on
     // unlink keeps the caller's list in sync for save); both lists hold the

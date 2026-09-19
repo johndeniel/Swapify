@@ -38,7 +38,7 @@ public final class IdFaceBinder {
         public final TextView holder;
         public final TextView numberLabel;
         public final TextView number;
-        public final com.akin.wallet.widget.BarcodeView barcode;
+        public final com.akin.wallet.util.BarcodeView barcode;
         public final TextView dob;
         public final TextView dobLabel;
         public final TextView expiry;

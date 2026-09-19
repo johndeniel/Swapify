@@ -12,7 +12,9 @@ import androidx.core.content.ContextCompat;
 
 import com.akin.wallet.R;
 import com.akin.wallet.security.AppLockManager;
+import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.snackbar.Snackbar;
 
 /**
  * Settings — security preferences behind the app lock. Biometric unlock is
@@ -34,6 +36,15 @@ public class SettingsActivity extends AppCompatActivity {
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
+
+        // Version footer stamps the installed version (falls back to 1.0).
+        TextView settingsVersion = findViewById(R.id.settings_version);
+        String version = "1.0";
+        try {
+            version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception ignored) {
+        }
+        settingsVersion.setText("Version " + version);
 
         biometricSwitch = findViewById(R.id.switch_biometric);
         biometricStatus = findViewById(R.id.biometric_status);
@@ -71,6 +82,22 @@ public class SettingsActivity extends AppCompatActivity {
         findViewById(R.id.row_terms).setOnClickListener(v ->
                 startActivity(new Intent(this, PolicyActivity.class)
                         .putExtra(PolicyActivity.EXTRA_TYPE, PolicyActivity.TYPE_TERMS)));
+
+        findViewById(R.id.row_about).setOnClickListener(v ->
+                startActivity(new Intent(this, PolicyActivity.class)
+                        .putExtra(PolicyActivity.EXTRA_TYPE, PolicyActivity.TYPE_ABOUT)));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // The PIN-change screen stashes its confirmation and finishes; show
+        // it here where the user actually lands.
+        int pending = Ui.takePendingMessage();
+        if (pending != 0) {
+            Snackbar.make(findViewById(android.R.id.content), pending,
+                    Snackbar.LENGTH_SHORT).show();
+        }
     }
 
     @Override

@@ -12,16 +12,18 @@ import com.akin.wallet.R;
 import com.google.android.material.appbar.MaterialToolbar;
 
 /**
- * In-app legal screen behind Settings. Shows either the Privacy Policy or
- * the Terms of Service depending on {@link #EXTRA_TYPE}. The bundled text is
- * sectioned (ALL-CAPS heading line, then body, blank line apart) and each
- * section renders as an accent-blue heading over light body copy.
+ * In-app legal screen behind Settings. Shows the Privacy Policy, Terms of
+ * Service or About page depending on {@link #EXTRA_TYPE}. The bundled text
+ * is sectioned (ALL-CAPS heading line, then body, blank line apart) and each
+ * section renders as an accent-blue heading over light body copy. The About
+ * page stamps the installed version name at the end.
  */
 public class PolicyActivity extends AppCompatActivity {
 
     public static final String EXTRA_TYPE = "extra_policy_type";
     public static final String TYPE_PRIVACY = "privacy";
     public static final String TYPE_TERMS = "terms";
+    public static final String TYPE_ABOUT = "about";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +39,25 @@ public class PolicyActivity extends AppCompatActivity {
         if (TYPE_TERMS.equals(getIntent().getStringExtra(EXTRA_TYPE))) {
             toolbar.setTitle(R.string.settings_terms);
             body = getString(R.string.policy_terms_body);
+        } else if (TYPE_ABOUT.equals(getIntent().getStringExtra(EXTRA_TYPE))) {
+            toolbar.setTitle(R.string.settings_about);
+            body = getString(R.string.policy_about_body)
+                    .replace("{version}", versionName());
         } else {
             toolbar.setTitle(R.string.settings_privacy);
             body = getString(R.string.policy_privacy_body);
         }
         renderSections(sections, body);
+    }
+
+    /** Installed version stamped on the About page (falls back to 1.0). */
+    private String versionName() {
+        try {
+            return getPackageManager()
+                    .getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            return "1.0";
+        }
     }
 
     /** Splits "HEADING\nbody\n\n..." into styled heading + body view pairs. */

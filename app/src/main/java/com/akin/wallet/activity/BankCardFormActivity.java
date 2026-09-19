@@ -6,17 +6,14 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.HideReturnsTransformationMethod;
-import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
@@ -26,6 +23,8 @@ import com.akin.wallet.R;
 import com.akin.wallet.adapter.BankCardDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
+import com.akin.wallet.util.Dialogs;
+import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
 
 public class BankCardFormActivity extends AppCompatActivity {
@@ -193,8 +192,10 @@ public class BankCardFormActivity extends AppCompatActivity {
         if (!restored) {
             // Fresh launch: seed pickers from the stored card; rotation keeps
             // the user's in-progress picks instead.
-            selectedType = indexOf(CARD_TYPES, item.getCardType());
-            selectedNetwork = indexOf(CARD_NETWORKS, item.getCardNetwork());
+            selectedType = sanitizeIndex(Ui.indexOfIgnoreCase(CARD_TYPES, item.getCardType()),
+                    CARD_TYPES.length);
+            selectedNetwork = sanitizeIndex(Ui.indexOfIgnoreCase(CARD_NETWORKS, item.getCardNetwork()),
+                    CARD_NETWORKS.length);
             selectedDesign = item.getDesign();
         }
         return item;
@@ -435,18 +436,9 @@ public class BankCardFormActivity extends AppCompatActivity {
     /** Eye icons flip the transformation method without losing cursor. */
     private void setupVisibilityToggles() {
         findViewById(R.id.btn_toggle_cvv).setOnClickListener(v ->
-                togglePasswordVisibility(inputCvv));
+                Ui.togglePasswordVisibility(inputCvv));
         findViewById(R.id.btn_toggle_pin).setOnClickListener(v ->
-                togglePasswordVisibility(inputPin));
-    }
-
-    private static void togglePasswordVisibility(EditText input) {
-        if (input.getTransformationMethod() == PasswordTransformationMethod.getInstance()) {
-            input.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-        } else {
-            input.setTransformationMethod(PasswordTransformationMethod.getInstance());
-        }
-        input.setSelection(input.getText().length());
+                Ui.togglePasswordVisibility(inputPin));
     }
 
     private void setupSaveAction() {
@@ -476,7 +468,7 @@ public class BankCardFormActivity extends AppCompatActivity {
                         // createdAt rides along untouched; updatedAt=0 tells the
                         // DB helper to stamp now().
                         editingItem.getCreatedAt(), 0));
-                Toast.makeText(this, "Updated Successfully", Toast.LENGTH_SHORT).show();
+                Ui.notifyOnReturn(R.string.msg_updated);
             } else {
                 dbHelper.insertBankCard(new BankCardItem(
                         CARD_TYPES[selectedType],
@@ -488,7 +480,7 @@ public class BankCardFormActivity extends AppCompatActivity {
                         cvvDigits,
                         pinDigits,
                         selectedDesign));
-                Toast.makeText(this, "Card Saved", Toast.LENGTH_SHORT).show();
+                Ui.notifyOnReturn(R.string.msg_card_saved);
             }
             setResult(RESULT_OK);
             finish();
@@ -501,17 +493,15 @@ public class BankCardFormActivity extends AppCompatActivity {
             return;
         }
         btnDelete.setVisibility(View.VISIBLE);
-        btnDelete.setOnClickListener(v -> new AlertDialog.Builder(this)
-                .setTitle("Delete Card")
-                .setMessage("Are you sure you want to delete this card?")
-                .setPositiveButton("Delete", (d, which) -> {
+        btnDelete.setOnClickListener(v -> Dialogs.confirmDelete(this,
+                "Delete Card",
+                "Are you sure you want to delete this card?",
+                () -> {
                     dbHelper.moveBankCardToTrash(editingItem.getId());
                     setResult(RESULT_OK);
                     finish();
-                    Toast.makeText(this, "Deleted Successfully", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show());
+                    Ui.notifyOnReturn(R.string.msg_deleted);
+                }));
     }
 
     // ------------------------------------------------------------------
@@ -640,19 +630,8 @@ public class BankCardFormActivity extends AppCompatActivity {
         return index < 0 || index >= size ? 0 : index;
     }
 
-    private static int indexOf(String[] options, String value) {
-        if (value != null) {
-            for (int i = 0; i < options.length; i++) {
-                if (options[i].equalsIgnoreCase(value.trim())) {
-                    return i;
-                }
-            }
-        }
-        return 0;
-    }
-
     private void showChoiceDialog(String title, String[] options, int checked, OnChoiceListener listener) {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle(title)
                 .setSingleChoiceItems(options, checked, (d, which) -> {
                     listener.onChoice(which);

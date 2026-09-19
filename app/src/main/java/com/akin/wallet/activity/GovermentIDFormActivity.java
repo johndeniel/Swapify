@@ -16,11 +16,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
@@ -31,7 +31,10 @@ import com.akin.wallet.adapter.IdCardDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.IdTypeSpec;
+import com.akin.wallet.util.Dialogs;
+import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -162,8 +165,9 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         // Swiping (or tapping) a page selects that type and rebuilds the form.
         IdCardDesignAdapter designAdapter = new IdCardDesignAdapter(pos -> {
             if (isEdit && !knownType[0]) {
-                Toast.makeText(GovermentIDFormActivity.this,
-                        "ID type is fixed for entries from a newer version", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content),
+                        "ID type is fixed for entries from a newer version",
+                        Snackbar.LENGTH_SHORT).show();
                 return;
             }
             if (pos != selectedType[0]) {
@@ -272,11 +276,11 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                             existing.getCreatedAt(), 0);
                 }
                 dbHelper.updateIdCard(updated);
-                Toast.makeText(GovermentIDFormActivity.this, "Updated Successfully", Toast.LENGTH_SHORT).show();
+                Ui.notifyOnReturn(R.string.msg_updated);
             } else {
                 IdCardItem newCard = new IdCardItem(typeName, filtered, fixedDesign);
                 dbHelper.insertIdCard(newCard);
-                Toast.makeText(GovermentIDFormActivity.this, "ID Saved", Toast.LENGTH_SHORT).show();
+                Ui.notifyOnReturn(R.string.msg_id_saved);
             }
             setResult(RESULT_OK);
             finish();
@@ -289,19 +293,16 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         View btnDelete = findViewById(R.id.btn_delete);
         if (isEdit) {
             btnDelete.setVisibility(View.VISIBLE);
-            btnDelete.setOnClickListener(v -> new AlertDialog.Builder(GovermentIDFormActivity.this)
-                    .setTitle("Delete ID")
-                    .setMessage("Are you sure you want to delete this "
-                            + existing.getIdType() + "?")
-                    .setPositiveButton("Delete", (d, which) -> {
+            btnDelete.setOnClickListener(v -> Dialogs.confirmDelete(GovermentIDFormActivity.this,
+                    "Delete ID",
+                    "Are you sure you want to delete this "
+                            + existing.getIdType() + "?",
+                    () -> {
                         dbHelper.moveIdCardToTrash(existing.getId());
                         setResult(RESULT_OK);
                         finish();
-                        Toast.makeText(GovermentIDFormActivity.this,
-                                "Deleted Successfully", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show());
+                        Ui.notifyOnReturn(R.string.msg_deleted);
+                    }));
         }
 
 
@@ -557,8 +558,8 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         row.addView(chevron);
 
         row.setOnClickListener(v -> {
-            int checked = indexOfOption(field.options, draft.get(field.key));
-            new AlertDialog.Builder(GovermentIDFormActivity.this)
+            int checked = Ui.indexOfIgnoreCase(field.options, draft.get(field.key));
+            new MaterialAlertDialogBuilder(GovermentIDFormActivity.this)
                     .setTitle(field.label)
                     .setSingleChoiceItems(field.options, checked, (d, which) -> {
                         String picked = field.options[which];
@@ -570,13 +571,6 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                         d.dismiss();
                     })
                     .setNegativeButton("Cancel", null)
-                    .setNeutralButton("Clear", (d, which) -> {
-                        draft.put(field.key, "");
-                        valueView.setText("Select");
-                        valueView.setAlpha(0.4f);
-                        hideFieldError(dropdownValues, field.key);
-                        onChanged.run();
-                    })
                     .show();
         });
 
@@ -829,7 +823,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             value.requestFocus();
             return false;
         }
-        Toast.makeText(GovermentIDFormActivity.this, message, Toast.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
         return false;
     }
 
@@ -843,18 +837,6 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
     private static String trimmed(String value) {
         return value != null ? value.trim() : "";
-    }
-
-    private static int indexOfOption(String[] options, String value) {
-        if (options == null || value == null) {
-            return -1;
-        }
-        for (int i = 0; i < options.length; i++) {
-            if (options[i].equalsIgnoreCase(value.trim())) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     private void applyIdTypeSelection(int pos,
