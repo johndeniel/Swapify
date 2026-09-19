@@ -119,7 +119,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         } else {
             // Re-query by id: secrets never ride the Intent, and a row
             // deleted elsewhere opens nothing instead of a stale copy.
-            CredentialItem item = dbHelper.getLoginById((int) id);
+            CredentialItem item = dbHelper.getSocialAccountById((int) id);
             if (item == null) {
                 finish();
                 return;
@@ -405,7 +405,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         findViewById(R.id.btn_toggle_pin).setOnClickListener(v ->
                 Ui.togglePasswordVisibility(inputPin));
 
-        setupAssociateSection(dbHelper.getAllLogins(), -1);
+        setupAssociateSection(dbHelper.getAllSocialAccounts(), -1);
 
         // Add mode keeps a single full-width Save button, same as the bank
         // screen: the delete view is GONE, so its row margin is dropped.
@@ -430,14 +430,14 @@ public class SocialAccountActivity extends AppCompatActivity {
                 return;
             }
 
-            List<Integer> assocIds = new ArrayList<>(linkedItems.size());
+            List<Integer> linkedIds = new ArrayList<>(linkedItems.size());
             for (CredentialItem linked : linkedItems) {
-                assocIds.add(linked.getId());
+                linkedIds.add(linked.getId());
             }
-            long newId = dbHelper.saveLoginWithAssociations(
+            long newId = dbHelper.saveSocialAccountWithLinks(
                     new CredentialItem(selectedName, username, password, pin,
                             selectedIcon, mobile, 0, 0),
-                    assocIds);
+                    linkedIds);
             if (newId < 0) {
                 Snackbar.make(findViewById(android.R.id.content),
                         R.string.err_save_failed, Snackbar.LENGTH_SHORT).show();
@@ -462,10 +462,10 @@ public class SocialAccountActivity extends AppCompatActivity {
         emptyLinked = findViewById(R.id.empty_linked);
 
         if (selfId != -1) {
-            List<Integer> currentAssocIds = dbHelper.getAssociations(selfId);
+            List<Integer> linkedIds = dbHelper.getLinkedAccountIds(selfId);
             for (CredentialItem login : linkPool) {
-                for (int assocId : currentAssocIds) {
-                    if (login.getId() == assocId) {
+                for (int linkedId : linkedIds) {
+                    if (login.getId() == linkedId) {
                         linkedItems.add(login);
                         break;
                     }
@@ -530,7 +530,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         findViewById(R.id.btn_toggle_pin).setOnClickListener(v ->
                 Ui.togglePasswordVisibility(inputPin));
 
-        setupAssociateSection(dbHelper.getAllLogins(), item.getId());
+        setupAssociateSection(dbHelper.getAllSocialAccounts(), item.getId());
 
         findViewById(R.id.btn_save).setOnClickListener(v -> {
             String username = inputUsername.getText().toString().trim();
@@ -545,14 +545,14 @@ public class SocialAccountActivity extends AppCompatActivity {
 
             // In-place update: same row id, so reverse links from other
             // accounts survive; the whole save is one transaction.
-            List<Integer> assocIds = new ArrayList<>(linkedItems.size());
+            List<Integer> linkedIds = new ArrayList<>(linkedItems.size());
             for (CredentialItem linked : linkedItems) {
-                assocIds.add(linked.getId());
+                linkedIds.add(linked.getId());
             }
-            long savedId = dbHelper.saveLoginWithAssociations(
+            long savedId = dbHelper.saveSocialAccountWithLinks(
                     new CredentialItem(item.getId(), selectedName, username, password, pin,
                             selectedIcon, mobile, item.getCreatedAt(), 0),
-                    assocIds);
+                    linkedIds);
             if (savedId < 0) {
                 Snackbar.make(findViewById(android.R.id.content),
                         R.string.err_save_failed, Snackbar.LENGTH_SHORT).show();
@@ -578,7 +578,7 @@ public class SocialAccountActivity extends AppCompatActivity {
                     "Are you sure you want to delete this "
                             + item.getPlatform() + " account?",
                     () -> {
-                        dbHelper.moveLoginToTrash(item.getId());
+                        dbHelper.moveSocialAccountToTrash(item.getId());
                         setResult(RESULT_OK);
                         finish();
                         Ui.notifyOnReturn(R.string.msg_deleted);

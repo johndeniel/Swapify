@@ -20,7 +20,7 @@ import com.akin.wallet.util.Ui;
 
 /**
  * App lock — the launcher screen. First run walks 4-digit PIN setup
- * (create + confirm); afterwards it is PIN entry or, only when the user
+ * (create + confirm); afterward it is PIN entry or, only when the user
  * opted in from Settings, fingerprint unlock. Result taps reuse the same
  * unlock-success routing per launch mode:
  *

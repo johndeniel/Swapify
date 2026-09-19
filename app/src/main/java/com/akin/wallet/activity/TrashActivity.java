@@ -166,7 +166,7 @@ public class TrashActivity extends AppCompatActivity {
             try {
                 ids = dbHelper.getTrashedIdCards();
                 cards = dbHelper.getTrashedBankCards();
-                accounts = dbHelper.getTrashedLogins();
+                accounts = dbHelper.getTrashedSocialAccounts();
             } catch (RuntimeException e) {
                 runOnUiThread(() -> {
                     if (generation != loadGeneration || isFinishing()) {
@@ -261,7 +261,7 @@ public class TrashActivity extends AppCompatActivity {
         dbIo.execute(() -> {
             dbHelper.restoreIdCards(ids);
             dbHelper.restoreBankCards(cards);
-            dbHelper.restoreLogins(socials);
+            dbHelper.restoreSocialAccounts(socials);
             runOnUiThread(() -> {
                 if (isFinishing()) {
                     return;
@@ -308,7 +308,7 @@ public class TrashActivity extends AppCompatActivity {
                 () -> dbIo.execute(() -> {
                     dbHelper.deleteIdCards(ids);
                     dbHelper.deleteBankCards(cards);
-                    dbHelper.deleteLogins(socials);
+                    dbHelper.deleteSocialAccounts(socials);
                     runOnUiThread(() -> {
                         if (isFinishing()) {
                             return;

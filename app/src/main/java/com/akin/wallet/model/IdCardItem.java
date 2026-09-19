@@ -91,14 +91,14 @@ public class IdCardItem {
         }
         return obj.toString();
     }
-
     /** Parse JSON string from SQLite. Never throws — returns empty map on bad input. */
-    public static Map<String, String> parseFieldsJson(String json) {        Map<String, String> map = new LinkedHashMap<>();
-        if (json == null || json.trim().isEmpty()) {
+    public static Map<String, String> parseFieldsJson(String payload) {
+        Map<String, String> map = new LinkedHashMap<>();
+        if (payload == null || payload.trim().isEmpty()) {
             return map;
         }
         try {
-            JSONObject obj = new JSONObject(json);
+            JSONObject obj = new JSONObject(payload);
             Iterator<String> keys = obj.keys();
             while (keys.hasNext()) {
                 String key = keys.next();

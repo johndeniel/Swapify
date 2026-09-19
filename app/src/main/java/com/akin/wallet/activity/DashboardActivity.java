@@ -563,7 +563,7 @@ public class DashboardActivity extends AppCompatActivity {
     private void openSocialEditor(CredentialItem item) {
         // Recency bump rides the I/O thread; navigation never waits for it.
         final int id = item.getId();
-        dbIo.execute(() -> dbHelper.touchLoginUpdatedAt(id));
+        dbIo.execute(() -> dbHelper.touchSocialAccountUpdatedAt(id));
         startActivity(SocialAccountActivity.editIntent(this, item));
     }
 
@@ -778,7 +778,7 @@ public class DashboardActivity extends AppCompatActivity {
         dbIo.execute(() -> {
             final List<IdCardItem> ids = dbHelper.getAllIdCards();
             final List<BankCardItem> cards = dbHelper.getAllBankCards();
-            final List<CredentialItem> accounts = dbHelper.getAllLogins();
+            final List<CredentialItem> accounts = dbHelper.getAllSocialAccounts();
             runOnUiThread(() -> {
                 if (generation != loadGeneration || isFinishing()) {
                     return;
