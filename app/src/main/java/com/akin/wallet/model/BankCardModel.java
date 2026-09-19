@@ -10,7 +10,7 @@ import java.util.Objects;
  * {@code id = -1} and {@code 0} timestamps; the database stamps real values
  * on insert.
  */
-public class BankCardItem {
+public final class BankCardModel {
 
     /** Row id for drafts that have never been persisted. */
     public static final int UNSET_ID = -1;
@@ -29,7 +29,7 @@ public class BankCardItem {
     private final long updatedAt;
 
     /** Unsaved draft; the database assigns the id and timestamps on insert. */
-    public BankCardItem(String cardType, String cardNetwork, String bankName, String holderName,
+    public BankCardModel(String cardType, String cardNetwork, String bankName, String holderName,
                         String cardNumber, String expiry, String cvv, String pin,
                         int design) {
         this(UNSET_ID, cardType, cardNetwork, bankName, holderName, cardNumber,
@@ -37,7 +37,7 @@ public class BankCardItem {
     }
 
     /** Stored row with its database identity and audit timestamps. */
-    public BankCardItem(int id, String cardType, String cardNetwork, String bankName,
+    public BankCardModel(int id, String cardType, String cardNetwork, String bankName,
                         String holderName, String cardNumber, String expiry,
                         String cvv, String pin, int design,
                         long createdAt, long updatedAt) {
@@ -109,10 +109,10 @@ public class BankCardItem {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof BankCardItem)) {
+        if (!(o instanceof BankCardModel)) {
             return false;
         }
-        BankCardItem that = (BankCardItem) o;
+        BankCardModel that = (BankCardModel) o;
         return id == that.id
                 && design == that.design
                 && createdAt == that.createdAt

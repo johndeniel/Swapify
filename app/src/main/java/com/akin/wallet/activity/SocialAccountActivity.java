@@ -20,8 +20,8 @@ import com.akin.wallet.R;
 import com.akin.wallet.adapter.LinkedSocialAccountAdapter;
 import com.akin.wallet.adapter.SocialPlatformAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
-import com.akin.wallet.model.CredentialItem;
-import com.akin.wallet.model.PlatformIcons;
+import com.akin.wallet.model.SocialAccountModel;
+import com.akin.wallet.model.SocialPlatformModel;
 import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.snackbar.Snackbar;
@@ -49,21 +49,20 @@ public class SocialAccountActivity extends AppCompatActivity {
      * as Intent extras (recents/dumps) and edits always start current.
      */
     public static Intent editIntent(@NonNull Context context,
-                                    @NonNull CredentialItem item) {
+                                    @NonNull SocialAccountModel item) {
         return new Intent(context, SocialAccountActivity.class)
                 .putExtra(EXTRA_LOGIN_ID, (long) item.getId());
     }
 
     private AppDatabaseHelper dbHelper;
-    private int selectedIcon = PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME);
+    private int selectedIcon = SocialPlatformModel.iconFor(DEFAULT_PLATFORM_NAME);
     private String selectedName = DEFAULT_PLATFORM_NAME;
     private ImageView platformIcon;
     private TextView platformName;
-    private LinearLayout associateSection;
     private RecyclerView recyclerLinked;
     private TextView emptyLinked;
-    private List<CredentialItem> linkPool = new ArrayList<>();
-    private List<CredentialItem> linkedItems = new ArrayList<>();
+    private List<SocialAccountModel> linkPool = new ArrayList<>();
+    private List<SocialAccountModel> linkedItems = new ArrayList<>();
     private LinkedSocialAccountAdapter linkedAdapter;
     private int linkSelfId = -1;
 
@@ -115,7 +114,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         } else {
             // Re-query by id: secrets never ride the Intent, and a row
             // deleted elsewhere opens nothing instead of a stale copy.
-            CredentialItem item = dbHelper.getSocialAccountById((int) id);
+            SocialAccountModel item = dbHelper.getSocialAccountById((int) id);
             if (item == null) {
                 finish();
                 return;
@@ -165,7 +164,7 @@ public class SocialAccountActivity extends AppCompatActivity {
             selectedName = name;
         }
         if (platformIcon != null) {
-            PlatformIcons.bindIcon(platformIcon, selectedName, selectedIcon);
+            SocialPlatformModel.bindIcon(platformIcon, selectedName, selectedIcon);
         }
         if (platformName != null) {
             platformName.setText(selectedName);
@@ -175,7 +174,7 @@ public class SocialAccountActivity extends AppCompatActivity {
             // In-place: the adapter shares this list reference for save.
             linkedItems.clear();
             for (int linkId : ids) {
-                for (CredentialItem candidate : linkPool) {
+                for (SocialAccountModel candidate : linkPool) {
                     if (candidate.getId() == linkId) {
                         linkedItems.add(candidate);
                         break;
@@ -200,12 +199,12 @@ public class SocialAccountActivity extends AppCompatActivity {
         recyclerPlatformSearch = findViewById(R.id.recycler_platform_search);
         emptyPlatformResults = findViewById(R.id.empty_platform_results);
 
-        platformAdapter = new SocialPlatformAdapter(PlatformIcons.catalog(),
+        platformAdapter = new SocialPlatformAdapter(SocialPlatformModel.catalog(),
                 (iconRes, name, url) -> {
                     selectedIcon = iconRes;
                     selectedName = name;
                     if (platformIcon != null) {
-                        PlatformIcons.bindIcon(platformIcon, selectedName, selectedIcon);
+                        SocialPlatformModel.bindIcon(platformIcon, selectedName, selectedIcon);
                     }
                     if (platformName != null) {
                         platformName.setText(selectedName);
@@ -234,9 +233,8 @@ public class SocialAccountActivity extends AppCompatActivity {
                 platformAdapter.getFilter().filter(text);
             }
         });
-        platformSearchView.addTransitionListener((view, oldState, newState) -> {
-            platformSearchOpen = newState == SearchView.TransitionState.SHOWN;
-        });
+        platformSearchView.addTransitionListener((view, oldState, newState) ->
+                platformSearchOpen = newState == SearchView.TransitionState.SHOWN);
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -292,9 +290,8 @@ public class SocialAccountActivity extends AppCompatActivity {
                 }
             }
         });
-        linkSearchView.addTransitionListener((view, oldState, newState) -> {
-            linkSearchOpen = newState == SearchView.TransitionState.SHOWN;
-        });
+        linkSearchView.addTransitionListener((view, oldState, newState) ->
+                linkSearchOpen = newState == SearchView.TransitionState.SHOWN);
 
         if (savedInstanceState != null
                 && savedInstanceState.getBoolean(KEY_LINK_OPEN, false)) {
@@ -311,13 +308,13 @@ public class SocialAccountActivity extends AppCompatActivity {
         if (linkSearchView == null || recyclerLinkSearch == null) {
             return;
         }
-        List<CredentialItem> available = new ArrayList<>();
-        for (CredentialItem existing : linkPool) {
+        List<SocialAccountModel> available = new ArrayList<>();
+        for (SocialAccountModel existing : linkPool) {
             if (existing.getId() == linkSelfId) {
                 continue;
             }
             boolean alreadyLinked = false;
-            for (CredentialItem linked : linkedItems) {
+            for (SocialAccountModel linked : linkedItems) {
                 if (linked.getId() == existing.getId()) {
                     alreadyLinked = true;
                     break;
@@ -336,7 +333,7 @@ public class SocialAccountActivity extends AppCompatActivity {
 
         linkSearchAdapter = new LinkedSocialAccountAdapter(available, false, (picked, removed) -> {
             boolean dup = false;
-            for (CredentialItem alreadyLinked : linkedItems) {
+            for (SocialAccountModel alreadyLinked : linkedItems) {
                 if (alreadyLinked.getId() == picked.getId()) {
                     dup = true;
                     break;
@@ -376,13 +373,13 @@ public class SocialAccountActivity extends AppCompatActivity {
     }
 
     private void bindAddForm() {
-        selectedIcon = PlatformIcons.iconFor(DEFAULT_PLATFORM_NAME);
+        selectedIcon = SocialPlatformModel.iconFor(DEFAULT_PLATFORM_NAME);
         selectedName = DEFAULT_PLATFORM_NAME;
 
         platformIcon = findViewById(R.id.platform_icon);
         platformName = findViewById(R.id.platform_name);
 
-        PlatformIcons.bindIcon(platformIcon, selectedName, selectedIcon);
+        SocialPlatformModel.bindIcon(platformIcon, selectedName, selectedIcon);
         platformName.setText(selectedName);
 
         findViewById(R.id.platform_selector).setOnClickListener(v -> openPlatformSearch());
@@ -409,8 +406,6 @@ public class SocialAccountActivity extends AppCompatActivity {
             // credentials with significant leading/trailing spaces.
             String password = inputPassword.getText().toString();
             String pin = inputPin.getText().toString();
-            EditText inputMobile = findViewById(R.id.input_mobile);
-            String mobile = inputMobile.getText().toString().trim();
 
             if (validateUsername(inputUsername, username) != null) {
                 return;
@@ -418,8 +413,8 @@ public class SocialAccountActivity extends AppCompatActivity {
 
             List<Integer> linkedIds = collectLinkedIds();
             long newId = dbHelper.saveSocialAccountWithLinks(
-                    new CredentialItem(selectedName, username, password, pin,
-                            selectedIcon, mobile, 0, 0),
+                    new SocialAccountModel(selectedName, username, password, pin,
+                            selectedIcon, 0, 0),
                     linkedIds);
             if (newId < 0) {
                 showSaveFailed();
@@ -435,17 +430,17 @@ public class SocialAccountActivity extends AppCompatActivity {
 
 
     /** Shared associate-accounts section for add (selfId -1) and edit modes. */
-    private void setupAssociateSection(List<CredentialItem> existingAccounts, int selfId) {
+    private void setupAssociateSection(List<SocialAccountModel> existingAccounts, int selfId) {
         linkPool = existingAccounts;
         linkSelfId = selfId;
         linkedItems = new ArrayList<>();
-        associateSection = findViewById(R.id.associate_section);
+        LinearLayout associateSection = findViewById(R.id.associate_section);
         recyclerLinked = findViewById(R.id.recycler_linked);
         emptyLinked = findViewById(R.id.empty_linked);
 
         if (selfId != -1) {
             List<Integer> linkedIds = dbHelper.getLinkedAccountIds(selfId);
-            for (CredentialItem login : linkPool) {
+            for (SocialAccountModel login : linkPool) {
                 for (int linkedId : linkedIds) {
                     if (login.getId() == linkedId) {
                         linkedItems.add(login);
@@ -497,7 +492,7 @@ public class SocialAccountActivity extends AppCompatActivity {
     /** Outgoing link edges for the save transaction. */
     private List<Integer> collectLinkedIds() {
         List<Integer> linkedIds = new ArrayList<>(linkedItems.size());
-        for (CredentialItem linkedAccount : linkedItems) {
+        for (SocialAccountModel linkedAccount : linkedItems) {
             linkedIds.add(linkedAccount.getId());
         }
         return linkedIds;
@@ -508,25 +503,23 @@ public class SocialAccountActivity extends AppCompatActivity {
                 R.string.err_save_failed, Snackbar.LENGTH_SHORT).show();
     }
 
-    private void bindEditForm(@NonNull CredentialItem item) {
+    private void bindEditForm(@NonNull SocialAccountModel item) {
         platformIcon = findViewById(R.id.platform_icon);
         platformName = findViewById(R.id.platform_name);
         TextView textSaveLabel = findViewById(R.id.text_save_label);
         EditText inputUsername = findViewById(R.id.input_username);
         EditText inputPassword = findViewById(R.id.input_password);
         EditText inputPin = findViewById(R.id.input_pin);
-        EditText inputMobile = findViewById(R.id.input_mobile);
 
         textSaveLabel.setText(R.string.action_update);
 
-        selectedIcon = PlatformIcons.iconFor(item.getPlatform(), item.getIconRes());
+        selectedIcon = SocialPlatformModel.iconFor(item.getPlatform(), item.getIconRes());
         selectedName = item.getPlatform();
-        PlatformIcons.bindIcon(platformIcon, selectedName, selectedIcon);
+        SocialPlatformModel.bindIcon(platformIcon, selectedName, selectedIcon);
         platformName.setText(item.getPlatform());
         inputUsername.setText(item.getUsername());
         inputPassword.setText(item.getPassword());
         inputPin.setText(item.getPin());
-        inputMobile.setText(item.getMobile());
 
         findViewById(R.id.platform_selector).setOnClickListener(v -> openPlatformSearch());
 
@@ -542,7 +535,6 @@ public class SocialAccountActivity extends AppCompatActivity {
             String username = inputUsername.getText().toString().trim();
             String password = inputPassword.getText().toString();
             String pin = inputPin.getText().toString();
-            String mobile = inputMobile.getText().toString().trim();
 
             if (validateUsername(inputUsername, username) != null) {
                 return;
@@ -552,8 +544,8 @@ public class SocialAccountActivity extends AppCompatActivity {
             // accounts survive; the whole save is one transaction.
             List<Integer> linkedIds = collectLinkedIds();
             long savedId = dbHelper.saveSocialAccountWithLinks(
-                    new CredentialItem(item.getId(), selectedName, username, password, pin,
-                            selectedIcon, mobile, item.getCreatedAt(), 0),
+                    new SocialAccountModel(item.getId(), selectedName, username, password, pin,
+                            selectedIcon, item.getCreatedAt(), 0),
                     linkedIds);
             if (savedId < 0) {
                 showSaveFailed();

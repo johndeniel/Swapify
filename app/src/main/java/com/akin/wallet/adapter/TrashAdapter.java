@@ -12,11 +12,10 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.model.BankCardItem;
-import com.akin.wallet.model.CredentialItem;
-import com.akin.wallet.model.IdCardItem;
-import com.akin.wallet.model.IdTypeSpec;
-import com.akin.wallet.model.PlatformIcons;
+import com.akin.wallet.model.BankCardModel;
+import com.akin.wallet.model.SocialAccountModel;
+import com.akin.wallet.model.GovernmentIDModel;
+import com.akin.wallet.model.SocialPlatformModel;
 import com.akin.wallet.util.CardText;
 import com.google.android.material.card.MaterialCardView;
 
@@ -48,12 +47,12 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         public final boolean header;
         public final String headerTitle;
         public final int headerCount;
-        public final IdCardItem idCard;
-        public final BankCardItem bankCard;
-        public final CredentialItem socialAccount;
+        public final GovernmentIDModel idCard;
+        public final BankCardModel bankCard;
+        public final SocialAccountModel socialAccount;
 
         private Entry(int kind, boolean header, String headerTitle, int headerCount,
-                      IdCardItem idCard, BankCardItem bankCard, CredentialItem socialAccount) {
+                      GovernmentIDModel idCard, BankCardModel bankCard, SocialAccountModel socialAccount) {
             this.kind = kind;
             this.header = header;
             this.headerTitle = headerTitle;
@@ -67,15 +66,15 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             return new Entry(KIND_HEADER, true, title, count, null, null, null);
         }
 
-        public static Entry id(IdCardItem item) {
+        public static Entry id(GovernmentIDModel item) {
             return new Entry(KIND_ID, false, null, 0, item, null, null);
         }
 
-        public static Entry card(BankCardItem item) {
+        public static Entry card(BankCardModel item) {
             return new Entry(KIND_CARD, false, null, 0, null, item, null);
         }
 
-        public static Entry social(CredentialItem item) {
+        public static Entry social(SocialAccountModel item) {
             return new Entry(KIND_SOCIAL, false, null, 0, null, null, item);
         }
 
@@ -320,31 +319,31 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         applySelection(tile, entry);
     }
 
-    private static void bindIdCard(TileHolder tile, IdCardItem idCard) {
+    private static void bindIdCard(TileHolder tile, GovernmentIDModel idCard) {
         Context context = tile.itemView.getContext();
         tile.icon.setImageResource(R.drawable.ic_person);
-        String rawType = idCard.getIdType() == null ? "" : idCard.getIdType().trim();
+        String rawType = idCard.getIdType().trim();
         tile.title.setText(rawType.isEmpty()
                 ? context.getString(R.string.trash_section_ids) : rawType);
-        tile.sub.setText(IdTypeSpec.displayNumber(faceSpec(idCard), idCard.getFields()));
+        tile.sub.setText(GovernmentIDModel.displayNumber(faceSpec(idCard), idCard.getFields()));
     }
 
-    private static IdTypeSpec.IdType faceSpec(IdCardItem idCard) {
+    private static GovernmentIDModel.IdType faceSpec(GovernmentIDModel idCard) {
         // Unknown types render through the generic face, never masquerading
         // as another document.
-        return IdTypeSpec.isKnownType(idCard.getIdType())
-                ? IdTypeSpec.forName(idCard.getIdType())
-                : IdTypeSpec.genericType(idCard.getIdType(), idCard.getFields());
+        return GovernmentIDModel.isKnownType(idCard.getIdType())
+                ? GovernmentIDModel.forName(idCard.getIdType())
+                : GovernmentIDModel.genericType(idCard.getIdType(), idCard.getFields());
     }
 
-    private static void bindBankCard(TileHolder tile, BankCardItem bankCard) {
+    private static void bindBankCard(TileHolder tile, BankCardModel bankCard) {
         tile.icon.setImageResource(R.drawable.chip);
         tile.title.setText(cardTitle(tile.itemView.getContext(), bankCard));
         tile.sub.setText(tile.itemView.getContext().getString(R.string.mask_card_last4,
                 CardText.last4(bankCard.getCardNumber())));
     }
 
-    private static void bindSocialAccount(TileHolder tile, CredentialItem socialAccount) {
+    private static void bindSocialAccount(TileHolder tile, SocialAccountModel socialAccount) {
         Context context = tile.itemView.getContext();
         String fallback = context.getString(R.string.label_social_account);
         String platform = socialAccount.getPlatform() != null
@@ -354,7 +353,7 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 ? socialAccount.getUsername().trim() : "";
         tile.title.setText(platform);
         tile.sub.setText(username.isEmpty() ? fallback : username);
-        PlatformIcons.bindIcon(tile.icon, socialAccount.getPlatform(),
+        SocialPlatformModel.bindIcon(tile.icon, socialAccount.getPlatform(),
                 socialAccount.getIconRes());
     }
 
@@ -392,7 +391,7 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return entries.size();
     }
 
-    private static String cardTitle(Context context, BankCardItem card) {
+    private static String cardTitle(Context context, BankCardModel card) {
         String bank = card.getBankName() != null ? card.getBankName().trim() : "";
         String type = card.getCardType() != null ? card.getCardType().trim() : "";
         if (!bank.isEmpty() && !type.isEmpty()) {

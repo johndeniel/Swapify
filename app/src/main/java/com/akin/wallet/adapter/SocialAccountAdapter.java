@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.model.CredentialItem;
-import com.akin.wallet.model.PlatformIcons;
+import com.akin.wallet.model.SocialAccountModel;
+import com.akin.wallet.model.SocialPlatformModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,18 +24,18 @@ import java.util.List;
 public class SocialAccountAdapter extends RecyclerView.Adapter<SocialAccountAdapter.AccountViewHolder> {
 
     public interface OnAccountClickListener {
-        void onAccountClick(CredentialItem item);
+        void onAccountClick(SocialAccountModel item);
     }
 
-    private final List<CredentialItem> accounts = new ArrayList<>();
+    private final List<SocialAccountModel> accounts = new ArrayList<>();
     private final OnAccountClickListener listener;
 
     public SocialAccountAdapter(OnAccountClickListener listener) {
         this.listener = listener;
     }
 
-    public void updateData(List<CredentialItem> newAccounts) {
-        List<CredentialItem> next =
+    public void updateData(List<SocialAccountModel> newAccounts) {
+        List<SocialAccountModel> next =
                 newAccounts != null ? new ArrayList<>(newAccounts) : new ArrayList<>();
         DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
@@ -77,14 +77,14 @@ public class SocialAccountAdapter extends RecyclerView.Adapter<SocialAccountAdap
 
     @Override
     public void onBindViewHolder(@NonNull AccountViewHolder holder, int position) {
-        CredentialItem account = accounts.get(position);
+        SocialAccountModel account = accounts.get(position);
         String fallback = holder.itemView.getContext().getString(R.string.label_social_account);
         String platform = account.getPlatform() != null && !account.getPlatform().trim().isEmpty()
                 ? account.getPlatform().trim() : fallback;
         String username = account.getUsername() != null ? account.getUsername().trim() : "";
         holder.title.setText(platform);
         holder.sub.setText(username.isEmpty() ? fallback : username);
-        PlatformIcons.bindIcon(holder.icon, account.getPlatform(), account.getIconRes());
+        SocialPlatformModel.bindIcon(holder.icon, account.getPlatform(), account.getIconRes());
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onAccountClick(account);

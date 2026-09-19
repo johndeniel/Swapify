@@ -2,7 +2,7 @@ package com.akin.wallet.adapter;
 
 import android.view.LayoutInflater;
 import com.akin.wallet.R;
-import com.akin.wallet.model.PlatformIcons;
+import com.akin.wallet.model.SocialPlatformModel;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -29,11 +29,11 @@ public class SocialPlatformAdapter extends RecyclerView.Adapter<SocialPlatformAd
         void onPlatformSelected(int iconRes, String name, String url);
     }
 
-    private final List<PlatformIcons.Option> visiblePlatforms;
-    private final List<PlatformIcons.Option> allPlatforms;
+    private final List<SocialPlatformModel.Option> visiblePlatforms;
+    private final List<SocialPlatformModel.Option> allPlatforms;
     private final OnPlatformSelectedListener listener;
 
-    public SocialPlatformAdapter(List<PlatformIcons.Option> platforms, OnPlatformSelectedListener listener) {
+    public SocialPlatformAdapter(List<SocialPlatformModel.Option> platforms, OnPlatformSelectedListener listener) {
         // Owned copy: filtering mutates the displayed list, which must never
         // leak back into the caller's catalog.
         this.visiblePlatforms = platforms != null ? new ArrayList<>(platforms) : new ArrayList<>();
@@ -50,7 +50,7 @@ public class SocialPlatformAdapter extends RecyclerView.Adapter<SocialPlatformAd
 
     @Override
     public void onBindViewHolder(@NonNull PlatformViewHolder holder, int position) {
-        PlatformIcons.Option platform = visiblePlatforms.get(position);
+        SocialPlatformModel.Option platform = visiblePlatforms.get(position);
         holder.icon.setImageResource(platform.getIconRes());
         holder.name.setText(platform.getName());
         holder.url.setText(platform.getUrl());
@@ -83,8 +83,8 @@ public class SocialPlatformAdapter extends RecyclerView.Adapter<SocialPlatformAd
         @SuppressWarnings("unchecked")
         protected void publishResults(CharSequence constraint, FilterResults results) {
             Object rawValues = results != null ? results.values : null;
-            final List<PlatformIcons.Option> nextOptions =
-                    rawValues instanceof List ? (List<PlatformIcons.Option>) rawValues : new ArrayList<>();
+            final List<SocialPlatformModel.Option> nextOptions =
+                    rawValues instanceof List ? (List<SocialPlatformModel.Option>) rawValues : new ArrayList<>();
             DiffUtil.DiffResult diff = platformDiff(nextOptions);
             visiblePlatforms.clear();
             visiblePlatforms.addAll(nextOptions);
@@ -92,14 +92,14 @@ public class SocialPlatformAdapter extends RecyclerView.Adapter<SocialPlatformAd
         }
     };
 
-    private List<PlatformIcons.Option> filterPlatforms(CharSequence constraint) {
-        List<PlatformIcons.Option> filteredOptions = new ArrayList<>();
+    private List<SocialPlatformModel.Option> filterPlatforms(CharSequence constraint) {
+        List<SocialPlatformModel.Option> filteredOptions = new ArrayList<>();
         if (constraint == null || constraint.length() == 0) {
             filteredOptions.addAll(allPlatforms);
             return filteredOptions;
         }
         String filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim();
-        for (PlatformIcons.Option platform : allPlatforms) {
+        for (SocialPlatformModel.Option platform : allPlatforms) {
             if (matchesPlatform(platform, filterPattern)) {
                 filteredOptions.add(platform);
             }
@@ -107,12 +107,12 @@ public class SocialPlatformAdapter extends RecyclerView.Adapter<SocialPlatformAd
         return filteredOptions;
     }
 
-    private static boolean matchesPlatform(PlatformIcons.Option platform, String filterPattern) {
+    private static boolean matchesPlatform(SocialPlatformModel.Option platform, String filterPattern) {
         return platform.getName().toLowerCase(Locale.ROOT).contains(filterPattern)
                 || platform.getUrl().toLowerCase(Locale.ROOT).contains(filterPattern);
     }
 
-    private DiffUtil.DiffResult platformDiff(final List<PlatformIcons.Option> nextOptions) {
+    private DiffUtil.DiffResult platformDiff(final List<SocialPlatformModel.Option> nextOptions) {
         return DiffUtil.calculateDiff(new DiffUtil.Callback() {
                 @Override
                 public int getOldListSize() {
@@ -132,8 +132,8 @@ public class SocialPlatformAdapter extends RecyclerView.Adapter<SocialPlatformAd
 
                 @Override
                 public boolean areContentsTheSame(int oldPos, int newPos) {
-                    PlatformIcons.Option oldOption = visiblePlatforms.get(oldPos);
-                    PlatformIcons.Option newOption = nextOptions.get(newPos);
+                    SocialPlatformModel.Option oldOption = visiblePlatforms.get(oldPos);
+                    SocialPlatformModel.Option newOption = nextOptions.get(newPos);
                     return oldOption.getIconRes() == newOption.getIconRes()
                             && oldOption.getName().equals(newOption.getName())
                             && oldOption.getUrl().equals(newOption.getUrl());

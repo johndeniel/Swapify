@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.akin.wallet.R;
 import com.akin.wallet.adapter.BankCardDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
-import com.akin.wallet.model.BankCardItem;
+import com.akin.wallet.model.BankCardModel;
 import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
 
@@ -33,7 +33,7 @@ public class BankCardActivity extends AppCompatActivity {
      * id only — the screen re-queries the vault, so secrets never travel as
      * Intent extras and edits always start current.
      */
-    public static Intent editIntent(@NonNull Context context, @NonNull BankCardItem item) {
+    public static Intent editIntent(@NonNull Context context, @NonNull BankCardModel item) {
         return new Intent(context, BankCardActivity.class)
                 .putExtra(EXTRA_ID, item.getId());
     }
@@ -41,10 +41,10 @@ public class BankCardActivity extends AppCompatActivity {
     // Fixed option sets. Order doubles as the persisted design/type index, so
     // never reorder without a DB migration.
     private static final String[] CARD_TYPES = {"Debit", "Credit", "Prepaid"};
-    private static final String[] CARD_NETWORKS = {"Visa", "Mastercard"};
+    private static final String[] CARD_NETWORKS = {"Visa", "MasterCard"};
 
     // Validation rules. Card number range follows ISO/IEC 7812 (13-19 digits);
-    // CVV is 3 digits because only Visa/Mastercard are offered (no Amex 4-digit).
+    // CVV is 3 digits because only Visa/MasterCard are offered (no Amex 4-digit).
     // PIN follows the common 4-6 digit ATM convention.
     private static final int CARD_NUMBER_MIN_LEN = 16;
     private static final int CARD_NUMBER_MAX_LEN = 19;
@@ -69,7 +69,7 @@ public class BankCardActivity extends AppCompatActivity {
     // Form state. Plain ints (not single-element arrays): bindForm runs once per
     // creation, and lambdas capture the activity, so no effectively-final hack.
     private boolean isEdit;
-    private BankCardItem editingItem;
+    private BankCardModel editingItem;
     private int selectedType;
     private int selectedNetwork;
     private int selectedDesign;
@@ -124,7 +124,7 @@ public class BankCardActivity extends AppCompatActivity {
             selectedDesign = Math.max(0, savedInstanceState.getInt(KEY_SELECTED_DESIGN, 0));
         }
 
-        BankCardItem existing = resolveEditingItem(savedInstanceState != null);
+        BankCardModel existing = resolveEditingItem(savedInstanceState != null);
         if (isFinishing()) {
             // Row vanished mid-edit (deleted elsewhere): nothing to bind.
             return;
@@ -168,12 +168,12 @@ public class BankCardActivity extends AppCompatActivity {
      *                 must not be overwritten by stored defaults
      */
     @Nullable
-    private BankCardItem resolveEditingItem(boolean restored) {
+    private BankCardModel resolveEditingItem(boolean restored) {
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id == -1) {
             return null;
         }
-        BankCardItem item = dbHelper.getBankCardById(id);
+        BankCardModel item = dbHelper.getBankCardById(id);
         if (item == null) {
             finish();
             return null;
@@ -191,7 +191,7 @@ public class BankCardActivity extends AppCompatActivity {
     }
 
     /** Entry point: wires every section in dependency order. */
-    private void bindForm(@Nullable BankCardItem existing) {
+    private void bindForm(@Nullable BankCardModel existing) {
         isEdit = existing != null;
         editingItem = existing;
 
@@ -282,7 +282,7 @@ public class BankCardActivity extends AppCompatActivity {
     }
 
     /** Fills every field from the stored card; clamps a stale design index. */
-    private void prefillEditMode(@NonNull BankCardItem existing) {
+    private void prefillEditMode(@NonNull BankCardModel existing) {
         textSaveLabel.setText(R.string.action_update);
         textCardType.setText(CARD_TYPES[selectedType]);
         textCardNetwork.setText(CARD_NETWORKS[selectedNetwork]);
@@ -446,7 +446,7 @@ public class BankCardActivity extends AppCompatActivity {
             String pinDigits = extractDigits(inputPin.getText().toString());
 
             if (isEdit) {
-                dbHelper.updateBankCard(new BankCardItem(
+                dbHelper.updateBankCard(new BankCardModel(
                         editingItem.getId(),
                         CARD_TYPES[selectedType],
                         CARD_NETWORKS[selectedNetwork],
@@ -462,7 +462,7 @@ public class BankCardActivity extends AppCompatActivity {
                         editingItem.getCreatedAt(), 0));
                 Ui.notifyOnReturn(R.string.msg_updated);
             } else {
-                dbHelper.insertBankCard(new BankCardItem(
+                dbHelper.insertBankCard(new BankCardModel(
                         CARD_TYPES[selectedType],
                         CARD_NETWORKS[selectedNetwork],
                         inputBankName.getText().toString().trim(),

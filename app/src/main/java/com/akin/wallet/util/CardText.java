@@ -2,7 +2,7 @@ package com.akin.wallet.util;
 
 /**
  * Bank-card face text rules shared by the dashboard carousel and trash.
- * Single source so masked numbers and expiries render identically
+ * Single source so masked numbers and expiry render identically
  * everywhere.
  */
 public final class CardText {

@@ -9,8 +9,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.model.IdCardItem;
-import com.akin.wallet.model.IdTypeSpec;
+import com.akin.wallet.model.GovernmentIDModel;
 import com.akin.wallet.util.GovermentIdFaceRenderer;
 
 import java.util.ArrayList;
@@ -26,18 +25,18 @@ import java.util.Map;
 public class GovermentIdAdapter extends RecyclerView.Adapter<GovermentIdAdapter.IdCardViewHolder> {
 
     public interface OnIdClickListener {
-        void onIdClick(IdCardItem item);
+        void onIdClick(GovernmentIDModel item);
     }
 
-    private final List<IdCardItem> idCards = new ArrayList<>();
+    private final List<GovernmentIDModel> idCards = new ArrayList<>();
     private final OnIdClickListener listener;
 
     public GovermentIdAdapter(OnIdClickListener listener) {
         this.listener = listener;
     }
 
-    public void updateData(List<IdCardItem> newIdCards) {
-        List<IdCardItem> next =
+    public void updateData(List<GovernmentIDModel> newIdCards) {
+        List<GovernmentIDModel> next =
                 newIdCards != null ? new ArrayList<>(newIdCards) : new ArrayList<>();
         DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
@@ -88,18 +87,19 @@ public class GovermentIdAdapter extends RecyclerView.Adapter<GovermentIdAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull IdCardViewHolder holder, int position) {
-        IdCardItem idCard = idCards.get(position);
+        GovernmentIDModel idCard = idCards.get(position);
         Map<String, String> fields = idCard.getFields();
-        String rawType = idCard.getIdType() == null ? "" : idCard.getIdType().trim();
+        String idType = idCard.getIdType();
+        String rawType = idType.trim();
         // Unknown types render through the generic face — never masqueraded
         // as another document. forName() falls back to the first type, so it
         // is only called for known types.
-        IdTypeSpec.IdType spec = IdTypeSpec.isKnownType(idCard.getIdType())
-                ? IdTypeSpec.forName(idCard.getIdType())
-                : IdTypeSpec.genericType(idCard.getIdType(), fields);
+        GovernmentIDModel.IdType spec = GovernmentIDModel.isKnownType(idType)
+                ? GovernmentIDModel.forName(idType)
+                : GovernmentIDModel.genericType(idType, fields);
         GovermentIdFaceRenderer.render(holder.face,
                 spec,
-                idCard.getIdType(),
+                idType,
                 rawType.isEmpty() ? "GOVERNMENT ID" : rawType,
                 fields);
 

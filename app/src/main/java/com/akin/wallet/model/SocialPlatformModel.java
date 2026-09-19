@@ -16,7 +16,6 @@ import java.util.Map;
  * Single source of truth for platform branding.
  *
  * <p>Why this exists: {@code R.drawable} ints are reassigned on every build,
- * so the raw ints persisted in {@code social_accounts.icon_res} rot after a reinstall
  * (title says Google, icon shows Facebook). Platform <b>names</b> are stable,
  * so every display site resolves the icon from the name here at bind time and
  * only trusts the stored int for unknown/custom platforms. Old rows heal
@@ -25,9 +24,9 @@ import java.util.Map;
  * <p>Each platform is registered exactly once in the static block below; the
  * icon map and the picker catalog are both derived from it.
  */
-public final class PlatformIcons {
+public final class SocialPlatformModel {
 
-    private PlatformIcons() {
+    private SocialPlatformModel() {
     }
 
     /** Picker row: branding + display url. */
@@ -74,6 +73,7 @@ public final class PlatformIcons {
         registerPlatform(R.drawable.google, "Google", "google.com");
         registerPlatform(R.drawable.instagram, "Instagram", "instagram.com");
         registerPlatform(R.drawable.itunes, "iTunes", "itunes.com");
+        //noinspection SpellCheckingInspection
         registerPlatform(R.drawable.lazada, "Lazada", "lazada.com");
         registerPlatform(R.drawable.line, "LINE", "line.me");
         registerPlatform(R.drawable.linkedin, "LinkedIn", "linkedin.com");
@@ -86,6 +86,7 @@ public final class PlatformIcons {
         registerPlatform(R.drawable.pinterest, "Pinterest", "pinterest.com");
         registerPlatform(R.drawable.rcbc, "RCBC", "rcbc.com.ph");
         registerPlatform(R.drawable.reddit, "Reddit", "reddit.com");
+        //noinspection SpellCheckingInspection
         registerPlatform(R.drawable.shoopee, "Shopee", "shopee.com");
         registerPlatform(R.drawable.slack, "Slack", "slack.com");
         registerPlatform(R.drawable.snapchat, "Snapchat", "snapchat.com");

@@ -3,13 +3,13 @@ package com.akin.wallet.model;
 import java.util.Objects;
 
 /**
- * Social account entry (platform login: username, password, PIN, mobile).
+ * Social account entry (platform login: username, password, PIN).
  *
  * <p>Immutable value object shared by the dashboard, the social-account form,
  * and {@code social_accounts} persistence. Unsaved drafts carry {@code id = -1}
  * and {@code 0} timestamps; the database stamps real values on insert.
  */
-public class CredentialItem {
+public final class SocialAccountModel {
 
     /** Row id for drafts that have never been persisted. */
     public static final int UNSET_ID = -1;
@@ -20,32 +20,26 @@ public class CredentialItem {
     private final String password;
     private final String pin;
     private final int iconRes;
-    private final String mobile;
     private final long createdAt;
     private final long updatedAt;
 
     /** Unsaved draft; the database assigns the id and timestamps on insert. */
-    public CredentialItem(String platform, String username, String password, String pin,
-                          int iconRes, String mobile, long createdAt, long updatedAt) {
-        this(UNSET_ID, platform, username, password, pin, iconRes, mobile, createdAt, updatedAt);
+    public SocialAccountModel(String platform, String username, String password, String pin,
+                          int iconRes, long createdAt, long updatedAt) {
+        this(UNSET_ID, platform, username, password, pin, iconRes, createdAt, updatedAt);
     }
 
     /** Stored row with its database identity and audit timestamps. */
-    public CredentialItem(int id, String platform, String username, String password, String pin,
-                          int iconRes, String mobile, long createdAt, long updatedAt) {
+    public SocialAccountModel(int id, String platform, String username, String password, String pin,
+                          int iconRes, long createdAt, long updatedAt) {
         this.id = id;
         this.platform = platform;
         this.username = username;
         this.password = password;
         this.pin = pin;
         this.iconRes = iconRes;
-        this.mobile = normalizeMobileNumber(mobile);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-    }
-
-    private static String normalizeMobileNumber(String mobile) {
-        return mobile != null ? mobile : "";
     }
 
     public int getId() {
@@ -72,10 +66,6 @@ public class CredentialItem {
         return iconRes;
     }
 
-    public String getMobile() {
-        return mobile;
-    }
-
     public long getCreatedAt() {
         return createdAt;
     }
@@ -90,10 +80,10 @@ public class CredentialItem {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof CredentialItem)) {
+        if (!(o instanceof SocialAccountModel)) {
             return false;
         }
-        CredentialItem that = (CredentialItem) o;
+        SocialAccountModel that = (SocialAccountModel) o;
         return id == that.id
                 && iconRes == that.iconRes
                 && createdAt == that.createdAt
@@ -101,13 +91,12 @@ public class CredentialItem {
                 && Objects.equals(platform, that.platform)
                 && Objects.equals(username, that.username)
                 && Objects.equals(password, that.password)
-                && Objects.equals(pin, that.pin)
-                && Objects.equals(mobile, that.mobile);
+                && Objects.equals(pin, that.pin);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, platform, username, password, pin, iconRes,
-                mobile, createdAt, updatedAt);
+                createdAt, updatedAt);
     }
 }

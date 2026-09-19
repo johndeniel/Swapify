@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.akin.wallet.R;
 import com.akin.wallet.adapter.TrashAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
-import com.akin.wallet.model.BankCardItem;
-import com.akin.wallet.model.CredentialItem;
-import com.akin.wallet.model.IdCardItem;
+import com.akin.wallet.model.BankCardModel;
+import com.akin.wallet.model.SocialAccountModel;
+import com.akin.wallet.model.GovernmentIDModel;
 import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Trash — restorable soft-deletes as selectable tiles. Deleting a Goverment
+ * Trash — restorable soft-deletes as selectable tiles. Deleting a Government
  * ID, Bank Card or Social Account stamps deleted_at (dashboard hides it);
  * this screen groups the trashed rows: one uniform set of tiles (centered
  * icon + title + masked hint, paired two-per-row). Tapping a tile toggles
@@ -76,24 +76,9 @@ public class TrashActivity extends AppCompatActivity {
         });
 
         recyclerTrash = findViewById(R.id.recycler_trash);
-        GridLayoutManager grid = new GridLayoutManager(this, 2);
-        // Uniform tiles pair up; headers take the full row. Bounds-guarded:
-        // layout can probe positions mid-animation that no longer exist.
-        grid.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-            @Override
-            public int getSpanSize(int position) {
-                if (trashAdapter == null
-                        || position < 0 || position >= trashAdapter.getItemCount()) {
-                    return 2;
-                }
-                return trashAdapter.getItemViewType(position)
-                        == TrashAdapter.TYPE_TILE ? 1 : 2;
-            }
-        });
-        recyclerTrash.setLayoutManager(grid);
+        recyclerTrash.setLayoutManager(createGridLayoutManager());
         trashAdapter = new TrashAdapter();
-        trashAdapter.setOnSelectionChangedListener(
-                (selected, total) -> updateChrome(selected, total));
+        trashAdapter.setOnSelectionChangedListener(this::updateChrome);
         recyclerTrash.setAdapter(trashAdapter);
 
         emptyTrash = findViewById(R.id.empty_trash);
@@ -118,6 +103,25 @@ public class TrashActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    /** Two-per-row tiles; headers span the full row. */
+    private GridLayoutManager createGridLayoutManager() {
+        GridLayoutManager grid = new GridLayoutManager(this, 2);
+        // Uniform tiles pair up; headers take the full row. Bounds-guarded:
+        // layout can probe positions mid-animation that no longer exist.
+        grid.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (trashAdapter == null
+                        || position < 0 || position >= trashAdapter.getItemCount()) {
+                    return 2;
+                }
+                return trashAdapter.getItemViewType(position)
+                        == TrashAdapter.TYPE_TILE ? 1 : 2;
+            }
+        });
+        return grid;
     }
 
     @Override
@@ -160,9 +164,9 @@ public class TrashActivity extends AppCompatActivity {
         }
         final int generation = ++loadGeneration;
         dbIo.execute(() -> {
-            final List<IdCardItem> ids;
-            final List<BankCardItem> cards;
-            final List<CredentialItem> accounts;
+            final List<GovernmentIDModel> ids;
+            final List<BankCardModel> cards;
+            final List<SocialAccountModel> accounts;
             try {
                 ids = dbHelper.getTrashedIdCards();
                 cards = dbHelper.getTrashedBankCards();
@@ -187,27 +191,27 @@ public class TrashActivity extends AppCompatActivity {
     }
 
     /** Binds one loaded snapshot on the UI thread (adapter + chrome). */
-    private void bindTrash(List<IdCardItem> ids, List<BankCardItem> cards,
-                           List<CredentialItem> accounts) {
+    private void bindTrash(List<GovernmentIDModel> ids, List<BankCardModel> cards,
+                           List<SocialAccountModel> accounts) {
         List<TrashAdapter.Entry> entries = new ArrayList<>();
         if (ids != null && !ids.isEmpty()) {
             entries.add(TrashAdapter.Entry.header(
                     getString(R.string.trash_section_ids), ids.size()));
-            for (IdCardItem item : ids) {
+            for (GovernmentIDModel item : ids) {
                 entries.add(TrashAdapter.Entry.id(item));
             }
         }
         if (cards != null && !cards.isEmpty()) {
             entries.add(TrashAdapter.Entry.header(
                     getString(R.string.trash_section_cards), cards.size()));
-            for (BankCardItem item : cards) {
+            for (BankCardModel item : cards) {
                 entries.add(TrashAdapter.Entry.card(item));
             }
         }
         if (accounts != null && !accounts.isEmpty()) {
             entries.add(TrashAdapter.Entry.header(
                     getString(R.string.trash_section_social), accounts.size()));
-            for (CredentialItem item : accounts) {
+            for (SocialAccountModel item : accounts) {
                 entries.add(TrashAdapter.Entry.social(item));
             }
         }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SINGLE government-ID face. Dashboard carousel (DashboardActivity) and the
-     Government ID form picker (GovermentIDActivity) both inflate THIS
+     Government ID form picker (GovernmentIDActivity) both inflate THIS
      file only, through the shared GovermentIdFaceRenderer, so look and feel can never
      drift. True 1.586:1 ratio; page width set to 68% of viewport in code. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"

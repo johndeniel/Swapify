@@ -145,7 +145,7 @@ public class LockActivity extends AppCompatActivity {
         } else if (MODE_CHANGE.equals(mode)) {
             showVerifyScreen();
         } else {
-            showPinScreen(null);
+            showPinScreen();
             // Biometric available: ask via system prompt over the same keypad.
             if (AppLockManager.canUseBiometric(this)) {
                 keypad.postDelayed(autoBiometric, 400);
@@ -173,7 +173,7 @@ public class LockActivity extends AppCompatActivity {
                 break;
             case PIN:
             default:
-                showPinScreen(null);
+                showPinScreen();
                 break;
         }
         entry.setLength(0);
@@ -197,7 +197,7 @@ public class LockActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         paused = false;
-        // System-cancelled prompts (backgrounding) re-ask automatically,
+        // System-canceled prompts (backgrounding) re-ask automatically,
         // design stays on the keypad.
         if (screen == Screen.PIN
                 && AppLockManager.canUseBiometric(this)
@@ -281,18 +281,14 @@ public class LockActivity extends AppCompatActivity {
         renderDots();
     }
 
-    private void showPinScreen(String message) {
+    private void showPinScreen() {
         screen = Screen.PIN;
         entry.setLength(0);
         submitting = false;
         cancelBiometric();
         resetTagline();
         showKeypadMode();
-        if (message != null) {
-            showError(message);
-        } else {
-            clearError();
-        }
+        clearError();
         setBioKeyVisible(AppLockManager.canUseBiometric(this) && !MODE_CHANGE.equals(mode));
         renderDots();
         if (AppLockManager.isLockedOut(this)) {
@@ -499,9 +495,8 @@ public class LockActivity extends AppCompatActivity {
                         || errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
                     // User dismissed — stay on the same keypad design.
                     return;
-                } else {
-                    showError(getString(R.string.lock_error_fingerprint));
                 }
+                showError(getString(R.string.lock_error_fingerprint));
             }
 
             @Override

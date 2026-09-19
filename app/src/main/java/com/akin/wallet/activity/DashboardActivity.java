@@ -23,9 +23,9 @@ import com.akin.wallet.adapter.GovermentIdAdapter;
 import com.akin.wallet.adapter.SocialAccountAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.security.AppLockManager;
-import com.akin.wallet.model.BankCardItem;
-import com.akin.wallet.model.CredentialItem;
-import com.akin.wallet.model.IdCardItem;
+import com.akin.wallet.model.BankCardModel;
+import com.akin.wallet.model.SocialAccountModel;
+import com.akin.wallet.model.GovernmentIDModel;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.search.SearchView;
@@ -64,8 +64,6 @@ public class DashboardActivity extends AppCompatActivity {
     private int loadGeneration;
     /** One stateless 12dp gap shared by every carousel (never per-item state). */
     private RecyclerView.ItemDecoration sharedGap;
-    private static final DecelerateInterpolator MENU_INTERPOLATOR =
-            new DecelerateInterpolator();
 
     /** Credit-card ratio shared with the carousel faces (width : height). */
     private static final float CARD_ASPECT_RATIO = 1.586f;
@@ -79,9 +77,9 @@ public class DashboardActivity extends AppCompatActivity {
 
     // M3 Search state. Masters hold the full newest-first rows; the SearchView
     // filters them into its own result lists (the dashboard behind stays whole).
-    private List<IdCardItem> allIds;
-    private List<BankCardItem> allCards;
-    private List<CredentialItem> allAccounts;
+    private List<GovernmentIDModel> allIds;
+    private List<BankCardModel> allCards;
+    private List<SocialAccountModel> allAccounts;
     private String currentQuery = "";
     private static final String KEY_SEARCH_QUERY = "dashboard_search_query";
     private static final String KEY_SEARCH_OPEN = "dashboard_search_open";
@@ -95,7 +93,6 @@ public class DashboardActivity extends AppCompatActivity {
     private View searchHeaderIds;
     private SocialAccountAdapter searchSocialAdapter;
     private View cardSearchSocial;
-    private RecyclerView recyclerSearchSocial;
     private View searchHeaderSocial;
     private View headerIds;
     private View headerCards;
@@ -282,7 +279,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Row taps open the account's edit screen, same as the dashboard list.
         searchSocialAdapter = new SocialAccountAdapter(this::openSocialEditor);
-        recyclerSearchSocial = findViewById(R.id.recycler_search_social);
+        RecyclerView recyclerSearchSocial = findViewById(R.id.recycler_search_social);
         recyclerSearchSocial.setLayoutManager(new LinearLayoutManager(this));
         recyclerSearchSocial.setAdapter(searchSocialAdapter);
         cardSearchSocial = findViewById(R.id.card_search_social);
@@ -365,8 +362,8 @@ public class DashboardActivity extends AppCompatActivity {
                 filterAccounts(allAccounts, query), true);
     }
 
-    private void bindSearchResults(List<IdCardItem> ids, List<BankCardItem> cards,
-                                   List<CredentialItem> accounts, boolean searching) {
+    private void bindSearchResults(List<GovernmentIDModel> ids, List<BankCardModel> cards,
+                                   List<SocialAccountModel> accounts, boolean searching) {
         searchIdAdapter.updateData(ids);
         boolean hasIds = ids != null && !ids.isEmpty();
         recyclerSearchIds.setVisibility(hasIds ? View.VISIBLE : View.GONE);
@@ -391,9 +388,9 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    private static List<IdCardItem> filterIds(List<IdCardItem> source, String query) {
-        List<IdCardItem> out = new ArrayList<>();
-        for (IdCardItem item : source) {
+    private static List<GovernmentIDModel> filterIds(List<GovernmentIDModel> source, String query) {
+        List<GovernmentIDModel> out = new ArrayList<>();
+        for (GovernmentIDModel item : source) {
             if (containsText(item.getIdType(), query) || idFieldsContain(item, query)) {
                 out.add(item);
             }
@@ -401,10 +398,10 @@ public class DashboardActivity extends AppCompatActivity {
         return out;
     }
 
-    private static List<BankCardItem> filterCards(
-            List<BankCardItem> source, String query, String digits) {
-        List<BankCardItem> out = new ArrayList<>();
-        for (BankCardItem item : source) {
+    private static List<BankCardModel> filterCards(
+            List<BankCardModel> source, String query, String digits) {
+        List<BankCardModel> out = new ArrayList<>();
+        for (BankCardModel item : source) {
             // Non-secret fields only: card number matches on digits so "1234"
             // finds "•••• •••• •••• 1234". CVV/PIN are never matched.
             if (containsText(item.getBankName(), query)
@@ -418,13 +415,12 @@ public class DashboardActivity extends AppCompatActivity {
         return out;
     }
 
-    private static List<CredentialItem> filterAccounts(List<CredentialItem> source, String query) {
-        List<CredentialItem> out = new ArrayList<>();
-        for (CredentialItem item : source) {
+    private static List<SocialAccountModel> filterAccounts(List<SocialAccountModel> source, String query) {
+        List<SocialAccountModel> out = new ArrayList<>();
+        for (SocialAccountModel item : source) {
             // Non-secret fields only: password/PIN stay out of the index.
             if (containsText(item.getPlatform(), query)
-                    || containsText(item.getUsername(), query)
-                    || containsText(item.getMobile(), query)) {
+                    || containsText(item.getUsername(), query)) {
                 out.add(item);
             }
         }
@@ -436,7 +432,7 @@ public class DashboardActivity extends AppCompatActivity {
                 && value.toLowerCase(Locale.US).contains(query);
     }
 
-    private static boolean idFieldsContain(@NonNull IdCardItem id, String query) {
+    private static boolean idFieldsContain(@NonNull GovernmentIDModel id, String query) {
         Map<String, String> fields = id.getFields();
         for (String value : fields.values()) {
             if (containsText(value, query)) {
@@ -447,7 +443,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     /** Card numbers are raw digits; match on digits only (CVV/PIN excluded). */
-    private static boolean cardNumberContains(@NonNull BankCardItem card, String digits) {
+    private static boolean cardNumberContains(@NonNull BankCardModel card, String digits) {
         if (digits.isEmpty() || card.getCardNumber() == null) {
             return false;
         }
@@ -509,6 +505,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
         ViewGroup menu = (ViewGroup) fabAddMenu;
         float rise = Ui.dp(this, 10);
+        DecelerateInterpolator menuInterpolator = new DecelerateInterpolator();
         for (int i = 0; i < menu.getChildCount(); i++) {
             View child = menu.getChildAt(i);
             child.setAlpha(0f);
@@ -518,7 +515,7 @@ public class DashboardActivity extends AppCompatActivity {
                     .translationY(0f)
                     .setStartDelay(i * 45L)
                     .setDuration(180L)
-                    .setInterpolator(MENU_INTERPOLATOR)
+                    .setInterpolator(menuInterpolator)
                     .start();
         }
     }
@@ -537,7 +534,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     /** Opens a social edit screen directly (dashboard rows open the editor). */
-    private void openSocialEditor(CredentialItem item) {
+    private void openSocialEditor(SocialAccountModel item) {
         // Recency bump rides the I/O thread; navigation never waits for it.
         final int id = item.getId();
         dbIo.execute(() -> dbHelper.touchSocialAccountUpdatedAt(id));
@@ -554,7 +551,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     /** Opens the ID creation screen directly (FAB is the only entry). */
     private void openIdCreator() {
-        openCreator(GovermentIDActivity.class);
+        openCreator(GovernmentIDActivity.class);
     }
 
     /**
@@ -563,10 +560,10 @@ public class DashboardActivity extends AppCompatActivity {
      * newest-first on return — mirroring the bank-card and login open paths.
      * No immediate refresh here; onResume re-queries after the editor closes.
      */
-    private void openIdEditor(IdCardItem item) {
+    private void openIdEditor(GovernmentIDModel item) {
         final int id = item.getId();
         dbIo.execute(() -> dbHelper.touchIdCardUpdatedAt(id));
-        startActivity(GovermentIDActivity.editIntent(this, item));
+        startActivity(GovernmentIDActivity.editIntent(this, item));
     }
 
     /** Opens the bank creation screen directly (FAB is the only entry). */
@@ -577,10 +574,10 @@ public class DashboardActivity extends AppCompatActivity {
     /**
      * Opens a bank card for editing. The tap itself is a recency signal: the
      * card's updated_at is bumped first so it sorts newest-first when the
-     * list refreshes on return — even if the edit is cancelled. No immediate
+     * list refreshes on return — even if the edit is canceled. No immediate
      * refresh here; onResume already re-queries after the editor closes.
      */
-    private void openBankEditor(BankCardItem item) {
+    private void openBankEditor(BankCardModel item) {
         final int id = item.getId();
         dbIo.execute(() -> dbHelper.touchBankCardUpdatedAt(id));
         startActivity(BankCardActivity.editIntent(this, item));
@@ -612,7 +609,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshCardCarousel(List<BankCardItem> cards) {
+    private void refreshCardCarousel(List<BankCardModel> cards) {
         if (cardAdapter == null || recyclerCarousel == null) {
             return;
         }
@@ -688,7 +685,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshIdsCarousel(List<IdCardItem> ids) {
+    private void refreshIdsCarousel(List<GovernmentIDModel> ids) {
         if (idAdapter == null || recyclerIdsCarousel == null) {
             return;
         }
@@ -726,7 +723,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshSocialAccounts(List<CredentialItem> accounts) {
+    private void refreshSocialAccounts(List<SocialAccountModel> accounts) {
         if (socialAdapter == null || recyclerSocialAccounts == null) {
             return;
         }
@@ -752,9 +749,9 @@ public class DashboardActivity extends AppCompatActivity {
         // stale rows or touch a dead activity.
         final int generation = ++loadGeneration;
         dbIo.execute(() -> {
-            final List<IdCardItem> ids = dbHelper.getAllIdCards();
-            final List<BankCardItem> cards = dbHelper.getAllBankCards();
-            final List<CredentialItem> accounts = dbHelper.getAllSocialAccounts();
+            final List<GovernmentIDModel> ids = dbHelper.getAllIdCards();
+            final List<BankCardModel> cards = dbHelper.getAllBankCards();
+            final List<SocialAccountModel> accounts = dbHelper.getAllSocialAccounts();
             runOnUiThread(() -> {
                 if (generation != loadGeneration || isFinishing()) {
                     return;

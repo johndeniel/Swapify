@@ -51,7 +51,7 @@
     <color name="photo_bg_passport">#FFF0D9CE</color>
     <color name="photo_icon_passport">#FF5C1F2E</color>
     <color name="photo_bg_sss">#FFD5E3F7</color>
-    <color name="photo_bg_philhealth">#FFD6EBDD</color>
+    <color name="photo_bg_phil_health">#FFD6EBDD</color>
     <color name="photo_bg_tin">#FFF3E3BC</color>
 
     <!-- Bank card gradients (one ramp per card colorway) -->
@@ -99,9 +99,9 @@
     <color name="sss_muted">#FFB4C8E8</color>
 
     <!-- PhilHealth face (soft sage document, green ink) -->
-    <color name="philhealth_bg_start">#FFEFF7F1</color>
-    <color name="philhealth_bg_center">#FFBFE0CA</color>
-    <color name="philhealth_bg_end">#FF8DBFA0</color>
+    <color name="phil_health_bg_start">#FFEFF7F1</color>
+    <color name="phil_health_bg_center">#FFBFE0CA</color>
+    <color name="phil_health_bg_end">#FF8DBFA0</color>
 
     <!-- TIN face (warm ivory document, dark-brown ink) -->
     <color name="tin_bg_start">#FFFFFAE9</color>
@@ -110,9 +110,9 @@
     <color name="tin_ink">#FF4A2F1B</color>
     <color name="tin_muted">#FF6B5433</color>
     <color name="tin_rule">#FF6E5636</color>
-    <color name="philhealth_ink">#FF005C36</color>
-    <color name="philhealth_muted">#FF4E7263</color>
-    <color name="philhealth_rule">#FF006B3F</color>
+    <color name="phil_health_ink">#FF005C36</color>
+    <color name="phil_health_muted">#FF4E7263</color>
+    <color name="phil_health_rule">#FF006B3F</color>
     <color name="dl_bar">#FF5B4FA3</color>
     <color name="dl_ink">#FF2B2545</color>
     <color name="dl_muted">#FF5F5878</color>

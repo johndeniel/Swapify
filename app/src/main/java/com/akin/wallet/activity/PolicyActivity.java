@@ -62,7 +62,7 @@ public class PolicyActivity extends AppCompatActivity {
         renderSections(sections, body);
     }
 
-    /** Splits "HEADING\nbody\n\n..." into styled heading + body view pairs. */
+    /** Splits "HEADING\n body\n\n..." into styled heading + body view pairs. */
     private void renderSections(LinearLayout container, String body) {
         if (body == null || body.trim().isEmpty()) {
             return;

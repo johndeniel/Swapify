@@ -122,7 +122,6 @@
     <string name="field_username">Username</string>
     <string name="field_password">Password</string>
     <string name="field_pin">PIN</string>
-    <string name="field_mobile">Mobile Number</string>
     <string name="field_card_type">Card Type</string>
     <string name="field_card_network">Card Network</string>
     <string name="field_bank_name">Bank Name</string>
@@ -138,7 +137,7 @@
     <string name="hint_card_number">1234 5678 9012 1233</string>
     <string name="hint_expiry">MMYY</string>
     <string name="hint_cvv">123</string>
-    <string name="hint_mobile">09XX XXX XXXX</string>
+    <string name="hint_dropdown_select">Select</string>
     <string name="default_card_type">Debit</string>
     <string name="default_card_network">Visa</string>
 
@@ -157,7 +156,7 @@
     <!-- Bank card -->
     <string name="preview_bank_name">YOUR BANK</string>
     <string name="preview_card_type">DEBIT</string>
-    <string name="preview_holder_label">CARD HOLDER</string>
+    <string name="preview_holder_label">CARDHOLDER</string>
     <string name="preview_holder_name">CARDHOLDER NAME</string>
     <string name="preview_expiry_label">VALID THRU</string>
     <string name="preview_expiry_value">MM/YY</string>
@@ -176,6 +175,7 @@
     <string name="cd_link_account">Link</string>
     <string name="cd_toggle_visibility">Toggle visibility</string>
     <string name="cd_select_platform">Select platform</string>
+    <string name="cd_select_field">Select %1$s</string>
     <string name="cd_select_card_type">Select card type</string>
     <string name="cd_select_card_network">Select card network</string>
     <string name="cd_card_network">Card network</string>

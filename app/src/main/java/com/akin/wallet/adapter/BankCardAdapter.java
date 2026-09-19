@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.model.BankCardItem;
+import com.akin.wallet.model.BankCardModel;
 import com.akin.wallet.util.CardText;
 
 import java.util.ArrayList;
@@ -41,18 +41,18 @@ public class BankCardAdapter extends RecyclerView.Adapter<BankCardAdapter.CardVi
     };
 
     public interface OnCardClickListener {
-        void onCardClick(BankCardItem item);
+        void onCardClick(BankCardModel item);
     }
 
-    private final List<BankCardItem> cards = new ArrayList<>();
+    private final List<BankCardModel> cards = new ArrayList<>();
     private final OnCardClickListener listener;
 
     public BankCardAdapter(OnCardClickListener listener) {
         this.listener = listener;
     }
 
-    public void updateData(List<BankCardItem> newCards) {
-        List<BankCardItem> next =
+    public void updateData(List<BankCardModel> newCards) {
+        List<BankCardModel> next =
                 newCards != null ? new ArrayList<>(newCards) : new ArrayList<>();
         DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
@@ -104,7 +104,7 @@ public class BankCardAdapter extends RecyclerView.Adapter<BankCardAdapter.CardVi
 
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
-        BankCardItem card = cards.get(position);
+        BankCardModel card = cards.get(position);
         BankCardDesignAdapter.applyCardOutline(holder.cardRoot);
         int design = card.getDesign();
         if (design < 0 || design >= BACKGROUNDS.length) {

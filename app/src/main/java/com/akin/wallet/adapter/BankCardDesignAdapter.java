@@ -127,9 +127,8 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         String name = network != null ? network.trim().toLowerCase(java.util.Locale.ROOT) : NETWORK_VISA;
         int icon;
         int heightDp;
-        //noinspection SpellCheckingInspection
-        if ("mastercard".equals(name)) {
-            icon = R.drawable.mastercard;
+        if ("MasterCard".equalsIgnoreCase(name)) {
+            icon = R.drawable.master_card;
             heightDp = 20;
         } else {
             icon = R.drawable.visa;

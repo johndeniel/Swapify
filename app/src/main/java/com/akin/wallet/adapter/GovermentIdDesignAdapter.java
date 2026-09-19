@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.model.IdTypeSpec;
+import com.akin.wallet.model.GovernmentIDModel;
 import com.akin.wallet.util.GovermentIdFaceRenderer;
 
 import java.util.LinkedHashMap;
@@ -27,7 +27,7 @@ public class GovermentIdDesignAdapter extends RecyclerView.Adapter<GovermentIdDe
         void onTypePageSelected(int typeIndex);
     }
 
-    private final List<IdTypeSpec.IdType> idTypes = IdTypeSpec.getAllTypes();
+    private final List<GovernmentIDModel.IdType> idTypes = GovernmentIDModel.getAllTypes();
     private final OnTypePageListener listener;
     private Map<String, String> draftFields = new LinkedHashMap<>();
 
@@ -85,12 +85,12 @@ public class GovermentIdDesignAdapter extends RecyclerView.Adapter<GovermentIdDe
     @Override
     public void onBindViewHolder(@NonNull FaceViewHolder holder, int position) {
         String pageType = typeNameAt(position);
-        IdTypeSpec.IdType spec = IdTypeSpec.forName(pageType);
+        GovernmentIDModel.IdType spec = GovernmentIDModel.forName(pageType);
 
         // Each page shows its own type's values from the shared draft so the
         // user can compare faces while typing (common keys carry over).
         Map<String, String> pageFields = new LinkedHashMap<>();
-        for (IdTypeSpec.IdField field : spec.fields) {
+        for (GovernmentIDModel.IdField field : spec.fields) {
             String value = draftFields.get(field.key);
             pageFields.put(field.key, value != null ? value : "");
         }

@@ -4,9 +4,9 @@
         <shape android:shape="rectangle">
             <gradient
                 android:angle="135"
-                android:startColor="@color/philhealth_bg_start"
-                android:centerColor="@color/philhealth_bg_center"
-                android:endColor="@color/philhealth_bg_end" />
+                android:startColor="@color/phil_health_bg_start"
+                android:centerColor="@color/phil_health_bg_center"
+                android:endColor="@color/phil_health_bg_end" />
             <corners android:radius="16dp" />
         </shape>
     </item>

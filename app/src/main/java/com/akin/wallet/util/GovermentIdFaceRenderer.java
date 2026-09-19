@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.akin.wallet.R;
 import com.akin.wallet.adapter.BankCardDesignAdapter;
-import com.akin.wallet.model.IdTypeSpec;
+import com.akin.wallet.model.GovernmentIDModel;
 
 import java.util.Map;
 
@@ -84,29 +84,29 @@ public final class GovermentIdFaceRenderer {
      * @param title   header title (uppercased here)
      * @param fields  field values to render
      */
-    public static void render(@NonNull FaceViews f, @NonNull IdTypeSpec.IdType spec,
+    public static void render(@NonNull FaceViews f, @NonNull GovernmentIDModel.IdType spec,
                               @NonNull String typeName, @NonNull String title,
                               @NonNull Map<String, String> fields) {
         BankCardDesignAdapter.applyCardOutline(f.cardRoot);
-        IdTypeSpec.FaceScheme scheme = IdTypeSpec.faceScheme(typeName);
+        GovernmentIDModel.FaceScheme scheme = GovernmentIDModel.faceScheme(typeName);
         f.cardRoot.setBackgroundResource(scheme.backgroundRes);
 
         // Primary number resolves through the spec so the face stays free of
         // per-type key branches.
-        String number = IdTypeSpec.displayNumber(spec, fields);
+        String number = GovernmentIDModel.displayNumber(spec, fields);
         f.eyebrow.setTextColor(colorOf(f, scheme.subtitleColorRes));
         f.title.setText(title.toUpperCase(java.util.Locale.ROOT));
         f.title.setTextColor(colorOf(f, scheme.titleColorRes));
         f.title.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
-        f.subtitle.setText(IdTypeSpec.previewSubtitle(typeName));
+        f.subtitle.setText(GovernmentIDModel.previewSubtitle(typeName));
         f.subtitle.setTextColor(colorOf(f, scheme.subtitleColorRes));
         f.subtitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7);
         f.rule.setBackgroundColor(colorOf(f, scheme.ruleColorRes));
         f.holderLabel.setTextColor(colorOf(f, scheme.numberLabelColorRes));
-        f.holder.setText(IdTypeSpec.displayName(spec, fields));
+        f.holder.setText(GovernmentIDModel.displayName(fields));
         f.holder.setTextColor(colorOf(f, scheme.holderColorRes));
         f.holder.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10);
-        f.numberLabel.setText(IdTypeSpec.numberLabel(typeName));
+        f.numberLabel.setText(GovernmentIDModel.numberLabel(typeName));
         f.numberLabel.setTextColor(colorOf(f, scheme.numberLabelColorRes));
         f.number.setText(number != null && !number.trim().isEmpty()
                 ? number.trim() : f.res.getString(R.string.empty_value));
@@ -118,7 +118,7 @@ public final class GovermentIdFaceRenderer {
 
         // Birth key varies by type ("dateOfBirth" on TIN/PhilHealth,
         // "birth_date" elsewhere); first non-blank wins, always YYYY-MM-DD.
-        String birth = IdTypeSpec.displayDate(
+        String birth = GovernmentIDModel.displayDate(
                 firstNonEmpty(fields.get("dateOfBirth"), fields.get("birth_date")));
         if (f.dob != null) {
             f.dob.setText(birth != null && !birth.trim().isEmpty() ? birth.trim() : "—");
@@ -128,7 +128,7 @@ public final class GovermentIdFaceRenderer {
         if (f.dobLabel != null) {
             f.dobLabel.setTextColor(colorOf(f, scheme.numberLabelColorRes));
         }
-        IdTypeSpec.FaceExtra extra = IdTypeSpec.faceExtra(typeName, fields);
+        GovernmentIDModel.FaceExtra extra = GovernmentIDModel.faceExtra(typeName, fields);
         if (f.expiryLabel != null) {
             f.expiryLabel.setText(extra.label);
             f.expiryLabel.setTextColor(colorOf(f, scheme.numberLabelColorRes));
@@ -151,7 +151,7 @@ public final class GovermentIdFaceRenderer {
 
     /** Face micro-metrics: smaller type, tighter rhythm, smaller well. */
     private static void applyFaceMetrics(@NonNull FaceViews f,
-                                            @NonNull IdTypeSpec.FaceScheme scheme) {
+                                            @NonNull GovernmentIDModel.FaceScheme scheme) {
         microLabel(f, f.holderLabel, scheme.numberLabelColorRes);
         microLabel(f, f.numberLabel, scheme.numberLabelColorRes);
         microLabel(f, f.dobLabel, scheme.numberLabelColorRes);

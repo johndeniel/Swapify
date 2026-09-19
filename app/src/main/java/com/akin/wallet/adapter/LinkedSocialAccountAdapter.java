@@ -14,8 +14,8 @@ import android.widget.Filter;
 import android.widget.Filterable;
 
 import com.akin.wallet.R;
-import com.akin.wallet.model.CredentialItem;
-import com.akin.wallet.model.PlatformIcons;
+import com.akin.wallet.model.SocialAccountModel;
+import com.akin.wallet.model.SocialPlatformModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +30,11 @@ import java.util.Locale;
 public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocialAccountAdapter.AccountViewHolder> implements Filterable {
 
     public interface OnActionListener {
-        void onAction(CredentialItem account, boolean removed);
+        void onAction(SocialAccountModel account, boolean removed);
     }
 
-    private final List<CredentialItem> visibleAccounts;
-    private final List<CredentialItem> filterSource;
+    private final List<SocialAccountModel> visibleAccounts;
+    private final List<SocialAccountModel> filterSource;
     private final boolean unlinkMode;
     private final OnActionListener listener;
     /** Pick mode only: false hides the [+] icon, the row itself taps. */
@@ -44,7 +44,7 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
         this.pickActionVisible = pickActionVisible;
     }
 
-    public LinkedSocialAccountAdapter(List<CredentialItem> accounts, boolean unlinkMode, OnActionListener listener) {
+    public LinkedSocialAccountAdapter(List<SocialAccountModel> accounts, boolean unlinkMode, OnActionListener listener) {
         this.visibleAccounts = accounts;
         this.filterSource = new ArrayList<>(accounts);
         this.unlinkMode = unlinkMode;
@@ -60,10 +60,10 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
 
     @Override
     public void onBindViewHolder(@NonNull AccountViewHolder holder, int position) {
-        CredentialItem account = visibleAccounts.get(position);
+        SocialAccountModel account = visibleAccounts.get(position);
         holder.name.setText(account.getPlatform());
         holder.username.setText(account.getUsername());
-        PlatformIcons.bindIcon(holder.icon, account.getPlatform(), account.getIconRes());
+        SocialPlatformModel.bindIcon(holder.icon, account.getPlatform(), account.getIconRes());
 
         if (unlinkMode) {
             holder.action.setImageResource(R.drawable.ic_remove_circle);
@@ -72,7 +72,7 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
                 if (clicked < 0 || clicked >= visibleAccounts.size()) {
                     return;
                 }
-                CredentialItem removed = visibleAccounts.get(clicked);
+                SocialAccountModel removed = visibleAccounts.get(clicked);
                 visibleAccounts.remove(clicked);
                 filterSource.remove(removed);
                 notifyItemRemoved(clicked);
@@ -102,7 +102,7 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
      * Keeps the search source in sync when the caller appends to its own list
      * externally (link picker result); identity match, same references.
      */
-    public void onExternalAdd(CredentialItem account) {
+    public void onExternalAdd(SocialAccountModel account) {
         if (account != null && !filterSource.contains(account)) {
             filterSource.add(account);
         }
@@ -112,7 +112,7 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
      * Replaces the whole set (rotation restore): the caller's list is mutated
      * in place alongside the search source, so save still reads one list.
      */
-    public void onExternalRestore(@NonNull List<CredentialItem> restored) {
+    public void onExternalRestore(@NonNull List<SocialAccountModel> restored) {
         DiffUtil.DiffResult diff = accountDiff(new ArrayList<>(restored));
         visibleAccounts.clear();
         visibleAccounts.addAll(restored);
@@ -121,7 +121,7 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
         diff.dispatchUpdatesTo(this);
     }
 
-    private DiffUtil.DiffResult accountDiff(List<CredentialItem> next) {
+    private DiffUtil.DiffResult accountDiff(List<SocialAccountModel> next) {
         return DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
             public int getOldListSize() {
@@ -153,7 +153,7 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
     private final Filter accountFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-            List<CredentialItem> filteredAccounts = filterAccounts(constraint);
+            List<SocialAccountModel> filteredAccounts = filterAccounts(constraint);
             FilterResults results = new FilterResults();
             results.values = filteredAccounts;
             return results;
@@ -163,8 +163,8 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
         @SuppressWarnings("unchecked")
         protected void publishResults(CharSequence constraint, FilterResults results) {
             Object rawValues = results != null ? results.values : null;
-            List<CredentialItem> nextAccounts =
-                    rawValues instanceof List ? (List<CredentialItem>) rawValues : new ArrayList<>();
+            List<SocialAccountModel> nextAccounts =
+                    rawValues instanceof List ? (List<SocialAccountModel>) rawValues : new ArrayList<>();
             DiffUtil.DiffResult diff = accountDiff(nextAccounts);
             visibleAccounts.clear();
             visibleAccounts.addAll(nextAccounts);
@@ -172,14 +172,14 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
         }
     };
 
-    private List<CredentialItem> filterAccounts(CharSequence constraint) {
-        List<CredentialItem> filteredAccounts = new ArrayList<>();
+    private List<SocialAccountModel> filterAccounts(CharSequence constraint) {
+        List<SocialAccountModel> filteredAccounts = new ArrayList<>();
         if (constraint == null || constraint.length() == 0) {
             filteredAccounts.addAll(filterSource);
             return filteredAccounts;
         }
         String filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim();
-        for (CredentialItem account : filterSource) {
+        for (SocialAccountModel account : filterSource) {
             if (matchesAccount(account, filterPattern)) {
                 filteredAccounts.add(account);
             }
@@ -187,7 +187,7 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
         return filteredAccounts;
     }
 
-    private static boolean matchesAccount(CredentialItem account, String filterPattern) {
+    private static boolean matchesAccount(SocialAccountModel account, String filterPattern) {
         String platform = account.getPlatform() != null
                 ? account.getPlatform().toLowerCase(Locale.ROOT) : "";
         String username = account.getUsername() != null

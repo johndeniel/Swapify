@@ -2,29 +2,173 @@ package com.akin.wallet.model;
 
 import android.text.InputType;
 
+import androidx.annotation.NonNull;
+
 import com.akin.wallet.R;
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * Single source of truth for every supported government ID type.
+ * Government ID entry plus the single source of truth for every supported
+ * government ID type.
  *
- * <p>Adding another ID type later = append one {@link IdType} here.
+ * <p>Entry: variable per-type fields are stored as a JSON object in SQLite
+ * (fields_json column) so National ID, Passport, SSS, GSIS, etc. all share
+ * one table and one card UI. Audit timestamps ({@code createdAt}/
+ * {@code updatedAt}) are first-class columns sibling to {@code id} — never
+ * keys inside the JSON document. Keeping them out of the JSON preserves the
+ * per-type field contract and lets recency ordering reuse the same
+ * {@code updated_at DESC, id DESC} pattern as bank cards and social accounts.
+ *
+ * <p>No {@code toString()} by design: document fields are sensitive and must
+ * never reach logcat through an implicit string conversion.
+ *
+ * <p>Spec: adding another ID type later = append one {@link IdType} below.
  * No DB migration, no new XML, no adapter change needed because storage is
  * JSON ({@code fields_json}) and both the list card and the form are rendered
  * dynamically from these specs.
  */
-public final class IdTypeSpec {
+public final class GovernmentIDModel {
+
+    /** Row id for drafts that have never been persisted. */
+    public static final int UNSET_ID = -1;
+
+    private final int id;
+    private final String idType;
+    private final Map<String, String> fields;
+    private final long createdAt;
+    private final long updatedAt;
+
+    /** Unsaved draft; the database assigns the id and timestamps on insert. */
+    public GovernmentIDModel(String idType, Map<String, String> fields) {
+        this(UNSET_ID, idType, fields, 0, 0);
+    }
+
+    /**
+     * Full constructor carrying audit timestamps alongside the row identity.
+     * New entries pass {@code 0, 0} and let the DB stamp {@code now};
+     * updates preserve {@code createdAt} and pass {@code 0} for
+     * {@code updatedAt} so the DB bumps recency.
+     */
+    public GovernmentIDModel(int id, String idType, Map<String, String> fields,
+                             long createdAt, long updatedAt) {
+        this.id = id;
+        this.idType = idType != null ? idType : "";
+        this.fields = fields != null
+                ? new LinkedHashMap<>(fields)
+                : new LinkedHashMap<>();
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    @NonNull
+    public String getIdType() {
+        return idType;
+    }
+
+    /** Defensive copy — callers cannot mutate internal state. */
+    @NonNull
+    public Map<String, String> getFields() {
+        return new LinkedHashMap<>(fields);
+    }
+
+    /** Row creation time, epoch millis. 0 when unset. */
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    /** Last recency bump, epoch millis. Drives newest-first ordering. */
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    /**
+     * Serialize document fields to JSON for SQLite storage.
+     * Timestamps are deliberately excluded: they live in their own columns.
+     */
+    public String getFieldsJson() {
+        JSONObject jsonDocument = new JSONObject();
+        for (Map.Entry<String, String> field : fields.entrySet()) {
+            putField(jsonDocument, field.getKey(), field.getValue());
+        }
+        return jsonDocument.toString();
+    }
+
+    /**
+     * JSONObject.put only throws for null keys or non-finite numbers; our keys
+     * are non-null strings and values are normalized to "", so this is
+     * provably non-throwing and intentionally silent.
+     */
+    private static void putField(JSONObject jsonDocument, String key, String value) {
+        try {
+            jsonDocument.put(key, value != null ? value : "");
+        } catch (JSONException impossible) {
+            throw new AssertionError("String keys never fail JSONObject.put", impossible);
+        }
+    }
+
+    /** Parse JSON string from SQLite. Never throws — returns empty map on bad input. */
+    public static Map<String, String> parseFieldsJson(String jsonPayload) {
+        Map<String, String> parsedFields = new LinkedHashMap<>();
+        if (jsonPayload == null || jsonPayload.trim().isEmpty()) {
+            return parsedFields;
+        }
+        try {
+            JSONObject jsonDocument = new JSONObject(jsonPayload);
+            Iterator<String> keys = jsonDocument.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                parsedFields.put(key, jsonDocument.optString(key, ""));
+            }
+        } catch (JSONException malformed) {
+            // Forward-compat: a corrupt row degrades to an empty form rather
+            // than crashing the list. The error is deliberate silence, not
+            // swallowed diagnostics — there is nothing actionable to log.
+            parsedFields.clear();
+        }
+        return parsedFields;
+    }
+
+    /** Value equality across every column (backs DiffUtil content checks). */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof GovernmentIDModel)) {
+            return false;
+        }
+        GovernmentIDModel that = (GovernmentIDModel) o;
+        return id == that.id
+                && createdAt == that.createdAt
+                && updatedAt == that.updatedAt
+                && Objects.equals(idType, that.idType)
+                && Objects.equals(fields, that.fields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, idType, fields, createdAt, updatedAt);
+    }
+
+    // ---- Type specs (one per document; storage stays JSON, UI stays dynamic) ----
 
     public static final String TYPE_NATIONAL_ID = "National ID";
-    public static final String TYPE_DRIVERS_LICENSE = "Driver's License";
+    public static final String TYPE_DRIVING_LICENSE = "Driver's License";
     public static final String TYPE_PASSPORT = "Passport";
     public static final String TYPE_SSS = "SSS";
-    public static final String TYPE_PHILHEALTH = "PhilHealth ID";
+    public static final String TYPE_PHIL_HEALTH = "PhilHealth ID";
     public static final String TYPE_TIN = "TIN ID";
 
     private static final String[] SEX_OPTIONS =
@@ -33,14 +177,11 @@ public final class IdTypeSpec {
             {"Unknown", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"};
     private static final String[] CIVIL_STATUS_OPTIONS =
             {"Single", "Married", "Widowed", "Divorced", "Separated"};
-    private static final String[] PHILHEALTH_MEMBER_OPTIONS =
+    private static final String[] PHIL_HEALTH_MEMBER_OPTIONS =
             {"Formal Economy", "Informal Economy", "Indigent", "Sponsored",
                     "Senior Citizen", "Lifetime Member"};
 
     private static final String EMPTY_FACE_VALUE = "—";
-
-    private IdTypeSpec() {
-    }
 
     /** One input field definition. */
     public static class IdField {
@@ -138,14 +279,7 @@ public final class IdTypeSpec {
     private static final List<IdType> TYPES;
 
     static {
-        List<IdType> typeCatalog = new ArrayList<>();
-        typeCatalog.add(buildNationalIdType());
-        typeCatalog.add(buildDriversLicenseType());
-        typeCatalog.add(buildPassportType());
-        typeCatalog.add(buildSssType());
-        typeCatalog.add(buildPhilHealthType());
-        typeCatalog.add(buildTinType());
-        TYPES = Collections.unmodifiableList(typeCatalog);
+        TYPES = List.of(buildNationalIdType(), buildDrivingLicenseType(), buildPassportType(), buildSssType(), buildPhilHealthType(), buildTinType());
     }
 
     // ---- Type builders (one per document; keeps the static block flat) ----
@@ -158,7 +292,7 @@ public final class IdTypeSpec {
     // exactly 16 digits capped at 16 chars and regrouped 4-4-4-4 on the
     // face; both dates are exactly 8 digits (YYYYMMDD) capped at 8 chars.
     private static IdType buildNationalIdType() {
-        return new IdType(TYPE_NATIONAL_ID, "psn", Arrays.asList(
+        return new IdType(TYPE_NATIONAL_ID, "psn", List.of(
                 IdField.number("psn", "PSN (PhilSys Number)", "1234567890123456", true, true, 16),
                 IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80).pairedWithNext(),
                 IdField.dropdown("sex", "Sex", true, SEX_OPTIONS),
@@ -171,7 +305,7 @@ public final class IdTypeSpec {
         ));
     }
 
-    // Driver's License layout: license number + agency code share the top
+    // Driver license layout: license number + agency code share the top
     // row, then name, address + nationality, and paired rows (sex + blood
     // type, birth + expiry, weight + height, eye color + serial number,
     // DL code + conditions). Every field required. The license number caps
@@ -179,8 +313,8 @@ public final class IdTypeSpec {
     // serial number is numeric-only; both dates are exactly 8 digits
     // (YYYYMMDD) capped at 8 chars and dashed as YYYY-MM-DD on the face;
     // text-led pairs use the explicit flag.
-    private static IdType buildDriversLicenseType() {
-        return new IdType(TYPE_DRIVERS_LICENSE, "license_no", Arrays.asList(
+    private static IdType buildDrivingLicenseType() {
+        return new IdType(TYPE_DRIVING_LICENSE, "license_no", List.of(
                 IdField.text("license_no", "License No.", "N0123456789", true, true, 11).pairedWithNext(),
                 IdField.text("agency_code", "Agency Code", "e.g. N01", true, false, 10),
                 IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
@@ -204,7 +338,7 @@ public final class IdTypeSpec {
     // expiry). Every field required. All three dates are exactly 8 digits
     // (YYYYMMDD) capped at 8 chars and dashed as YYYY-MM-DD on the face.
     private static IdType buildPassportType() {
-        return new IdType(TYPE_PASSPORT, "passport_no", Arrays.asList(
+        return new IdType(TYPE_PASSPORT, "passport_no", List.of(
                 IdField.text("passport_no", "Passport No.", "P1234567A", true, true, 9).pairedWithNext(),
                 IdField.text("issuing_authority", "Issuing Authority", "DFA Manila", true, false, 60),
                 IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
@@ -222,7 +356,7 @@ public final class IdTypeSpec {
     // capped at 10 chars on a numeric keyboard; birth is exactly 8 digits
     // (YYYYMMDD) capped at 8 chars and dashed as YYYY-MM-DD on the face.
     private static IdType buildSssType() {
-        return new IdType(TYPE_SSS, "ss_number", Arrays.asList(
+        return new IdType(TYPE_SSS, "ss_number", List.of(
                 IdField.number("ss_number", "SS Number", "3412345678", true, true, 10),
                 IdField.text("full_name", "Full Name", "Juan Dela Cruz", true, false, 80),
                 IdField.date("birth_date", "Date of Birth", "YYYYMMDD", true, 8),
@@ -237,9 +371,9 @@ public final class IdTypeSpec {
     // The number is exactly 12 digits capped at 12 chars and regrouped
     // 111-111-111-111 on the face; birth is exactly 8 digits (YYYYMMDD).
     private static IdType buildPhilHealthType() {
-        return new IdType(TYPE_PHILHEALTH, "philhealth_no", Arrays.asList(
-                IdField.number("philhealth_no", "PhilHealth No.", "123456789012", true, true, 12),
-                IdField.dropdown("membership", "Membership", true, PHILHEALTH_MEMBER_OPTIONS),
+        return new IdType(TYPE_PHIL_HEALTH, "philHealthNumber", List.of(
+                IdField.number("philHealthNumber", "PhilHealth No.", "123456789012", true, true, 12),
+                IdField.dropdown("membership", "Membership", true, PHIL_HEALTH_MEMBER_OPTIONS),
                 IdField.text("fullName", "Full Name", "Juan Dela Cruz", true, false, 80),
                 IdField.text("address", "Address", "Street, City", true, false, 120),
                 IdField.date("dateOfBirth", "Date of Birth", "YYYYMMDD", true, 8),
@@ -252,9 +386,9 @@ public final class IdTypeSpec {
     // The face regroups the bare digits as 111-111-111-111 and dashes
     // plain-digit dates for display.
     private static IdType buildTinType() {
-        return new IdType(TYPE_TIN, "tinNumber", Arrays.asList(
+        return new IdType(TYPE_TIN, "tinNumber", List.of(
                 IdField.number("tinNumber", "TIN", "123456789012", true, true, 12),
-                IdField.text("fullname", "Full Name", "Juan Dela Cruz", true, false, 80),
+                IdField.text("fullName", "Full Name", "Juan Dela Cruz", true, false, 80),
                 IdField.text("address", "Address", "Street, City", true, false, 120),
                 IdField.date("dateOfBirth", "Date of Birth", "YYYYMMDD", true, 8),
                 IdField.date("dateOfIssue", "Date of Issue", "YYYYMMDD", true, 8)
@@ -338,14 +472,11 @@ public final class IdTypeSpec {
         return new IdType(safeTypeName, primaryNumberKey, fallbackFields);
     }
 
-    // ---- Face copy ----
-
-    /** Sub-line under the card title, per type. Never null. */
     public static String previewSubtitle(String typeName) {
         if (matchesType(typeName, TYPE_NATIONAL_ID)) {
             return "PHILIPPINE IDENTIFICATION";
         }
-        if (matchesType(typeName, TYPE_DRIVERS_LICENSE)) {
+        if (matchesType(typeName, TYPE_DRIVING_LICENSE)) {
             return "LAND TRANSPORT OFFICE";
         }
         if (matchesType(typeName, TYPE_PASSPORT)) {
@@ -354,14 +485,11 @@ public final class IdTypeSpec {
         if (matchesType(typeName, TYPE_SSS)) {
             return "SOCIAL SECURITY SYSTEM";
         }
-        if (matchesType(typeName, TYPE_PHILHEALTH)) {
-            return "PHILHEALTH";
+        if (matchesType(typeName, TYPE_PHIL_HEALTH)) {
+            return "PhilHealth".toUpperCase(java.util.Locale.ROOT);
         }
         if (matchesType(typeName, TYPE_TIN)) {
             return "BUREAU OF INTERNAL REVENUE";
-        }
-        if (hasText(typeName)) {
-            return "GOVERNMENT ID";
         }
         return "GOVERNMENT ID";
     }
@@ -382,8 +510,8 @@ public final class IdTypeSpec {
         if ("ss_number".equalsIgnoreCase(numberKey)) {
             return "SS NUMBER";
         }
-        if ("philhealth_no".equalsIgnoreCase(numberKey)) {
-            return "PHILHEALTH NO.";
+        if ("philHealthNumber".equalsIgnoreCase(numberKey)) {
+            return "PhilHealth No.".toUpperCase(java.util.Locale.ROOT);
         }
         if ("tinNumber".equalsIgnoreCase(numberKey)) {
             return "TIN";
@@ -429,9 +557,9 @@ public final class IdTypeSpec {
     }
 
     public static FaceScheme faceScheme(String typeName) {
-        if (matchesType(typeName, TYPE_DRIVERS_LICENSE)) {
+        if (matchesType(typeName, TYPE_DRIVING_LICENSE)) {
             return new FaceScheme(
-                    R.drawable.bg_drivers_license,
+                    R.drawable.bg_driving_license,
                     R.color.dl_ink, R.color.dl_accent, R.color.dl_bar,
                     R.color.dl_ink, R.color.dl_muted,
                     R.color.dl_ink,
@@ -454,14 +582,14 @@ public final class IdTypeSpec {
                     R.color.text_primary,
                     R.color.photo_bg_sss, R.color.sss_bg_start, R.color.sss_bg_end);
         }
-        if (matchesType(typeName, TYPE_PHILHEALTH)) {
+        if (matchesType(typeName, TYPE_PHIL_HEALTH)) {
             return new FaceScheme(
-                    R.drawable.bg_philhealth,
-                    R.color.philhealth_ink, R.color.philhealth_muted, R.color.philhealth_rule,
-                    R.color.philhealth_ink, R.color.philhealth_muted,
-                    R.color.philhealth_ink,
-                    R.color.photo_bg_philhealth, R.color.philhealth_rule,
-                    R.color.philhealth_ink);
+                    R.drawable.bg_phil_health,
+                    R.color.phil_health_ink, R.color.phil_health_muted, R.color.phil_health_rule,
+                    R.color.phil_health_ink, R.color.phil_health_muted,
+                    R.color.phil_health_ink,
+                    R.color.photo_bg_phil_health, R.color.phil_health_rule,
+                    R.color.phil_health_ink);
         }
         if (matchesType(typeName, TYPE_TIN)) {
             return new FaceScheme(
@@ -504,14 +632,14 @@ public final class IdTypeSpec {
         if (matchesType(typeName, TYPE_PASSPORT)) {
             return new FaceExtra("DATE OF EXPIRY", displayDate(safeFields.get("expiry_date")));
         }
-        // Driver's License has no sex slot either: birth pairs with expiry,
+        // Driver license has no sex slot either: birth pairs with expiry,
         // matching the form's side-by-side date row.
-        if (matchesType(typeName, TYPE_DRIVERS_LICENSE)) {
+        if (matchesType(typeName, TYPE_DRIVING_LICENSE)) {
             return new FaceExtra("EXPIRY DATE", displayDate(safeFields.get("expiry_date")));
         }
         // PhilHealth shows membership beside birth (no sex slot on its face),
         // matching the form's PhilHealth No. + Membership top row.
-        if (matchesType(typeName, TYPE_PHILHEALTH)) {
+        if (matchesType(typeName, TYPE_PHIL_HEALTH)) {
             return new FaceExtra("MEMBERSHIP", displayOrDash(safeFields.get("membership")));
         }
         return new FaceExtra("SEX", displayOrDash(safeFields.get("sex")));
@@ -525,11 +653,10 @@ public final class IdTypeSpec {
     }
 
     /** Card-face holder line: the type's full-name field, uppercased. */
-    public static String displayName(IdType typeSpec, Map<String, String> documentFields) {
+    public static String displayName(Map<String, String> documentFields) {
         Map<String, String> safeFields = documentFields != null ? documentFields : new LinkedHashMap<>();
-        // Name key varies by type: PhilHealth "fullName", TIN "fullname",
-        // everything else "full_name". First non-blank wins.
-        String holderName = firstNonEmpty(safeFields.get("fullName"), safeFields.get("fullname"), safeFields.get("full_name"));
+        // Name key varies by type ("fullName" vs "full_name"); first non-blank wins.
+        String holderName = firstNonEmpty(safeFields.get("fullName"), safeFields.get("full_name"));
         return hasText(holderName) ? holderName.trim().toUpperCase() : "FULL NAME";
     }
 
@@ -566,7 +693,7 @@ public final class IdTypeSpec {
     /** 12-digit document numbers (TIN, PhilHealth No.) group 3-3-3-3 on the face. */
     private static boolean usesGrouped12Display(String typeName) {
         return TYPE_TIN.equalsIgnoreCase(typeName)
-                || TYPE_PHILHEALTH.equalsIgnoreCase(typeName);
+                || TYPE_PHIL_HEALTH.equalsIgnoreCase(typeName);
     }
 
     /** The 16-digit PSN groups 4-4-4-4 on the face. */
@@ -581,7 +708,7 @@ public final class IdTypeSpec {
 
     /** The license number groups 3-2-6 (N01-23-456789) on the face. */
     private static boolean usesLicenseDisplay(String typeName) {
-        return TYPE_DRIVERS_LICENSE.equalsIgnoreCase(typeName);
+        return TYPE_DRIVING_LICENSE.equalsIgnoreCase(typeName);
     }
 
     /**
@@ -622,7 +749,7 @@ public final class IdTypeSpec {
         String digitsOnly = rawNumber != null ? rawNumber.replaceAll("\\D", "") : "";
         if (digitsOnly.length() == 10) {
             return digitsOnly.substring(0, 2) + "-" + digitsOnly.substring(2, 9)
-                    + "-" + digitsOnly.substring(9, 10);
+                    + "-" + digitsOnly.charAt(9);
         }
         return hasText(rawNumber) ? rawNumber.trim() : EMPTY_FACE_VALUE;
     }
