@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.animation.TranslateAnimation;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -89,6 +88,7 @@ public class LockActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock);
+        Ui.applySystemBars(this);
 
         String extra = getIntent().getStringExtra(EXTRA_MODE);
         if (extra != null) {
@@ -332,10 +332,10 @@ public class LockActivity extends AppCompatActivity {
                 R.id.key_6, R.id.key_7, R.id.key_8, R.id.key_9, R.id.key_0};
         for (int i = 0; i < keyIds.length; i++) {
             // i = 0..8 -> '1'..'9', i = 9 -> '0'.
-            final char d = i == 9 ? '0' : (char) ('1' + i);
+            final char digit = i == 9 ? '0' : (char) ('1' + i);
             View key = findViewById(keyIds[i]);
             if (key != null) {
-                key.setOnClickListener(v -> onDigit(d));
+                key.setOnClickListener(v -> onDigit(digit));
             }
         }
         View backKey = findViewById(R.id.key_back);
@@ -470,7 +470,7 @@ public class LockActivity extends AppCompatActivity {
         if (biometricPrompt != null) {
             try {
                 biometricPrompt.cancelAuthentication();
-            } catch (Exception ignored) {
+            } catch (RuntimeException ignored) {
             }
         }
     }
@@ -541,10 +541,9 @@ public class LockActivity extends AppCompatActivity {
     }
 
     private void shakeDots() {
-        TranslateAnimation shake = new TranslateAnimation(0, 12, 0, 0);
-        shake.setDuration(45);
-        shake.setRepeatCount(5);
-        shake.setRepeatMode(TranslateAnimation.REVERSE);
-        dotsRow.startAnimation(shake);
+        android.animation.ObjectAnimator shake =
+                android.animation.ObjectAnimator.ofFloat(dotsRow, View.TRANSLATION_X, 0f, 12f, 0f, -12f, 0f);
+        shake.setDuration(240);
+        shake.start();
     }
 }

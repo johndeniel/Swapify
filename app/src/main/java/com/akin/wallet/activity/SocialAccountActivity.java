@@ -3,8 +3,6 @@ package com.akin.wallet.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -26,7 +24,6 @@ import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.PlatformIcons;
 import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.search.SearchView;
 
@@ -104,12 +101,11 @@ public class SocialAccountActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_social_account);
+        Ui.applySystemBars(this);
 
         dbHelper = new AppDatabaseHelper(this);
 
-        // Back chevron, same as the bank and government ID screens.
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
+        Ui.setupBackToolbar(this, R.id.toolbar);
 
         setupPlatformSearch(savedInstanceState);
 
@@ -153,9 +149,7 @@ public class SocialAccountActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (deleteDialog != null && deleteDialog.isShowing()) {
-            deleteDialog.dismiss();
-        }
+        Ui.dismissOwnedDialog(deleteDialog);
         deleteDialog = null;
         if (dbHelper != null) {
             dbHelper.close();
@@ -234,13 +228,11 @@ public class SocialAccountActivity extends AppCompatActivity {
             }
         });
 
-        platformSearchView.getEditText().addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                platformQuery = s != null ? s.toString() : "";
-                platformAdapter.getFilter().filter(s);
+        platformSearchView.getEditText().addTextChangedListener(new Ui.SimpleTextWatcher() {
+            @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
+                platformQuery = text != null ? text.toString() : "";
+                platformAdapter.getFilter().filter(text);
             }
-            @Override public void afterTextChanged(Editable s) {}
         });
         platformSearchView.addTransitionListener((view, oldState, newState) -> {
             platformSearchOpen = newState == SearchView.TransitionState.SHOWN;
@@ -292,15 +284,13 @@ public class SocialAccountActivity extends AppCompatActivity {
         emptyLinkResults = findViewById(R.id.empty_link_results);
         recyclerLinkSearch.setLayoutManager(new LinearLayoutManager(this));
 
-        linkSearchView.getEditText().addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                linkQuery = s != null ? s.toString() : "";
+        linkSearchView.getEditText().addTextChangedListener(new Ui.SimpleTextWatcher() {
+            @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
+                linkQuery = text != null ? text.toString() : "";
                 if (linkSearchAdapter != null) {
-                    linkSearchAdapter.getFilter().filter(s);
+                    linkSearchAdapter.getFilter().filter(text);
                 }
             }
-            @Override public void afterTextChanged(Editable s) {}
         });
         linkSearchView.addTransitionListener((view, oldState, newState) -> {
             linkSearchOpen = newState == SearchView.TransitionState.SHOWN;
@@ -346,8 +336,8 @@ public class SocialAccountActivity extends AppCompatActivity {
 
         linkSearchAdapter = new LinkedSocialAccountAdapter(available, false, (picked, removed) -> {
             boolean dup = false;
-            for (CredentialItem l : linkedItems) {
-                if (l.getId() == picked.getId()) {
+            for (CredentialItem alreadyLinked : linkedItems) {
+                if (alreadyLinked.getId() == picked.getId()) {
                     dup = true;
                     break;
                 }
@@ -410,10 +400,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         // Add mode keeps a single full-width Save button, same as the bank
         // screen: the delete view is GONE, so its row margin is dropped.
         View btnSaveAdd = findViewById(R.id.btn_save);
-        LinearLayout.LayoutParams saveParams =
-                (LinearLayout.LayoutParams) btnSaveAdd.getLayoutParams();
-        saveParams.setMarginEnd(0);
-        btnSaveAdd.setLayoutParams(saveParams);
+        Ui.makeSaveButtonFullWidth(btnSaveAdd);
 
         findViewById(R.id.btn_save).setOnClickListener(v -> {
             EditText inputUsername = findViewById(R.id.input_username);
@@ -425,22 +412,17 @@ public class SocialAccountActivity extends AppCompatActivity {
             EditText inputMobile = findViewById(R.id.input_mobile);
             String mobile = inputMobile.getText().toString().trim();
 
-            if (username.isEmpty()) {
-                inputUsername.setError(getString(R.string.err_username_required));
+            if (validateUsername(inputUsername, username) != null) {
                 return;
             }
 
-            List<Integer> linkedIds = new ArrayList<>(linkedItems.size());
-            for (CredentialItem linked : linkedItems) {
-                linkedIds.add(linked.getId());
-            }
+            List<Integer> linkedIds = collectLinkedIds();
             long newId = dbHelper.saveSocialAccountWithLinks(
                     new CredentialItem(selectedName, username, password, pin,
                             selectedIcon, mobile, 0, 0),
                     linkedIds);
             if (newId < 0) {
-                Snackbar.make(findViewById(android.R.id.content),
-                        R.string.err_save_failed, Snackbar.LENGTH_SHORT).show();
+                showSaveFailed();
                 return;
             }
 
@@ -502,6 +484,30 @@ public class SocialAccountActivity extends AppCompatActivity {
         }
     }
 
+    /** Offending username field (error already set), null when valid. */
+    private View validateUsername(EditText inputUsername, String username) {
+        if (username.isEmpty()) {
+            inputUsername.setError(getString(R.string.err_username_required));
+            inputUsername.requestFocus();
+            return inputUsername;
+        }
+        return null;
+    }
+
+    /** Outgoing link edges for the save transaction. */
+    private List<Integer> collectLinkedIds() {
+        List<Integer> linkedIds = new ArrayList<>(linkedItems.size());
+        for (CredentialItem linkedAccount : linkedItems) {
+            linkedIds.add(linkedAccount.getId());
+        }
+        return linkedIds;
+    }
+
+    private void showSaveFailed() {
+        Snackbar.make(findViewById(android.R.id.content),
+                R.string.err_save_failed, Snackbar.LENGTH_SHORT).show();
+    }
+
     private void bindEditForm(@NonNull CredentialItem item) {
         platformIcon = findViewById(R.id.platform_icon);
         platformName = findViewById(R.id.platform_name);
@@ -511,7 +517,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         EditText inputPin = findViewById(R.id.input_pin);
         EditText inputMobile = findViewById(R.id.input_mobile);
 
-        textSaveLabel.setText("Update");
+        textSaveLabel.setText(R.string.action_update);
 
         selectedIcon = PlatformIcons.iconFor(item.getPlatform(), item.getIconRes());
         selectedName = item.getPlatform();
@@ -538,24 +544,19 @@ public class SocialAccountActivity extends AppCompatActivity {
             String pin = inputPin.getText().toString();
             String mobile = inputMobile.getText().toString().trim();
 
-            if (username.isEmpty()) {
-                inputUsername.setError(getString(R.string.err_username_required));
+            if (validateUsername(inputUsername, username) != null) {
                 return;
             }
 
             // In-place update: same row id, so reverse links from other
             // accounts survive; the whole save is one transaction.
-            List<Integer> linkedIds = new ArrayList<>(linkedItems.size());
-            for (CredentialItem linked : linkedItems) {
-                linkedIds.add(linked.getId());
-            }
+            List<Integer> linkedIds = collectLinkedIds();
             long savedId = dbHelper.saveSocialAccountWithLinks(
                     new CredentialItem(item.getId(), selectedName, username, password, pin,
                             selectedIcon, mobile, item.getCreatedAt(), 0),
                     linkedIds);
             if (savedId < 0) {
-                Snackbar.make(findViewById(android.R.id.content),
-                        R.string.err_save_failed, Snackbar.LENGTH_SHORT).show();
+                showSaveFailed();
                 return;
             }
 
@@ -570,9 +571,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         View btnDelete = findViewById(R.id.btn_delete);
         btnDelete.setVisibility(View.VISIBLE);
         btnDelete.setOnClickListener(v -> {
-            if (deleteDialog != null && deleteDialog.isShowing()) {
-                deleteDialog.dismiss();
-            }
+            Ui.dismissOwnedDialog(deleteDialog);
             deleteDialog = Dialogs.confirmDelete(SocialAccountActivity.this,
                     "Delete Account",
                     "Are you sure you want to delete this "

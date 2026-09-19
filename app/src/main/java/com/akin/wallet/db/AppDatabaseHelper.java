@@ -57,7 +57,6 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ID_CARD_ID = "id";
     private static final String COL_ID_TYPE = "id_type";
     private static final String COL_ID_FIELDS_JSON = "fields_json";
-    private static final String COL_ID_DESIGN = "design";
 
     private final Context appContext;
 
@@ -121,7 +120,6 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 + COL_ID_CARD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_ID_TYPE + " TEXT, "
                 + COL_ID_FIELDS_JSON + " TEXT, "
-                + COL_ID_DESIGN + " INTEGER, "
                 + COL_CREATED_AT + " INTEGER DEFAULT 0, "
                 + COL_UPDATED_AT + " INTEGER DEFAULT 0, "
                 + COL_DELETED_AT + " INTEGER DEFAULT 0)");
@@ -152,11 +150,8 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Development stage, v1 only: the pre-v1 social tables are discarded
-        // and rebuilt under their v1 names. Bank cards and IDs are untouched,
-        // so everything else survives. Never migrated.
-        db.execSQL("DROP TABLE IF EXISTS logins");
-        db.execSQL("DROP TABLE IF EXISTS associations");
+        // Development stage, v1 only: no versioned migrations are supported.
+        // The current schema is ensured unconditionally.
         createAllTables(db);
         createIndexes(db);
     }
@@ -198,7 +193,6 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
                 cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_TYPE)),
                 IdCardItem.parseFieldsJson(
                         cursor.getString(cursor.getColumnIndexOrThrow(COL_ID_FIELDS_JSON))),
-                cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID_DESIGN)),
                 cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED_AT)),
                 cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED_AT)));
     }
@@ -605,7 +599,6 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         ContentValues cv = new ContentValues();
         cv.put(COL_ID_TYPE, item.getIdType());
         cv.put(COL_ID_FIELDS_JSON, item.getFieldsJson());
-        cv.put(COL_ID_DESIGN, item.getDesign());
         if (fresh) {
             // Honor caller-supplied values (e.g. imports) when present.
             // The JSON blob is untouched — stamps live in their own columns.

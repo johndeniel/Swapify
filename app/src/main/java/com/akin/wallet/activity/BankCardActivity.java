@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -24,7 +23,6 @@ import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
-import com.google.android.material.appbar.MaterialToolbar;
 
 public class BankCardActivity extends AppCompatActivity {
 
@@ -58,7 +56,7 @@ public class BankCardActivity extends AppCompatActivity {
     private static final int BANK_NAME_MAX_LEN = 50;
     private static final int HOLDER_NAME_MIN_LEN = 2;
     private static final int HOLDER_NAME_MAX_LEN = 50;
-    private static final String NON_DIGITS_REGEX = "\\D";
+    private static final java.util.regex.Pattern NON_DIGITS = java.util.regex.Pattern.compile("\\D");
 
     // Rotation keys. EditTexts restore their own text; the pickers do not, so
     // the selected indices are saved explicitly.
@@ -99,7 +97,7 @@ public class BankCardActivity extends AppCompatActivity {
      * that is layout noise that must not overwrite the restored design. */
     private boolean carouselSettled;
 
-    // Re-entrancy guards for the formatting watchers. Without these, setText
+    // Reentrancy guards for the formatting watchers. Without these, setText
     // inside afterTextChanged would recurse until a stack overflow.
     private boolean isFormattingNumber;
     private boolean isFormattingExpiry;
@@ -111,11 +109,11 @@ public class BankCardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bank_card);
+        Ui.applySystemBars(this);
 
         dbHelper = new AppDatabaseHelper(this);
 
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
+        Ui.setupBackToolbar(this, R.id.toolbar);
 
         if (savedInstanceState != null) {
             // Restore picker state before binding; invalid values fall back to 0.
@@ -150,21 +148,15 @@ public class BankCardActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        dismissDialog(choiceDialog);
+        Ui.dismissOwnedDialog(choiceDialog);
         choiceDialog = null;
-        dismissDialog(deleteDialog);
+        Ui.dismissOwnedDialog(deleteDialog);
         deleteDialog = null;
         // SQLiteOpenHelper holds a pooled connection; release it with the screen.
         if (dbHelper != null) {
             dbHelper.close();
         }
         super.onDestroy();
-    }
-
-    private static void dismissDialog(androidx.appcompat.app.AlertDialog dialog) {
-        if (dialog != null && dialog.isShowing()) {
-            dialog.dismiss();
-        }
     }
 
     /**
@@ -246,7 +238,9 @@ public class BankCardActivity extends AppCompatActivity {
         recyclerDesign.setLayoutManager(designLayoutManager);
         recyclerDesign.setAdapter(designAdapter);
 
-        // Same 12dp inter-card gap as the dashboard carousel.
+        // Same 12dp inter-card gap as the dashboard carousel (computed once;
+        // getItemOffsets runs per child per layout pass).
+        final int carouselGapPx = Ui.dp(this, 12);
         recyclerDesign.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override
             public void getItemOffsets(@NonNull Rect outRect, @NonNull View child,
@@ -255,7 +249,7 @@ public class BankCardActivity extends AppCompatActivity {
                 int position = parent.getChildAdapterPosition(child);
                 if (position != RecyclerView.NO_POSITION
                         && position < state.getItemCount() - 1) {
-                    outRect.right = Ui.dp(parent.getContext(), 12);
+                    outRect.right = carouselGapPx;
                 }
             }
         });
@@ -289,7 +283,7 @@ public class BankCardActivity extends AppCompatActivity {
 
     /** Fills every field from the stored card; clamps a stale design index. */
     private void prefillEditMode(@NonNull BankCardItem existing) {
-        textSaveLabel.setText("Update");
+        textSaveLabel.setText(R.string.action_update);
         textCardType.setText(CARD_TYPES[selectedType]);
         textCardNetwork.setText(CARD_NETWORKS[selectedNetwork]);
 
@@ -319,21 +313,16 @@ public class BankCardActivity extends AppCompatActivity {
      */
     private void applyAddModeLayout() {
         textSaveLabel.setText(R.string.action_save);
-        LinearLayout.LayoutParams saveParams =
-                (LinearLayout.LayoutParams) btnSave.getLayoutParams();
-        saveParams.setMarginEnd(0);
-        btnSave.setLayoutParams(saveParams);
+        Ui.makeSaveButtonFullWidth(btnSave);
         recyclerDesign.post(() -> carouselSettled = true);
     }
 
     /** Live card-face preview; also clears stale errors as the user types. */
     private void setupPreviewBinding() {
-        TextWatcher previewWatcher = new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+        Ui.SimpleTextWatcher previewWatcher = new Ui.SimpleTextWatcher() {
+            @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
                 refreshPreview();
             }
-            @Override public void afterTextChanged(Editable s) {}
         };
         inputBankName.addTextChangedListener(previewWatcher);
         inputHolderName.addTextChangedListener(previewWatcher);
@@ -371,49 +360,45 @@ public class BankCardActivity extends AppCompatActivity {
 
     /** Groups card digits in 4s and expiry as MM/YY while preserving cursor. */
     private void setupInputFormatting() {
-        inputCardNumber.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            @Override public void afterTextChanged(Editable s) {
+        inputCardNumber.addTextChangedListener(new Ui.SimpleTextWatcher() {
+            @Override public void afterTextChanged(Editable text) {
                 if (isFormattingNumber) {
                     return;
                 }
                 isFormattingNumber = true;
                 try {
                     int cursor = inputCardNumber.getSelectionStart();
-                    int beforeLen = s.length();
-                    String digits = extractDigits(s.toString());
+                    int beforeLen = text.length();
+                    String digits = extractDigits(text.toString());
                     if (digits.length() > CARD_NUMBER_MAX_LEN) {
                         digits = digits.substring(0, CARD_NUMBER_MAX_LEN);
                     }
-                    s.replace(0, s.length(), groupInFours(digits));
-                    inputCardNumber.setSelection(clampCursor(cursor + (s.length() - beforeLen), s.length()));
+                    text.replace(0, text.length(), groupInFours(digits));
+                    inputCardNumber.setSelection(clampCursor(cursor + (text.length() - beforeLen), text.length()));
                 } finally {
                     isFormattingNumber = false;
                 }
             }
         });
 
-        inputExpiry.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            @Override public void afterTextChanged(Editable s) {
+        inputExpiry.addTextChangedListener(new Ui.SimpleTextWatcher() {
+            @Override public void afterTextChanged(Editable text) {
                 if (isFormattingExpiry) {
                     return;
                 }
                 isFormattingExpiry = true;
                 try {
                     int cursor = inputExpiry.getSelectionStart();
-                    int beforeLen = s.length();
-                    String digits = extractDigits(s.toString());
+                    int beforeLen = text.length();
+                    String digits = extractDigits(text.toString());
                     if (digits.length() > EXPIRY_DIGITS_LEN) {
                         digits = digits.substring(0, EXPIRY_DIGITS_LEN);
                     }
-                    s.replace(0, s.length(), formatExpiryInput(digits));
-                    int newCursor = clampCursor(cursor + (s.length() - beforeLen), s.length());
+                    text.replace(0, text.length(), formatExpiryInput(digits));
+                    int newCursor = clampCursor(cursor + (text.length() - beforeLen), text.length());
                     // Typing the 4th digit inserts a slash before it, jumping
                     // the length 4 -> 5; pin the cursor to the end in that case.
-                    if (newCursor == 3 && s.length() == 5 && beforeLen < s.length()) {
+                    if (newCursor == 3 && text.length() == 5 && beforeLen < text.length()) {
                         newCursor = 5;
                     }
                     inputExpiry.setSelection(newCursor);
@@ -426,16 +411,16 @@ public class BankCardActivity extends AppCompatActivity {
 
     private void setupPickers() {
         findViewById(R.id.row_card_type).setOnClickListener(v ->
-                showChoiceDialog("Card Type", CARD_TYPES, selectedType, which -> {
-                    selectedType = which;
-                    textCardType.setText(CARD_TYPES[which]);
+                showChoiceDialog("Card Type", CARD_TYPES, selectedType, selectedPosition -> {
+                    selectedType = selectedPosition;
+                    textCardType.setText(CARD_TYPES[selectedPosition]);
                     refreshPreview();
                 }));
 
         findViewById(R.id.row_card_network).setOnClickListener(v ->
-                showChoiceDialog("Card Network", CARD_NETWORKS, selectedNetwork, which -> {
-                    selectedNetwork = which;
-                    textCardNetwork.setText(CARD_NETWORKS[which]);
+                showChoiceDialog("Card Network", CARD_NETWORKS, selectedNetwork, selectedPosition -> {
+                    selectedNetwork = selectedPosition;
+                    textCardNetwork.setText(CARD_NETWORKS[selectedPosition]);
                     refreshPreview();
                 }));
     }
@@ -501,7 +486,7 @@ public class BankCardActivity extends AppCompatActivity {
         }
         btnDelete.setVisibility(View.VISIBLE);
         btnDelete.setOnClickListener(v -> {
-            dismissDialog(deleteDialog);
+            Ui.dismissOwnedDialog(deleteDialog);
             deleteDialog = Dialogs.confirmDelete(this,
                     "Delete Card",
                     "Are you sure you want to delete this card?",
@@ -526,61 +511,20 @@ public class BankCardActivity extends AppCompatActivity {
      * @return true when every field is persistable
      */
     private boolean validateForm() {
-        View firstInvalid = null;
+        View bankOffender = validateBankName(inputBankName.getText().toString().trim());
+        View holderOffender = validateHolderName(inputHolderName.getText().toString().trim());
+        View numberOffender = validateCardNumber(
+                extractDigits(inputCardNumber.getText().toString()));
+        View expiryOffender = validateExpiry(
+                extractDigits(inputExpiry.getText().toString()));
+        View cvvOffender = validateCvv(
+                extractDigits(inputCvv.getText().toString()));
+        View pinOffender = validatePin(
+                extractDigits(inputPin.getText().toString()));
 
-        String bank = inputBankName.getText().toString().trim();
-        if (bank.isEmpty()) {
-            inputBankName.setError("Bank name is required");
-            firstInvalid = firstInvalidOr(firstInvalid, inputBankName);
-        } else if (bank.length() < BANK_NAME_MIN_LEN) {
-            inputBankName.setError("Bank name must be at least " + BANK_NAME_MIN_LEN + " characters");
-            firstInvalid = firstInvalidOr(firstInvalid, inputBankName);
-        } else if (bank.length() > BANK_NAME_MAX_LEN) {
-            inputBankName.setError("Bank name must be under " + (BANK_NAME_MAX_LEN + 1) + " characters");
-            firstInvalid = firstInvalidOr(firstInvalid, inputBankName);
-        }
-
-        String holder = inputHolderName.getText().toString().trim();
-        if (holder.isEmpty()) {
-            inputHolderName.setError("Cardholder name is required");
-            firstInvalid = firstInvalidOr(firstInvalid, inputHolderName);
-        } else if (holder.length() < HOLDER_NAME_MIN_LEN) {
-            inputHolderName.setError("Cardholder name must be at least " + HOLDER_NAME_MIN_LEN + " characters");
-            firstInvalid = firstInvalidOr(firstInvalid, inputHolderName);
-        } else if (holder.length() > HOLDER_NAME_MAX_LEN) {
-            inputHolderName.setError("Cardholder name must be under " + (HOLDER_NAME_MAX_LEN + 1) + " characters");
-            firstInvalid = firstInvalidOr(firstInvalid, inputHolderName);
-        } else if (!holder.matches("[\\p{L}][\\p{L} .'-]*")) {
-            // Unicode-aware: allows accented names, denies digits/symbols.
-            inputHolderName.setError("Name can only contain letters, spaces, . ' -");
-            firstInvalid = firstInvalidOr(firstInvalid, inputHolderName);
-        }
-
-        String cardDigits = extractDigits(inputCardNumber.getText().toString());
-        if (cardDigits.length() < CARD_NUMBER_MIN_LEN || cardDigits.length() > CARD_NUMBER_MAX_LEN) {
-            inputCardNumber.setError(
-                    "Card number must be " + CARD_NUMBER_MIN_LEN + "-" + CARD_NUMBER_MAX_LEN + " digits");
-            firstInvalid = firstInvalidOr(firstInvalid, inputCardNumber);
-        }
-
-        String expDigits = extractDigits(inputExpiry.getText().toString());
-        if (expDigits.length() != EXPIRY_DIGITS_LEN) {
-            inputExpiry.setError("Expiry must be exactly 4 digits (MMYY)");
-            firstInvalid = firstInvalidOr(firstInvalid, inputExpiry);
-        }
-
-        String cvvDigits = extractDigits(inputCvv.getText().toString());
-        if (cvvDigits.length() != CVV_LEN) {
-            inputCvv.setError("CVV must be exactly " + CVV_LEN + " digits");
-            firstInvalid = firstInvalidOr(firstInvalid, inputCvv);
-        }
-
-        String pinDigits = extractDigits(inputPin.getText().toString());
-        if (pinDigits.length() < PIN_MIN_LEN || pinDigits.length() > PIN_MAX_LEN) {
-            inputPin.setError("PIN must be " + PIN_MIN_LEN + "-" + PIN_MAX_LEN + " digits");
-            firstInvalid = firstInvalidOr(firstInvalid, inputPin);
-        }
-
+        View firstInvalid = firstOffender(
+                bankOffender, holderOffender, numberOffender,
+                expiryOffender, cvvOffender, pinOffender);
         if (firstInvalid != null) {
             firstInvalid.requestFocus();
             return false;
@@ -588,20 +532,95 @@ public class BankCardActivity extends AppCompatActivity {
         return true;
     }
 
-    private static View firstInvalidOr(@Nullable View current, @NonNull View candidate) {
-        return current != null ? current : candidate;
+    /** First non-null offender, preserving form order. */
+    private static View firstOffender(View... offenders) {
+        for (View offender : offenders) {
+            if (offender != null) {
+                return offender;
+            }
+        }
+        return null;
+    }
+
+    /** Returns the field when invalid (error already set), null when valid. */
+    private View validateBankName(String bank) {
+        if (bank.isEmpty()) {
+            inputBankName.setError("Bank name is required");
+            return inputBankName;
+        } else if (bank.length() < BANK_NAME_MIN_LEN) {
+            inputBankName.setError("Bank name must be at least " + BANK_NAME_MIN_LEN + " characters");
+            return inputBankName;
+        } else if (bank.length() > BANK_NAME_MAX_LEN) {
+            inputBankName.setError("Bank name must be under " + (BANK_NAME_MAX_LEN + 1) + " characters");
+            return inputBankName;
+        }
+        return null;
+    }
+
+    /** Returns the field when invalid (error already set), null when valid. */
+    private View validateHolderName(String holder) {
+        if (holder.isEmpty()) {
+            inputHolderName.setError("Cardholder name is required");
+            return inputHolderName;
+        } else if (holder.length() < HOLDER_NAME_MIN_LEN) {
+            inputHolderName.setError("Cardholder name must be at least " + HOLDER_NAME_MIN_LEN + " characters");
+            return inputHolderName;
+        } else if (holder.length() > HOLDER_NAME_MAX_LEN) {
+            inputHolderName.setError("Cardholder name must be under " + (HOLDER_NAME_MAX_LEN + 1) + " characters");
+            return inputHolderName;
+        } else if (!holder.matches("\\p{L}[\\p{L} .'-]*")) {
+            // Unicode-aware: allows accented names, denies digits/symbols.
+            inputHolderName.setError("Name can only contain letters, spaces, . ' -");
+            return inputHolderName;
+        }
+        return null;
+    }
+
+    /** Returns the field when invalid (error already set), null when valid. */
+    private View validateCardNumber(String cardDigits) {
+        if (cardDigits.length() < CARD_NUMBER_MIN_LEN || cardDigits.length() > CARD_NUMBER_MAX_LEN) {
+            inputCardNumber.setError(
+                    "Card number must be " + CARD_NUMBER_MIN_LEN + "-" + CARD_NUMBER_MAX_LEN + " digits");
+            return inputCardNumber;
+        }
+        return null;
+    }
+
+    /** Returns the field when invalid (error already set), null when valid. */
+    private View validateExpiry(String expDigits) {
+        if (expDigits.length() != EXPIRY_DIGITS_LEN) {
+            inputExpiry.setError("Expiry must be exactly 4 digits (MMYY)");
+            return inputExpiry;
+        }
+        return null;
+    }
+
+    /** Returns the field when invalid (error already set), null when valid. */
+    private View validateCvv(String cvvDigits) {
+        if (cvvDigits.length() != CVV_LEN) {
+            inputCvv.setError("CVV must be exactly " + CVV_LEN + " digits");
+            return inputCvv;
+        }
+        return null;
+    }
+
+    /** Returns the field when invalid (error already set), null when valid. */
+    private View validatePin(String pinDigits) {
+        if (pinDigits.length() < PIN_MIN_LEN || pinDigits.length() > PIN_MAX_LEN) {
+            inputPin.setError("PIN must be " + PIN_MIN_LEN + "-" + PIN_MAX_LEN + " digits");
+            return inputPin;
+        }
+        return null;
     }
 
     /** Clears a stale setError as soon as the user edits the field again. */
     private static void clearErrorOnChange(EditText input) {
-        input.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+        input.addTextChangedListener(new Ui.SimpleTextWatcher() {
+            @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
                 if (input.getError() != null) {
                     input.setError(null);
                 }
             }
-            @Override public void afterTextChanged(Editable s) {}
         });
     }
 
@@ -610,19 +629,19 @@ public class BankCardActivity extends AppCompatActivity {
     // ------------------------------------------------------------------
 
     private static String extractDigits(String raw) {
-        return raw == null ? "" : raw.replaceAll(NON_DIGITS_REGEX, "");
+        return raw == null ? "" : NON_DIGITS.matcher(raw).replaceAll("");
     }
 
     /** Groups raw digits for display: "12345678" -> "1234 5678". */
     private static String groupInFours(String digits) {
-        StringBuilder sb = new StringBuilder(digits.length() + digits.length() / 4);
-        for (int i = 0; i < digits.length(); i++) {
-            if (i > 0 && i % 4 == 0) {
-                sb.append(' ');
+        StringBuilder groupedDigits = new StringBuilder(digits.length() + digits.length() / 4);
+        for (int digitIndex = 0; digitIndex < digits.length(); digitIndex++) {
+            if (digitIndex > 0 && digitIndex % 4 == 0) {
+                groupedDigits.append(' ');
             }
-            sb.append(digits.charAt(i));
+            groupedDigits.append(digits.charAt(digitIndex));
         }
-        return sb.toString();
+        return groupedDigits.toString();
     }
 
     /** Formats raw expiry digits for display: "1" -> "1", "122" -> "12/2". */
@@ -640,9 +659,9 @@ public class BankCardActivity extends AppCompatActivity {
         return index < 0 || index >= size ? 0 : index;
     }
 
-    private void showChoiceDialog(String title, String[] options, int checked, OnChoiceListener listener) {
-        dismissDialog(choiceDialog);
-        choiceDialog = Dialogs.singleChoice(this, title, options, checked, listener::onChoice);
+    private void showChoiceDialog(String title, String[] options, int checkedPosition, OnChoiceListener listener) {
+        Ui.dismissOwnedDialog(choiceDialog);
+        choiceDialog = Dialogs.singleChoice(this, title, options, checkedPosition, listener::onChoice);
     }
 
     /** Builds dots once; use updateDots() on scroll to avoid view churn. */
@@ -668,6 +687,6 @@ public class BankCardActivity extends AppCompatActivity {
     }
 
     private interface OnChoiceListener {
-        void onChoice(int which);
+        void onChoice(int selectedPosition);
     }
 }

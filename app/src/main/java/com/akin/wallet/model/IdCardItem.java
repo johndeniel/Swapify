@@ -10,28 +10,32 @@ import java.util.Objects;
 
 /**
  * Government ID entry. Variable per-type fields are stored as a JSON object
- * in SQLite (fields_json column) so National ID, Driver's License, Passport,
+ * in SQLite (fields_json column) so National ID, Passport,
  * SSS, GSIS, etc. all share one table and one card UI.
  *
  * <p>Audit timestamps ({@code createdAt}/{@code updatedAt}) are first-class
- * columns sibling to {@code id} — never keys inside {@code fields_json}.
- * Keeping them out of the JSON preserves the per-type field contract (TIN,
- * SSS, etc. carry only their own document data) and lets recency ordering
- * reuse the same {@code updated_at DESC, id DESC} pattern as bank cards and
- * logins.
+ * columns sibling to {@code id} — never keys inside the JSON document.
+ * Keeping them out of the JSON preserves the per-type field contract and lets
+ * recency ordering reuse the same {@code updated_at DESC, id DESC} pattern as
+ * bank cards and social accounts.
+ *
+ * <p>No {@code toString()} by design: document fields are sensitive and must
+ * never reach logcat through an implicit string conversion.
  */
 public class IdCardItem {
+
+    /** Row id for drafts that have never been persisted. */
+    public static final int UNSET_ID = -1;
+
     private final int id;
     private final String idType;
     private final Map<String, String> fields;
-    private final int design;
-    // Epoch millis (UTC). 0 = unset (unsaved drafts); the DB fills real
-    // values on insert.
     private final long createdAt;
     private final long updatedAt;
 
-    public IdCardItem(String idType, Map<String, String> fields, int design) {
-        this(-1, idType, fields, design, 0, 0);
+    /** Unsaved draft; the database assigns the id and timestamps on insert. */
+    public IdCardItem(String idType, Map<String, String> fields) {
+        this(UNSET_ID, idType, fields, 0, 0);
     }
 
     /**
@@ -40,12 +44,13 @@ public class IdCardItem {
      * updates preserve {@code createdAt} and pass {@code 0} for
      * {@code updatedAt} so the DB bumps recency.
      */
-    public IdCardItem(int id, String idType, Map<String, String> fields, int design,
+    public IdCardItem(int id, String idType, Map<String, String> fields,
                       long createdAt, long updatedAt) {
         this.id = id;
         this.idType = idType != null ? idType : "";
-        this.fields = fields != null ? new LinkedHashMap<>(fields) : new LinkedHashMap<>();
-        this.design = design;
+        this.fields = fields != null
+                ? new LinkedHashMap<>(fields)
+                : new LinkedHashMap<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -63,10 +68,6 @@ public class IdCardItem {
         return new LinkedHashMap<>(fields);
     }
 
-    public int getDesign() {
-        return design;
-    }
-
     /** Row creation time, epoch millis. 0 when unset. */
     public long getCreatedAt() {
         return createdAt;
@@ -78,35 +79,50 @@ public class IdCardItem {
     }
 
     /**
-     * Serialize fields map to JSON string for SQLite storage.
+     * Serialize document fields to JSON for SQLite storage.
      * Timestamps are deliberately excluded: they live in their own columns.
      */
     public String getFieldsJson() {
-        JSONObject obj = new JSONObject();
-        for (Map.Entry<String, String> e : fields.entrySet()) {
-            try {
-                obj.put(e.getKey(), e.getValue() != null ? e.getValue() : "");
-            } catch (JSONException ignored) {
-            }
+        JSONObject jsonDocument = new JSONObject();
+        for (Map.Entry<String, String> field : fields.entrySet()) {
+            putField(jsonDocument, field.getKey(), field.getValue());
         }
-        return obj.toString();
+        return jsonDocument.toString();
     }
+
+    /**
+     * JSONObject.put only throws for null keys or non-finite numbers; our keys
+     * are non-null strings and values are normalized to "", so this is
+     * provably non-throwing and intentionally silent.
+     */
+    private static void putField(JSONObject jsonDocument, String key, String value) {
+        try {
+            jsonDocument.put(key, value != null ? value : "");
+        } catch (JSONException impossible) {
+            throw new AssertionError("String keys never fail JSONObject.put", impossible);
+        }
+    }
+
     /** Parse JSON string from SQLite. Never throws — returns empty map on bad input. */
-    public static Map<String, String> parseFieldsJson(String payload) {
-        Map<String, String> map = new LinkedHashMap<>();
-        if (payload == null || payload.trim().isEmpty()) {
-            return map;
+    public static Map<String, String> parseFieldsJson(String jsonPayload) {
+        Map<String, String> parsedFields = new LinkedHashMap<>();
+        if (jsonPayload == null || jsonPayload.trim().isEmpty()) {
+            return parsedFields;
         }
         try {
-            JSONObject obj = new JSONObject(payload);
-            Iterator<String> keys = obj.keys();
+            JSONObject jsonDocument = new JSONObject(jsonPayload);
+            Iterator<String> keys = jsonDocument.keys();
             while (keys.hasNext()) {
                 String key = keys.next();
-                map.put(key, obj.optString(key, ""));
+                parsedFields.put(key, jsonDocument.optString(key, ""));
             }
-        } catch (JSONException ignored) {
+        } catch (JSONException malformed) {
+            // Forward-compat: a corrupt row degrades to an empty form rather
+            // than crashing the list. The error is deliberate silence, not
+            // swallowed diagnostics — there is nothing actionable to log.
+            parsedFields.clear();
         }
-        return map;
+        return parsedFields;
     }
 
     /** Value equality across every column (backs DiffUtil content checks). */
@@ -120,7 +136,6 @@ public class IdCardItem {
         }
         IdCardItem that = (IdCardItem) o;
         return id == that.id
-                && design == that.design
                 && createdAt == that.createdAt
                 && updatedAt == that.updatedAt
                 && Objects.equals(idType, that.idType)
@@ -129,6 +144,6 @@ public class IdCardItem {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, idType, fields, design, createdAt, updatedAt);
+        return Objects.hash(id, idType, fields, createdAt, updatedAt);
     }
 }

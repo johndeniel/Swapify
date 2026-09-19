@@ -4,10 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -32,7 +30,6 @@ import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.IdTypeSpec;
 import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.LinkedHashMap;
@@ -78,22 +75,18 @@ public class GovermentIDActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_goverment_id);
+        Ui.applySystemBars(this);
 
         dbHelper = new AppDatabaseHelper(this);
 
-        // Back chevron, same as the bank card screen: plain finish, no save.
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
+        Ui.setupBackToolbar(this, R.id.toolbar);
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (savedInstanceState != null) {
             // Rotation: re-seed below from the user's in-progress draft.
             hasSavedState = true;
             savedSelectedType = savedInstanceState.getInt(KEY_SELECTED_TYPE, 0);
-            Object raw = savedInstanceState.getSerializable(KEY_DRAFT);
-            savedDraft = raw instanceof Map
-                    ? castStringMap((Map<?, ?>) raw)
-                    : new LinkedHashMap<>();
+            savedDraft = restoreDraft(savedInstanceState);
         }
         if (id == -1) {
             bindForm(null);
@@ -118,12 +111,21 @@ public class GovermentIDActivity extends AppCompatActivity {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    private static Map<String, String> restoreDraft(@NonNull Bundle savedState) {
+        java.util.HashMap<?, ?> rawDraft =
+                androidx.core.os.BundleCompat.getSerializable(
+                        savedState, KEY_DRAFT, java.util.HashMap.class);
+        if (rawDraft == null) {
+            return new LinkedHashMap<>();
+        }
+        return castStringMap(rawDraft);
+    }
+
     private static Map<String, String> castStringMap(Map<?, ?> raw) {
         Map<String, String> out = new LinkedHashMap<>();
-        for (Map.Entry<?, ?> e : raw.entrySet()) {
-            if (e.getKey() instanceof String && e.getValue() instanceof String) {
-                out.put((String) e.getKey(), (String) e.getValue());
+        for (Map.Entry<?, ?> rawEntry : raw.entrySet()) {
+            if (rawEntry.getKey() instanceof String && rawEntry.getValue() instanceof String) {
+                out.put((String) rawEntry.getKey(), (String) rawEntry.getValue());
             }
         }
         return out;
@@ -131,9 +133,7 @@ public class GovermentIDActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (activeDialog != null && activeDialog.isShowing()) {
-            activeDialog.dismiss();
-        }
+        Ui.dismissOwnedDialog(activeDialog);
         activeDialog = null;
         if (dbHelper != null) {
             dbHelper.close();
@@ -172,7 +172,7 @@ public class GovermentIDActivity extends AppCompatActivity {
         final boolean[] knownType = {true};
 
         if (isEdit) {
-            textSaveLabel.setText("Update");
+            textSaveLabel.setText(R.string.action_update);
             if (IdTypeSpec.isKnownType(existing.getIdType())) {
                 selectedType[0] = IdTypeSpec.indexOf(existing.getIdType());
             } else {
@@ -302,8 +302,8 @@ public class GovermentIDActivity extends AppCompatActivity {
                     isEdit ? existing : null);
 
             // Pull latest text (watchers already keep draftValues live; this is a safety net).
-            for (Map.Entry<String, EditText> e : textInputs.entrySet()) {
-                draftValues.put(e.getKey(), e.getValue().getText().toString().trim());
+            for (Map.Entry<String, EditText> textInput : textInputs.entrySet()) {
+                draftValues.put(textInput.getKey(), textInput.getValue().getText().toString().trim());
             }
             Map<String, String> filtered = filteredDraft(typeName, draftValues);
 
@@ -315,15 +315,15 @@ public class GovermentIDActivity extends AppCompatActivity {
                 // createdAt rides along untouched (creation order is immutable);
                 // updatedAt=0 tells the DB helper to stamp now on write.
                 // Known types may have been switched via selector; use the new
-                // name. Design is fixed per type (column kept as 0).
+                // name.
                 String finalType = knownType[0] ? typeName : existing.getIdType();
                 IdCardItem updated = new IdCardItem(
-                        existing.getId(), finalType, filtered, 0,
+                        existing.getId(), finalType, filtered,
                         existing.getCreatedAt(), 0);
                 dbHelper.updateIdCard(updated);
                 Ui.notifyOnReturn(R.string.msg_updated);
             } else {
-                IdCardItem newCard = new IdCardItem(typeName, filtered, 0);
+                IdCardItem newCard = new IdCardItem(typeName, filtered);
                 dbHelper.insertIdCard(newCard);
                 Ui.notifyOnReturn(R.string.msg_id_saved);
             }
@@ -339,9 +339,7 @@ public class GovermentIDActivity extends AppCompatActivity {
         if (isEdit) {
             btnDelete.setVisibility(View.VISIBLE);
             btnDelete.setOnClickListener(v -> {
-                if (activeDialog != null && activeDialog.isShowing()) {
-                    activeDialog.dismiss();
-                }
+                Ui.dismissOwnedDialog(activeDialog);
                 activeDialog = Dialogs.confirmDelete(GovermentIDActivity.this,
                         "Delete ID",
                         "Are you sure you want to delete this "
@@ -386,9 +384,9 @@ public class GovermentIDActivity extends AppCompatActivity {
         IdTypeSpec.IdType spec = IdTypeSpec.isKnownType(typeName)
                 ? IdTypeSpec.forName(typeName)
                 : IdTypeSpec.genericType(typeName, draft);
-        for (IdTypeSpec.IdField f : spec.fields) {
-            String v = draft.get(f.key);
-            out.put(f.key, v != null ? v : "");
+        for (IdTypeSpec.IdField specField : spec.fields) {
+            String draftValue = draft.get(specField.key);
+            out.put(specField.key, draftValue != null ? draftValue : "");
         }
         return out;
     }
@@ -515,26 +513,18 @@ public class GovermentIDActivity extends AppCompatActivity {
         if (field.maxLength > 0) {
             input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(field.maxLength)});
         }
-        int h = Ui.dp(this, 16);
-        int v = Ui.dp(this, 14);
-        input.setPadding(h, v, h, v);
+        int horizontalPadding = Ui.dp(this, 16);
+        int verticalPadding = Ui.dp(this, 14);
+        input.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
         String current = draft.get(field.key);
         if (current != null && !current.isEmpty()) {
             input.setText(current);
         }
-        input.addTextChangedListener(new TextWatcher() {
+        input.addTextChangedListener(new Ui.SimpleTextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                draft.put(field.key, s.toString());
+            public void onTextChanged(CharSequence text, int start, int before, int count) {
+                draft.put(field.key, text.toString());
                 onChanged.run();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
             }
         });
 
@@ -566,9 +556,9 @@ public class GovermentIDActivity extends AppCompatActivity {
         rowParams.topMargin = Ui.dp(this, 8);
         row.setLayoutParams(rowParams);
         row.setBackgroundResource(R.drawable.bg_dashboard_card);
-        int h = Ui.dp(this, 16);
-        int padV = Ui.dp(this, 14);
-        row.setPadding(h, padV, h, padV);
+        int horizontalPadding = Ui.dp(this, 16);
+        int verticalRowPadding = Ui.dp(this, 14);
+        row.setPadding(horizontalPadding, verticalRowPadding, horizontalPadding, verticalRowPadding);
         row.setClickable(true);
         row.setFocusable(true);
 
@@ -607,13 +597,11 @@ public class GovermentIDActivity extends AppCompatActivity {
         row.addView(chevron);
 
         row.setOnClickListener(v -> {
-            int checked = Ui.indexOfIgnoreCase(field.options, draft.get(field.key));
-            if (activeDialog != null && activeDialog.isShowing()) {
-                activeDialog.dismiss();
-            }
+            int checkedPosition = Ui.indexOfIgnoreCase(field.options, draft.get(field.key));
+            Ui.dismissOwnedDialog(activeDialog);
             activeDialog = Dialogs.singleChoice(GovermentIDActivity.this,
-                    field.label, field.options, checked, which -> {
-                        String picked = field.options[which];
+                    field.label, field.options, checkedPosition, selectedPosition -> {
+                        String picked = field.options[selectedPosition];
                         draft.put(field.key, picked);
                         valueView.setText(picked);
                         valueView.setAlpha(1f);
@@ -636,45 +624,58 @@ public class GovermentIDActivity extends AppCompatActivity {
         // sees the document rule first: exactly-12-digit numeric TIN / PIN and
         // numeric date shapes (presence itself is covered by the generic
         // required check below).
+        FieldOffense offense = documentOffense(spec, values);
+        if (offense == null) {
+            offense = requiredFieldOffense(spec, values);
+        }
+        if (offense == null) {
+            return true;
+        }
+        flagFieldError(textInputs, dropdownValues, offense.fieldKey, offense.message);
+        return false;
+    }
+
+    /** Document-specific offense for the active type, null when clean. */
+    private static FieldOffense documentOffense(IdTypeSpec.IdType spec, Map<String, String> values) {
         if (spec != null && IdTypeSpec.TYPE_TIN.equalsIgnoreCase(spec.name)) {
-            if (!validateTinFields(values, textInputs, dropdownValues)) {
-                return false;
-            }
+            return validateTinFields(values);
         } else if (spec != null && IdTypeSpec.TYPE_PHILHEALTH.equalsIgnoreCase(spec.name)) {
-            if (!validatePhilHealthFields(values, textInputs, dropdownValues)) {
-                return false;
-            }
+            return validatePhilHealthFields(values);
         } else if (spec != null && IdTypeSpec.TYPE_NATIONAL_ID.equalsIgnoreCase(spec.name)) {
-            if (!validateNationalIdFields(values, textInputs, dropdownValues)) {
-                return false;
-            }
+            return validateNationalIdFields(values);
         } else if (spec != null && IdTypeSpec.TYPE_PASSPORT.equalsIgnoreCase(spec.name)) {
-            if (!validatePassportFields(values, textInputs, dropdownValues)) {
-                return false;
-            }
+            return validatePassportFields(values);
         } else if (spec != null && IdTypeSpec.TYPE_DRIVERS_LICENSE.equalsIgnoreCase(spec.name)) {
-            if (!validateDriversLicenseFields(values, textInputs, dropdownValues)) {
-                return false;
-            }
+            return validateDriversLicenseFields(values);
         } else if (spec != null && IdTypeSpec.TYPE_SSS.equalsIgnoreCase(spec.name)) {
-            if (!validateSssFields(values, textInputs, dropdownValues)) {
-                return false;
+            return validateSssFields(values);
+        }
+        return null;
+    }
+
+    /** Generic required/sensitive pass over the spec, null when clean. */
+    private static FieldOffense requiredFieldOffense(IdTypeSpec.IdType spec, Map<String, String> values) {
+        for (IdTypeSpec.IdField specField : spec.fields) {
+            String fieldValue = trimmed(values.get(specField.key));
+            if (specField.required && fieldValue.isEmpty()) {
+                return new FieldOffense(specField.key, specField.label + " is required");
+            }
+            if (specField.sensitive && !fieldValue.isEmpty() && fieldValue.replaceAll("[^A-Za-z0-9]", "").length() < 4) {
+                return new FieldOffense(specField.key, specField.label + " looks too short");
             }
         }
-        for (IdTypeSpec.IdField f : spec.fields) {
-            String v = values.get(f.key);
-            if (v == null) {
-                v = "";
-            }
-            v = v.trim();
-            if (f.required && v.isEmpty()) {
-                return failField(textInputs, dropdownValues, f.key, f.label + " is required");
-            }
-            if (f.sensitive && !v.isEmpty() && v.replaceAll("[^A-Za-z0-9]", "").length() < 4) {
-                return failField(textInputs, dropdownValues, f.key, f.label + " looks too short");
-            }
+        return null;
+    }
+
+    /** One validation failure: which field plus what to tell the user. */
+    private static final class FieldOffense {
+        final String fieldKey;
+        final String message;
+
+        FieldOffense(String fieldKey, String message) {
+            this.fieldKey = fieldKey;
+            this.message = message;
         }
-        return true;
     }
 
     /**
@@ -684,23 +685,21 @@ public class GovermentIDActivity extends AppCompatActivity {
      * <p>BIR TINs are exactly 12 digits with no alphabet (digit count is what
      * matters). Dates are exactly 8 digits (YYYYMMDD) — no calendar computation.
      */
-    private boolean validateTinFields(Map<String, String> values,
-                                      Map<String, EditText> textInputs,
-                                      Map<String, TextView> dropdownValues) {
+    private static FieldOffense validateTinFields(Map<String, String> values) {
         String tinError = exactDigitNumberError("TIN", values.get("tinNumber"), 12);
         if (tinError != null) {
-            return failField(textInputs, dropdownValues, "tinNumber", tinError);
+            return new FieldOffense("tinNumber", tinError);
         }
 
         String dobError = numericDateError("Date of Birth", values.get("dateOfBirth"));
         if (dobError != null) {
-            return failField(textInputs, dropdownValues, "dateOfBirth", dobError);
+            return new FieldOffense("dateOfBirth", dobError);
         }
         String issueError = numericDateError("Date of Issue", values.get("dateOfIssue"));
         if (issueError != null) {
-            return failField(textInputs, dropdownValues, "dateOfIssue", issueError);
+            return new FieldOffense("dateOfIssue", issueError);
         }
-        return true;
+        return null;
     }
 
     /**
@@ -708,19 +707,17 @@ public class GovermentIDActivity extends AppCompatActivity {
      * the face, same presentational rule as the TIN) plus the shared numeric
      * date shape for birth. Fail-fast in field order, matching the TIN pass.
      */
-    private boolean validatePhilHealthFields(Map<String, String> values,
-                                             Map<String, EditText> textInputs,
-                                             Map<String, TextView> dropdownValues) {
+    private static FieldOffense validatePhilHealthFields(Map<String, String> values) {
         String pinError = exactDigitNumberError("PhilHealth No.", values.get("philhealth_no"), 12);
         if (pinError != null) {
-            return failField(textInputs, dropdownValues, "philhealth_no", pinError);
+            return new FieldOffense("philhealth_no", pinError);
         }
 
         String dobError = numericDateError("Date of Birth", values.get("dateOfBirth"));
         if (dobError != null) {
-            return failField(textInputs, dropdownValues, "dateOfBirth", dobError);
+            return new FieldOffense("dateOfBirth", dobError);
         }
-        return true;
+        return null;
     }
 
     /**
@@ -728,23 +725,21 @@ public class GovermentIDActivity extends AppCompatActivity {
      * the face) plus the shared 8-digit shapes for birth and issue. Fail-fast
      * in field order, matching the other passes.
      */
-    private boolean validateNationalIdFields(Map<String, String> values,
-                                             Map<String, EditText> textInputs,
-                                             Map<String, TextView> dropdownValues) {
+    private static FieldOffense validateNationalIdFields(Map<String, String> values) {
         String psnError = exactDigitNumberError("PSN", values.get("psn"), 16);
         if (psnError != null) {
-            return failField(textInputs, dropdownValues, "psn", psnError);
+            return new FieldOffense("psn", psnError);
         }
 
         String dobError = numericDateError("Date of Birth", values.get("birth_date"));
         if (dobError != null) {
-            return failField(textInputs, dropdownValues, "birth_date", dobError);
+            return new FieldOffense("birth_date", dobError);
         }
         String issueError = numericDateError("Date of Issue", values.get("issue_date"));
         if (issueError != null) {
-            return failField(textInputs, dropdownValues, "issue_date", issueError);
+            return new FieldOffense("issue_date", issueError);
         }
-        return true;
+        return null;
     }
 
     /**
@@ -752,22 +747,20 @@ public class GovermentIDActivity extends AppCompatActivity {
      * expiry (number presence is covered by the generic required pass).
      * Fail-fast in field order, matching the other passes.
      */
-    private boolean validatePassportFields(Map<String, String> values,
-                                           Map<String, EditText> textInputs,
-                                           Map<String, TextView> dropdownValues) {
+    private static FieldOffense validatePassportFields(Map<String, String> values) {
         String dobError = numericDateError("Date of Birth", values.get("birth_date"));
         if (dobError != null) {
-            return failField(textInputs, dropdownValues, "birth_date", dobError);
+            return new FieldOffense("birth_date", dobError);
         }
         String issueError = numericDateError("Date of Issue", values.get("issue_date"));
         if (issueError != null) {
-            return failField(textInputs, dropdownValues, "issue_date", issueError);
+            return new FieldOffense("issue_date", issueError);
         }
         String expiryError = numericDateError("Date of Expiry", values.get("expiry_date"));
         if (expiryError != null) {
-            return failField(textInputs, dropdownValues, "expiry_date", expiryError);
+            return new FieldOffense("expiry_date", expiryError);
         }
-        return true;
+        return null;
     }
 
     /**
@@ -775,42 +768,37 @@ public class GovermentIDActivity extends AppCompatActivity {
      * expiry plus numeric-only serial (number presence is covered by the
      * generic required pass). Fail-fast in field order, matching the passes.
      */
-    private boolean validateDriversLicenseFields(Map<String, String> values,
-                                                 Map<String, EditText> textInputs,
-                                                 Map<String, TextView> dropdownValues) {
+    private static FieldOffense validateDriversLicenseFields(Map<String, String> values) {
         String dobError = numericDateError("Date of Birth", values.get("birth_date"));
         if (dobError != null) {
-            return failField(textInputs, dropdownValues, "birth_date", dobError);
+            return new FieldOffense("birth_date", dobError);
         }
         String expiryError = numericDateError("Expiry Date", values.get("expiry_date"));
         if (expiryError != null) {
-            return failField(textInputs, dropdownValues, "expiry_date", expiryError);
+            return new FieldOffense("expiry_date", expiryError);
         }
         String serialRaw = trimmed(values.get("serial_no"));
         if (!serialRaw.isEmpty() && serialRaw.matches(".*[A-Za-z].*")) {
-            return failField(textInputs, dropdownValues, "serial_no",
-                    "Serial No. must contain numbers only (no letters)");
+            return new FieldOffense("serial_no", "Serial No. must contain numbers only (no letters)");
         }
-        return true;
+        return null;
     }
     /**
      * SSS document rules: 10-digit numeric SS number plus the shared 8-digit
      * birth shape (other presence is covered by the generic required pass).
      * Fail-fast in field order, matching the other passes.
      */
-    private boolean validateSssFields(Map<String, String> values,
-                                      Map<String, EditText> textInputs,
-                                      Map<String, TextView> dropdownValues) {
+    private static FieldOffense validateSssFields(Map<String, String> values) {
         String ssError = exactDigitNumberError("SS Number", values.get("ss_number"), 10);
         if (ssError != null) {
-            return failField(textInputs, dropdownValues, "ss_number", ssError);
+            return new FieldOffense("ss_number", ssError);
         }
 
         String dobError = numericDateError("Date of Birth", values.get("birth_date"));
         if (dobError != null) {
-            return failField(textInputs, dropdownValues, "birth_date", dobError);
+            return new FieldOffense("birth_date", dobError);
         }
-        return true;
+        return null;
     }
     /**
      * Shared exact-length document-number rule (16-digit PSN, 12-digit TIN /
@@ -838,7 +826,7 @@ public class GovermentIDActivity extends AppCompatActivity {
      * computed. Returns the error message, or null when acceptable.
      */
     private static String numericDateError(String label, String rawValue) {
-        String raw = rawValue != null ? rawValue.trim() : "";
+        String raw = trimmed(rawValue);
         if (raw.isEmpty()) {
             return null;
         }
@@ -851,28 +839,27 @@ public class GovermentIDActivity extends AppCompatActivity {
     }
 
     /**
-     * Flags one field invalid and returns false. Text inputs and dropdown
+     * Flags one field invalid with focus. Text inputs and dropdown
      * values both use setError plus focus, so every field — including Blood
      * Type — behaves exactly like Date of Birth. The toast survives only as a
      * last resort for a key bound to neither, which should never happen while
      * builders register every field.
      */
-    private boolean failField(Map<String, EditText> textInputs, Map<String, TextView> dropdownValues,
-                              String key, String message) {
+    private void flagFieldError(Map<String, EditText> textInputs, Map<String, TextView> dropdownValues,
+                                String key, String message) {
         EditText input = textInputs.get(key);
         if (input != null) {
             input.setError(message);
             input.requestFocus();
-            return false;
+            return;
         }
         TextView value = dropdownValues != null ? dropdownValues.get(key) : null;
         if (value != null) {
             value.setError(message);
             value.requestFocus();
-            return false;
+            return;
         }
         Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
-        return false;
     }
 
     /** Clears a dropdown's setError once the user picks or clears a value. */

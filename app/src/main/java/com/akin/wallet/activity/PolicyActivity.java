@@ -1,6 +1,7 @@
 package com.akin.wallet.activity;
 
 import android.os.Bundle;
+import android.graphics.Typeface;
 import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -26,17 +27,18 @@ public class PolicyActivity extends AppCompatActivity {
     public static final String TYPE_TERMS = "terms";
     public static final String TYPE_ABOUT = "about";
 
+    /** Section separator in the bundled policy text (literal, not regex). */
+    private static final java.util.regex.Pattern SECTION_SEPARATOR =
+            java.util.regex.Pattern.compile("\n\n", java.util.regex.Pattern.LITERAL);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_policy);
+        Ui.applySystemBars(this);
 
+        Ui.setupBackToolbar(this, R.id.toolbar);
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        if (toolbar == null) {
-            finish();
-            return;
-        }
-        toolbar.setNavigationOnClickListener(v -> finish());
 
         LinearLayout sections = findViewById(R.id.policy_sections);
         if (sections == null) {
@@ -66,20 +68,20 @@ public class PolicyActivity extends AppCompatActivity {
             return;
         }
         boolean first = true;
-        for (String chunk : body.split("\n\n")) {
+        for (String chunk : SECTION_SEPARATOR.split(body)) {
             String section = chunk.trim();
             if (section.isEmpty()) {
                 continue;
             }
-            int cut = section.indexOf('\n');
-            String heading = cut == -1 ? section : section.substring(0, cut).trim();
-            String text = cut == -1 ? "" : section.substring(cut + 1).trim();
+            int newlineIndex = section.indexOf('\n');
+            String heading = newlineIndex == -1 ? section : section.substring(0, newlineIndex).trim();
+            String text = newlineIndex == -1 ? "" : section.substring(newlineIndex + 1).trim();
 
             TextView headingView = new TextView(this);
             headingView.setText(heading);
             headingView.setTextColor(getColor(R.color.dashboard_active));
             headingView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-            headingView.setTypeface(headingView.getTypeface(), android.graphics.Typeface.BOLD);
+            headingView.setTypeface(headingView.getTypeface(), Typeface.BOLD);
             headingView.setLetterSpacing(0.06f);
             LinearLayout.LayoutParams headingParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);

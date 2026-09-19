@@ -153,39 +153,47 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
     private final Filter accountFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-            List<CredentialItem> filtered = new ArrayList<>();
-            if (constraint == null || constraint.length() == 0) {
-                filtered.addAll(filterSource);
-            } else {
-                String filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim();
-                for (CredentialItem account : filterSource) {
-                    String platform = account.getPlatform() != null
-                            ? account.getPlatform().toLowerCase(Locale.ROOT) : "";
-                    String username = account.getUsername() != null
-                            ? account.getUsername().toLowerCase(Locale.ROOT) : "";
-                    if (platform.contains(filterPattern) || username.contains(filterPattern)) {
-                        filtered.add(account);
-                    }
-                }
-            }
+            List<CredentialItem> filteredAccounts = filterAccounts(constraint);
             FilterResults results = new FilterResults();
-            results.values = filtered;
+            results.values = filteredAccounts;
             return results;
         }
 
         @Override
         @SuppressWarnings("unchecked")
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            List<CredentialItem> next = (List<CredentialItem>) results.values;
-            DiffUtil.DiffResult diff =
-                    accountDiff(next != null ? next : new ArrayList<>());
+            Object rawValues = results != null ? results.values : null;
+            List<CredentialItem> nextAccounts =
+                    rawValues instanceof List ? (List<CredentialItem>) rawValues : new ArrayList<>();
+            DiffUtil.DiffResult diff = accountDiff(nextAccounts);
             visibleAccounts.clear();
-            if (next != null) {
-                visibleAccounts.addAll(next);
-            }
+            visibleAccounts.addAll(nextAccounts);
             diff.dispatchUpdatesTo(LinkedSocialAccountAdapter.this);
         }
     };
+
+    private List<CredentialItem> filterAccounts(CharSequence constraint) {
+        List<CredentialItem> filteredAccounts = new ArrayList<>();
+        if (constraint == null || constraint.length() == 0) {
+            filteredAccounts.addAll(filterSource);
+            return filteredAccounts;
+        }
+        String filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim();
+        for (CredentialItem account : filterSource) {
+            if (matchesAccount(account, filterPattern)) {
+                filteredAccounts.add(account);
+            }
+        }
+        return filteredAccounts;
+    }
+
+    private static boolean matchesAccount(CredentialItem account, String filterPattern) {
+        String platform = account.getPlatform() != null
+                ? account.getPlatform().toLowerCase(Locale.ROOT) : "";
+        String username = account.getUsername() != null
+                ? account.getUsername().toLowerCase(Locale.ROOT) : "";
+        return platform.contains(filterPattern) || username.contains(filterPattern);
+    }
 
     public static class AccountViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;

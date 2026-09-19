@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat;
 import com.akin.wallet.R;
 import com.akin.wallet.security.AppLockManager;
 import com.akin.wallet.util.Ui;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
 /**
@@ -33,9 +32,9 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        Ui.applySystemBars(this);
 
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
+        Ui.setupBackToolbar(this, R.id.toolbar);
 
         // Version footer stamps the installed version (falls back to 1.0).
         TextView settingsVersion = findViewById(R.id.settings_version);
@@ -97,17 +96,17 @@ public class SettingsActivity extends AppCompatActivity {
         if (confirmPrompt != null) {
             try {
                 confirmPrompt.cancelAuthentication();
-            } catch (Exception ignored) {
+            } catch (RuntimeException ignored) {
             }
         }
         confirming = false;
         super.onPause();
     }
 
-    private void refreshBiometricStatus(boolean available, boolean enabled) {
-        if (!available) {
+    private void refreshBiometricStatus(boolean isAvailable, boolean isEnabled) {
+        if (!isAvailable) {
             biometricStatus.setText(R.string.settings_biometric_unavailable);
-        } else if (enabled) {
+        } else if (isEnabled) {
             biometricStatus.setText(R.string.settings_biometric_on);
         } else {
             biometricStatus.setText(R.string.settings_biometric_off);

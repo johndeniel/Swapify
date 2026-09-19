@@ -2,14 +2,25 @@ package com.akin.wallet.util;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
+import com.akin.wallet.BuildConfig;
+import com.akin.wallet.R;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.snackbar.Snackbar;
 
 /**
@@ -97,21 +108,71 @@ public final class Ui {
     /** Installed version name for About/version footers (falls back to 1.0). */
     public static String versionName(Context context) {
         try {
-            if (android.os.Build.VERSION.SDK_INT >= 33) {
-                return context.getPackageManager().getPackageInfo(
-                        context.getPackageName(),
-                        PackageManager.PackageInfoFlags.of(0)).versionName;
-            }
-            return legacyVersionName(context);
-        } catch (PackageManager.NameNotFoundException | RuntimeException e) {
+            String version = BuildConfig.VERSION_NAME;
+            return version != null ? version : "1.0";
+        } catch (RuntimeException e) {
             return "1.0";
         }
     }
 
-    @SuppressWarnings("deprecation")
-    private static String legacyVersionName(Context context)
-            throws PackageManager.NameNotFoundException {
-        return context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), 0).versionName;
+    // -- Shared chrome (one definition, every activity looks identical) ----
+
+    /**
+     * System bars stay visible on every screen (no immersive mode): status bar
+     * in the theme color, transparent navigation bar kept shown. AndroidX
+     * compat, no version branches, safe back to minSdk.
+     */
+    public static void applySystemBars(Activity activity) {
+        activity.getWindow().setStatusBarColor(
+                ContextCompat.getColor(activity, R.color.dashboard_bg_start));
+        activity.getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        WindowCompat.getInsetsController(
+                        activity.getWindow(), activity.getWindow().getDecorView())
+                .show(WindowInsetsCompat.Type.navigationBars());
+    }
+
+    /** Back-chevron toolbar wiring shared by every form screen. */
+    public static void setupBackToolbar(Activity activity, int toolbarId) {
+        MaterialToolbar toolbar = activity.findViewById(toolbarId);
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> activity.finish());
+        }
+    }
+
+    /** Dismisses an owned dialog without leaking windows across rotation. */
+    public static void dismissOwnedDialog(AlertDialog dialog) {
+        if (dialog != null && dialog.isShowing()) {
+            dialog.dismiss();
+        }
+    }
+
+    /**
+     * Add mode keeps a single full-width Save button: drops the trailing
+     * margin left for the (GONE) delete view.
+     */
+    public static void makeSaveButtonFullWidth(View saveButton) {
+        ViewGroup.LayoutParams params = saveButton.getLayoutParams();
+        if (params instanceof LinearLayout.LayoutParams) {
+            ((LinearLayout.LayoutParams) params).setMarginEnd(0);
+            saveButton.setLayoutParams(params);
+        }
+    }
+
+    /**
+     * TextWatcher with empty defaults so call sites override only the phase
+     * they need instead of repeating three empty overrides per listener.
+     */
+    public abstract static class SimpleTextWatcher implements TextWatcher {
+        @Override
+        public void beforeTextChanged(CharSequence text, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence text, int start, int before, int count) {
+        }
+
+        @Override
+        public void afterTextChanged(Editable text) {
+        }
     }
 }

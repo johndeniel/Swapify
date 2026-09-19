@@ -2,14 +2,9 @@ package com.akin.wallet.activity;
 
 import android.content.Intent;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsetsController;
-import android.graphics.Color;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
@@ -74,6 +69,9 @@ public class DashboardActivity extends AppCompatActivity {
 
     /** Credit-card ratio shared with the carousel faces (width : height). */
     private static final float CARD_ASPECT_RATIO = 1.586f;
+    /** Precompiled: digit extraction runs per card per keystroke while searching. */
+    private static final java.util.regex.Pattern NON_DIGITS =
+            java.util.regex.Pattern.compile("\\D");
     private FloatingActionButton fabAdd;
     private View fabAddMenu;
     private View fabScrim;
@@ -214,20 +212,7 @@ public class DashboardActivity extends AppCompatActivity {
      * transiently (e.g. after a fullscreen intent returns).
      */
     private void setupSystemBars() {
-        getWindow().setStatusBarColor(getColor(R.color.dashboard_bg_start));
-        getWindow().setNavigationBarColor(Color.TRANSPARENT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            WindowInsetsController controller = getWindow().getInsetsController();
-            if (controller != null) {
-                controller.show(android.view.WindowInsets.Type.navigationBars());
-            }
-        } else {
-            // Lay out edge-to-edge behind the bar, but keep the bar visible:
-            // no HIDE_NAVIGATION / IMMERSIVE_STICKY flags.
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        }
+        Ui.applySystemBars(this);
     }
 
     /**
@@ -306,19 +291,11 @@ public class DashboardActivity extends AppCompatActivity {
         emptySearchResults = findViewById(R.id.empty_search_results);
         emptySearchSub = findViewById(R.id.empty_search_sub);
 
-        searchView.getEditText().addTextChangedListener(new TextWatcher() {
+        searchView.getEditText().addTextChangedListener(new Ui.SimpleTextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                currentQuery = s != null ? s.toString() : "";
+            public void onTextChanged(CharSequence text, int start, int before, int count) {
+                currentQuery = text != null ? text.toString() : "";
                 updateSearchResults();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
             }
         });
         searchView.addTransitionListener((view, oldState, newState) -> {
@@ -378,14 +355,14 @@ public class DashboardActivity extends AppCompatActivity {
                 || searchSocialAdapter == null) {
             return;
         }
-        String q = currentQuery.trim().toLowerCase(Locale.US);
-        if (q.isEmpty()) {
+        String query = currentQuery.trim().toLowerCase(Locale.US);
+        if (query.isEmpty()) {
             bindSearchResults(allIds, allCards, allAccounts, false);
             return;
         }
-        String digits = q.replaceAll("\\D", "");
-        bindSearchResults(filterIds(allIds, q), filterCards(allCards, q, digits),
-                filterAccounts(allAccounts, q), true);
+        String digits = NON_DIGITS.matcher(query).replaceAll("");
+        bindSearchResults(filterIds(allIds, query), filterCards(allCards, query, digits),
+                filterAccounts(allAccounts, query), true);
     }
 
     private void bindSearchResults(List<IdCardItem> ids, List<BankCardItem> cards,
@@ -414,10 +391,10 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    private static List<IdCardItem> filterIds(List<IdCardItem> source, String q) {
+    private static List<IdCardItem> filterIds(List<IdCardItem> source, String query) {
         List<IdCardItem> out = new ArrayList<>();
         for (IdCardItem item : source) {
-            if (containsText(item.getIdType(), q) || idFieldsContain(item, q)) {
+            if (containsText(item.getIdType(), query) || idFieldsContain(item, query)) {
                 out.add(item);
             }
         }
@@ -425,15 +402,15 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private static List<BankCardItem> filterCards(
-            List<BankCardItem> source, String q, String digits) {
+            List<BankCardItem> source, String query, String digits) {
         List<BankCardItem> out = new ArrayList<>();
         for (BankCardItem item : source) {
             // Non-secret fields only: card number matches on digits so "1234"
             // finds "•••• •••• •••• 1234". CVV/PIN are never matched.
-            if (containsText(item.getBankName(), q)
-                    || containsText(item.getHolderName(), q)
-                    || containsText(item.getCardType(), q)
-                    || containsText(item.getCardNetwork(), q)
+            if (containsText(item.getBankName(), query)
+                    || containsText(item.getHolderName(), query)
+                    || containsText(item.getCardType(), query)
+                    || containsText(item.getCardNetwork(), query)
                     || cardNumberContains(item, digits)) {
                 out.add(item);
             }
@@ -441,28 +418,28 @@ public class DashboardActivity extends AppCompatActivity {
         return out;
     }
 
-    private static List<CredentialItem> filterAccounts(List<CredentialItem> source, String q) {
+    private static List<CredentialItem> filterAccounts(List<CredentialItem> source, String query) {
         List<CredentialItem> out = new ArrayList<>();
         for (CredentialItem item : source) {
             // Non-secret fields only: password/PIN stay out of the index.
-            if (containsText(item.getPlatform(), q)
-                    || containsText(item.getUsername(), q)
-                    || containsText(item.getMobile(), q)) {
+            if (containsText(item.getPlatform(), query)
+                    || containsText(item.getUsername(), query)
+                    || containsText(item.getMobile(), query)) {
                 out.add(item);
             }
         }
         return out;
     }
 
-    private static boolean containsText(String value, String q) {
+    private static boolean containsText(String value, String query) {
         return value != null && !value.trim().isEmpty()
-                && value.toLowerCase(Locale.US).contains(q);
+                && value.toLowerCase(Locale.US).contains(query);
     }
 
-    private static boolean idFieldsContain(@NonNull IdCardItem id, String q) {
+    private static boolean idFieldsContain(@NonNull IdCardItem id, String query) {
         Map<String, String> fields = id.getFields();
         for (String value : fields.values()) {
-            if (containsText(value, q)) {
+            if (containsText(value, query)) {
                 return true;
             }
         }
@@ -474,7 +451,7 @@ public class DashboardActivity extends AppCompatActivity {
         if (digits.isEmpty() || card.getCardNumber() == null) {
             return false;
         }
-        String numberDigits = card.getCardNumber().replaceAll("\\D", "");
+        String numberDigits = NON_DIGITS.matcher(card.getCardNumber()).replaceAll("");
         return !numberDigits.isEmpty() && numberDigits.contains(digits);
     }
 
@@ -567,12 +544,17 @@ public class DashboardActivity extends AppCompatActivity {
         startActivity(SocialAccountActivity.editIntent(this, item));
     }
 
-    /** Opens the ID creation screen directly (FAB is the only entry). */
-    private void openIdCreator() {
+    /** Opens a creation screen directly (FAB is the only entry). */
+    private void openCreator(Class<?> editorScreen) {
         if (isFabMenuOpen) {
             toggleAddMenu();
         }
-        startActivity(new Intent(this, GovermentIDActivity.class));
+        startActivity(new Intent(this, editorScreen));
+    }
+
+    /** Opens the ID creation screen directly (FAB is the only entry). */
+    private void openIdCreator() {
+        openCreator(GovermentIDActivity.class);
     }
 
     /**
@@ -589,10 +571,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     /** Opens the bank creation screen directly (FAB is the only entry). */
     private void openBankCreator() {
-        if (isFabMenuOpen) {
-            toggleAddMenu();
-        }
-        startActivity(new Intent(this, BankCardActivity.class));
+        openCreator(BankCardActivity.class);
     }
 
     /**
@@ -609,10 +588,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     /** Opens the login creation screen directly (dashboard rows open the editor). */
     private void openSocialCreator() {
-        if (isFabMenuOpen) {
-            toggleAddMenu();
-        }
-        startActivity(new Intent(this, SocialAccountActivity.class));
+        openCreator(SocialAccountActivity.class);
     }
 
     /** Horizontal snap carousel rendering the user's real bank cards. */

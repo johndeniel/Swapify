@@ -18,6 +18,7 @@ import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.util.Dialogs;
+import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -42,7 +43,7 @@ public class TrashActivity extends AppCompatActivity {
     private RecyclerView recyclerTrash;
     private TrashAdapter trashAdapter;
     private View emptyTrash;
-    private View actionBar;
+    private View bottomActionBar;
     private MaterialButton btnBulkRestore;
     private MaterialButton btnBulkDelete;
     private AlertDialog bulkDeleteDialog;
@@ -59,6 +60,7 @@ public class TrashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trash);
+        Ui.applySystemBars(this);
 
         dbHelper = new AppDatabaseHelper(this);
 
@@ -95,7 +97,7 @@ public class TrashActivity extends AppCompatActivity {
         recyclerTrash.setAdapter(trashAdapter);
 
         emptyTrash = findViewById(R.id.empty_trash);
-        actionBar = findViewById(R.id.action_bar);
+        bottomActionBar = findViewById(R.id.action_bar);
         btnBulkRestore = findViewById(R.id.btn_bulk_restore);
         btnBulkDelete = findViewById(R.id.btn_bulk_delete);
         btnBulkRestore.setOnClickListener(v -> bulkRestore());
@@ -134,9 +136,7 @@ public class TrashActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (bulkDeleteDialog != null && bulkDeleteDialog.isShowing()) {
-            bulkDeleteDialog.dismiss();
-        }
+        Ui.dismissOwnedDialog(bulkDeleteDialog);
         bulkDeleteDialog = null;
         dbIo.shutdownNow();
         if (dbHelper != null) {
@@ -240,7 +240,7 @@ public class TrashActivity extends AppCompatActivity {
                 selectAll.setVisible(selecting && selected < total);
             }
         }
-        actionBar.setVisibility(selecting ? View.VISIBLE : View.GONE);
+        bottomActionBar.setVisibility(selecting ? View.VISIBLE : View.GONE);
         if (selecting) {
             btnBulkRestore.setText(getString(R.string.trash_restore_count, selected));
             btnBulkDelete.setText(getString(R.string.trash_delete_count, selected));

@@ -2,45 +2,50 @@ package com.akin.wallet.model;
 
 import java.util.Objects;
 
+/**
+ * Social account entry (platform login: username, password, PIN, mobile).
+ *
+ * <p>Immutable value object shared by the dashboard, the social-account form,
+ * and {@code social_accounts} persistence. Unsaved drafts carry {@code id = -1}
+ * and {@code 0} timestamps; the database stamps real values on insert.
+ */
 public class CredentialItem {
+
+    /** Row id for drafts that have never been persisted. */
+    public static final int UNSET_ID = -1;
+
     private final int id;
     private final String platform;
     private final String username;
     private final String password;
     private final String pin;
     private final int iconRes;
-    // Contact number stored as its own column (never inside another field).
-    // Empty string when not provided.
     private final String mobile;
-    // Epoch millis (UTC). 0 = unset (unsaved drafts); the DB fills real
-    // values on insert.
     private final long createdAt;
     private final long updatedAt;
 
-    public CredentialItem(String platform, String username, String password, String pin, int iconRes,
-                          String mobile, long createdAt, long updatedAt) {
-        this.id = -1;
-        this.platform = platform;
-        this.username = username;
-        this.password = password;
-        this.pin = pin;
-        this.iconRes = iconRes;
-        this.mobile = mobile != null ? mobile : "";
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    /** Unsaved draft; the database assigns the id and timestamps on insert. */
+    public CredentialItem(String platform, String username, String password, String pin,
+                          int iconRes, String mobile, long createdAt, long updatedAt) {
+        this(UNSET_ID, platform, username, password, pin, iconRes, mobile, createdAt, updatedAt);
     }
 
-    public CredentialItem(int id, String platform, String username, String password, String pin, int iconRes,
-                          String mobile, long createdAt, long updatedAt) {
+    /** Stored row with its database identity and audit timestamps. */
+    public CredentialItem(int id, String platform, String username, String password, String pin,
+                          int iconRes, String mobile, long createdAt, long updatedAt) {
         this.id = id;
         this.platform = platform;
         this.username = username;
         this.password = password;
         this.pin = pin;
         this.iconRes = iconRes;
-        this.mobile = mobile != null ? mobile : "";
+        this.mobile = normalizeMobileNumber(mobile);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    private static String normalizeMobileNumber(String mobile) {
+        return mobile != null ? mobile : "";
     }
 
     public int getId() {

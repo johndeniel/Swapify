@@ -2,7 +2,19 @@ package com.akin.wallet.model;
 
 import java.util.Objects;
 
+/**
+ * Bank card entry (number, holder, expiry, security code, design).
+ *
+ * <p>Immutable value object shared by the dashboard carousel, the bank-card
+ * form, and {@code bank_cards} persistence. Unsaved drafts carry
+ * {@code id = -1} and {@code 0} timestamps; the database stamps real values
+ * on insert.
+ */
 public class BankCardItem {
+
+    /** Row id for drafts that have never been persisted. */
+    public static final int UNSET_ID = -1;
+
     private final int id;
     private final String cardType;
     private final String cardNetwork;
@@ -13,36 +25,21 @@ public class BankCardItem {
     private final String cvv;
     private final String pin;
     private final int design;
-    // Epoch millis (UTC). 0 = unset (unsaved drafts); the DB fills real
-    // values on insert.
     private final long createdAt;
     private final long updatedAt;
 
+    /** Unsaved draft; the database assigns the id and timestamps on insert. */
     public BankCardItem(String cardType, String cardNetwork, String bankName, String holderName,
-                        String cardNumber, String expiry, String cvv, String pin, int design) {
-        this(cardType, cardNetwork, bankName, holderName,
-                cardNumber, expiry, cvv, pin, design, 0, 0);
+                        String cardNumber, String expiry, String cvv, String pin,
+                        int design) {
+        this(UNSET_ID, cardType, cardNetwork, bankName, holderName, cardNumber,
+                expiry, cvv, pin, design, 0, 0);
     }
 
-    public BankCardItem(String cardType, String cardNetwork, String bankName, String holderName,
-                        String cardNumber, String expiry, String cvv, String pin, int design,
-                        long createdAt, long updatedAt) {
-        this.id = -1;
-        this.cardType = cardType;
-        this.cardNetwork = cardNetwork;
-        this.bankName = bankName;
-        this.holderName = holderName;
-        this.cardNumber = cardNumber;
-        this.expiry = expiry;
-        this.cvv = cvv;
-        this.pin = pin;
-        this.design = design;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
-    public BankCardItem(int id, String cardType, String cardNetwork, String bankName, String holderName,
-                        String cardNumber, String expiry, String cvv, String pin, int design,
+    /** Stored row with its database identity and audit timestamps. */
+    public BankCardItem(int id, String cardType, String cardNetwork, String bankName,
+                        String holderName, String cardNumber, String expiry,
+                        String cvv, String pin, int design,
                         long createdAt, long updatedAt) {
         this.id = id;
         this.cardType = cardType;

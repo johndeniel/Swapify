@@ -74,30 +74,46 @@ public class SocialPlatformAdapter extends RecyclerView.Adapter<SocialPlatformAd
     private final Filter platformFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-            List<PlatformIcons.Option> filtered = new ArrayList<>();
-            if (constraint == null || constraint.length() == 0) {
-                filtered.addAll(allPlatforms);
-            } else {
-                String filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim();
-                for (PlatformIcons.Option platform : allPlatforms) {
-                    if (platform.getName().toLowerCase(Locale.ROOT).contains(filterPattern)
-                            || platform.getUrl().toLowerCase(Locale.ROOT).contains(filterPattern)) {
-                        filtered.add(platform);
-                    }
-                }
-            }
             FilterResults results = new FilterResults();
-            results.values = filtered;
+            results.values = filterPlatforms(constraint);
             return results;
         }
 
         @Override
         @SuppressWarnings("unchecked")
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            List<PlatformIcons.Option> filtered = (List<PlatformIcons.Option>) results.values;
-            final List<PlatformIcons.Option> next =
-                    filtered != null ? filtered : new ArrayList<>();
-            DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            Object rawValues = results != null ? results.values : null;
+            final List<PlatformIcons.Option> nextOptions =
+                    rawValues instanceof List ? (List<PlatformIcons.Option>) rawValues : new ArrayList<>();
+            DiffUtil.DiffResult diff = platformDiff(nextOptions);
+            visiblePlatforms.clear();
+            visiblePlatforms.addAll(nextOptions);
+            diff.dispatchUpdatesTo(SocialPlatformAdapter.this);
+        }
+    };
+
+    private List<PlatformIcons.Option> filterPlatforms(CharSequence constraint) {
+        List<PlatformIcons.Option> filteredOptions = new ArrayList<>();
+        if (constraint == null || constraint.length() == 0) {
+            filteredOptions.addAll(allPlatforms);
+            return filteredOptions;
+        }
+        String filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim();
+        for (PlatformIcons.Option platform : allPlatforms) {
+            if (matchesPlatform(platform, filterPattern)) {
+                filteredOptions.add(platform);
+            }
+        }
+        return filteredOptions;
+    }
+
+    private static boolean matchesPlatform(PlatformIcons.Option platform, String filterPattern) {
+        return platform.getName().toLowerCase(Locale.ROOT).contains(filterPattern)
+                || platform.getUrl().toLowerCase(Locale.ROOT).contains(filterPattern);
+    }
+
+    private DiffUtil.DiffResult platformDiff(final List<PlatformIcons.Option> nextOptions) {
+        return DiffUtil.calculateDiff(new DiffUtil.Callback() {
                 @Override
                 public int getOldListSize() {
                     return visiblePlatforms.size();
@@ -105,29 +121,25 @@ public class SocialPlatformAdapter extends RecyclerView.Adapter<SocialPlatformAd
 
                 @Override
                 public int getNewListSize() {
-                    return next.size();
+                    return nextOptions.size();
                 }
 
                 @Override
                 public boolean areItemsTheSame(int oldPos, int newPos) {
                     return visiblePlatforms.get(oldPos).getName()
-                            .equals(next.get(newPos).getName());
+                            .equals(nextOptions.get(newPos).getName());
                 }
 
                 @Override
                 public boolean areContentsTheSame(int oldPos, int newPos) {
                     PlatformIcons.Option oldOption = visiblePlatforms.get(oldPos);
-                    PlatformIcons.Option newOption = next.get(newPos);
+                    PlatformIcons.Option newOption = nextOptions.get(newPos);
                     return oldOption.getIconRes() == newOption.getIconRes()
                             && oldOption.getName().equals(newOption.getName())
                             && oldOption.getUrl().equals(newOption.getUrl());
                 }
             });
-            visiblePlatforms.clear();
-            visiblePlatforms.addAll(next);
-            diff.dispatchUpdatesTo(SocialPlatformAdapter.this);
-        }
-    };
+    }
 
     public static class PlatformViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;

@@ -29,6 +29,7 @@
     <!-- Shared actions (also reused as content descriptions) -->
     <string name="action_add">Add</string>
     <string name="action_save">Save</string>
+    <string name="action_update">Update</string>
     <string name="action_delete">Delete</string>
 
     <!-- Search -->

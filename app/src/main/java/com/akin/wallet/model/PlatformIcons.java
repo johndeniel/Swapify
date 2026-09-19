@@ -16,7 +16,7 @@ import java.util.Map;
  * Single source of truth for platform branding.
  *
  * <p>Why this exists: {@code R.drawable} ints are reassigned on every build,
- * so the raw ints persisted in {@code logins.icon_res} rot after a reinstall
+ * so the raw ints persisted in {@code social_accounts.icon_res} rot after a reinstall
  * (title says Google, icon shows Facebook). Platform <b>names</b> are stable,
  * so every display site resolves the icon from the name here at bind time and
  * only trusts the stored int for unknown/custom platforms. Old rows heal
@@ -55,63 +55,63 @@ public final class PlatformIcons {
         }
     }
 
-    private static final Map<String, Integer> ICONS = new HashMap<>();
-    /** {name, url} pairs in picker order; icons come from {@link #ICONS}. */
-    private static final List<String[]> ENTRIES = new ArrayList<>();
+    private static final Map<String, Integer> ICON_BY_PLATFORM = new HashMap<>();
+    /** {name, url} pairs in picker order; icons come from {@link #ICON_BY_PLATFORM}. */
+    private static final List<String[]> CATALOG_ENTRIES = new ArrayList<>();
 
     static {
-        register(R.drawable.binance, "Binance", "binance.com");
-        register(R.drawable.bdo, "BDO", "bdo.com.ph");
-        register(R.drawable.bpi, "BPI", "bpi.com.ph");
-        register(R.drawable.discord, "Discord", "discord.com");
-        register(R.drawable.dropbox, "Dropbox", "dropbox.com");
-        register(R.drawable.facebook, "Facebook", "facebook.com");
-        register(R.drawable.gcash, "GCash", "gcash.com");
-        register(R.drawable.gitlab, "GitLab", "gitlab.com");
-        register(R.drawable.github, "GitHub", "github.com");
-        register(R.drawable.gmail, "Gmail", "gmail.com");
-        register(R.drawable.gotyme, "GoTyme", "gotyme.com");
-        register(R.drawable.google, "Google", "google.com");
-        register(R.drawable.instagram, "Instagram", "instagram.com");
-        register(R.drawable.itunes, "iTunes", "itunes.com");
-        register(R.drawable.lazada, "Lazada", "lazada.com");
-        register(R.drawable.line, "LINE", "line.me");
-        register(R.drawable.linkedin, "LinkedIn", "linkedin.com");
-        register(R.drawable.maribank, "MariBank", "maribank.com.ph");
-        register(R.drawable.maya, "Maya", "maya.ph");
-        register(R.drawable.messenger, "Messenger", "messenger.com");
-        register(R.drawable.microsoft, "Microsoft", "microsoft.com");
-        register(R.drawable.netflix, "Netflix", "netflix.com");
-        register(R.drawable.paypal, "PayPal", "paypal.com");
-        register(R.drawable.pinterest, "Pinterest", "pinterest.com");
-        register(R.drawable.rcbc, "RCBC", "rcbc.com.ph");
-        register(R.drawable.reddit, "Reddit", "reddit.com");
-        register(R.drawable.shoopee, "Shopee", "shopee.com");
-        register(R.drawable.slack, "Slack", "slack.com");
-        register(R.drawable.snapchat, "Snapchat", "snapchat.com");
-        register(R.drawable.soundcloud, "SoundCloud", "soundcloud.com");
-        register(R.drawable.spotify, "Spotify", "spotify.com");
-        register(R.drawable.steam, "Steam", "store.steampowered.com");
-        register(R.drawable.telegram, "Telegram", "telegram.org");
-        register(R.drawable.tiktok, "TikTok", "tiktok.com");
-        register(R.drawable.tinder, "Tinder", "tinder.com");
-        register(R.drawable.unionbank, "UnionBank", "unionbank.com.ph");
-        register(R.drawable.viber, "Viber", "viber.com");
-        register(R.drawable.wattpad, "Wattpad", "wattpad.com");
-        register(R.drawable.whatsapp, "WhatsApp", "whatsapp.com");
-        register(R.drawable.wise, "Wise", "wise.com");
-        register(R.drawable.x, "X", "x.com");
-        register(R.drawable.youtube, "YouTube", "youtube.com");
-        register(R.drawable.zoom, "Zoom", "zoom.us");
+        registerPlatform(R.drawable.binance, "Binance", "binance.com");
+        registerPlatform(R.drawable.bdo, "BDO", "bdo.com.ph");
+        registerPlatform(R.drawable.bpi, "BPI", "bpi.com.ph");
+        registerPlatform(R.drawable.discord, "Discord", "discord.com");
+        registerPlatform(R.drawable.dropbox, "Dropbox", "dropbox.com");
+        registerPlatform(R.drawable.facebook, "Facebook", "facebook.com");
+        registerPlatform(R.drawable.gcash, "GCash", "gcash.com");
+        registerPlatform(R.drawable.gitlab, "GitLab", "gitlab.com");
+        registerPlatform(R.drawable.github, "GitHub", "github.com");
+        registerPlatform(R.drawable.gmail, "Gmail", "gmail.com");
+        registerPlatform(R.drawable.gotyme, "GoTyme", "gotyme.com");
+        registerPlatform(R.drawable.google, "Google", "google.com");
+        registerPlatform(R.drawable.instagram, "Instagram", "instagram.com");
+        registerPlatform(R.drawable.itunes, "iTunes", "itunes.com");
+        registerPlatform(R.drawable.lazada, "Lazada", "lazada.com");
+        registerPlatform(R.drawable.line, "LINE", "line.me");
+        registerPlatform(R.drawable.linkedin, "LinkedIn", "linkedin.com");
+        registerPlatform(R.drawable.maribank, "MariBank", "maribank.com.ph");
+        registerPlatform(R.drawable.maya, "Maya", "maya.ph");
+        registerPlatform(R.drawable.messenger, "Messenger", "messenger.com");
+        registerPlatform(R.drawable.microsoft, "Microsoft", "microsoft.com");
+        registerPlatform(R.drawable.netflix, "Netflix", "netflix.com");
+        registerPlatform(R.drawable.paypal, "PayPal", "paypal.com");
+        registerPlatform(R.drawable.pinterest, "Pinterest", "pinterest.com");
+        registerPlatform(R.drawable.rcbc, "RCBC", "rcbc.com.ph");
+        registerPlatform(R.drawable.reddit, "Reddit", "reddit.com");
+        registerPlatform(R.drawable.shoopee, "Shopee", "shopee.com");
+        registerPlatform(R.drawable.slack, "Slack", "slack.com");
+        registerPlatform(R.drawable.snapchat, "Snapchat", "snapchat.com");
+        registerPlatform(R.drawable.soundcloud, "SoundCloud", "soundcloud.com");
+        registerPlatform(R.drawable.spotify, "Spotify", "spotify.com");
+        registerPlatform(R.drawable.steam, "Steam", "store.steampowered.com");
+        registerPlatform(R.drawable.telegram, "Telegram", "telegram.org");
+        registerPlatform(R.drawable.tiktok, "TikTok", "tiktok.com");
+        registerPlatform(R.drawable.tinder, "Tinder", "tinder.com");
+        registerPlatform(R.drawable.unionbank, "UnionBank", "unionbank.com.ph");
+        registerPlatform(R.drawable.viber, "Viber", "viber.com");
+        registerPlatform(R.drawable.wattpad, "Wattpad", "wattpad.com");
+        registerPlatform(R.drawable.whatsapp, "WhatsApp", "whatsapp.com");
+        registerPlatform(R.drawable.wise, "Wise", "wise.com");
+        registerPlatform(R.drawable.x, "X", "x.com");
+        registerPlatform(R.drawable.youtube, "YouTube", "youtube.com");
+        registerPlatform(R.drawable.zoom, "Zoom", "zoom.us");
     }
 
-    private static void register(int iconRes, String name, String url) {
-        ICONS.put(key(name), iconRes);
-        ENTRIES.add(new String[]{name, url});
+    private static void registerPlatform(int iconRes, String platformName, String displayUrl) {
+        ICON_BY_PLATFORM.put(normalizePlatformKey(platformName), iconRes);
+        CATALOG_ENTRIES.add(new String[]{platformName, displayUrl});
     }
 
-    private static String key(@Nullable String name) {
-        return name == null ? "" : name.trim().toLowerCase(Locale.US);
+    private static String normalizePlatformKey(@Nullable String platformName) {
+        return platformName == null ? "" : platformName.trim().toLowerCase(Locale.US);
     }
 
     /**
@@ -127,12 +127,16 @@ public final class PlatformIcons {
      * (valid when saved by this same install) and finally the generic icon.
      * Use this when binding rows read from the DB.
      */
-    public static int iconFor(@Nullable String platformName, int fallbackRes) {
-        Integer mapped = ICONS.get(key(platformName));
-        if (mapped != null) {
-            return mapped;
+    public static int iconFor(@Nullable String platformName, int storedIconRes) {
+        Integer mappedIconRes = ICON_BY_PLATFORM.get(normalizePlatformKey(platformName));
+        if (mappedIconRes != null) {
+            return mappedIconRes;
         }
-        return fallbackRes != 0 ? fallbackRes : R.drawable.ic_social;
+        return resolveStoredIconFallback(storedIconRes);
+    }
+
+    private static int resolveStoredIconFallback(int storedIconRes) {
+        return storedIconRes != 0 ? storedIconRes : R.drawable.ic_social;
     }
 
     /**
@@ -140,10 +144,10 @@ public final class PlatformIcons {
      * the fallback res is stale. One line per adapter instead of a repeated
      * try/catch at every bind site.
      */
-    public static void bindIcon(ImageView iconView, @Nullable String platformName, int storedRes) {
+    public static void bindIcon(ImageView iconView, @Nullable String platformName, int storedIconRes) {
         try {
-            iconView.setImageResource(iconFor(platformName, storedRes));
-        } catch (Exception e) {
+            iconView.setImageResource(iconFor(platformName, storedIconRes));
+        } catch (Exception fallbackToGeneric) {
             iconView.setImageResource(R.drawable.ic_social);
         }
     }
@@ -153,9 +157,11 @@ public final class PlatformIcons {
      * selection adapter filters it in place.
      */
     public static List<Option> catalog() {
-        List<Option> platforms = new ArrayList<>(ENTRIES.size());
-        for (String[] entry : ENTRIES) {
-            platforms.add(new Option(iconFor(entry[0]), entry[0], entry[1]));
+        List<Option> platforms = new ArrayList<>(CATALOG_ENTRIES.size());
+        for (String[] catalogEntry : CATALOG_ENTRIES) {
+            String platformName = catalogEntry[0];
+            String displayUrl = catalogEntry[1];
+            platforms.add(new Option(iconFor(platformName), platformName, displayUrl));
         }
         return platforms;
     }
