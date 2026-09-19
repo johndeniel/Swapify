@@ -49,10 +49,8 @@
             android:layout_marginTop="8dp"
             android:orientation="vertical" />
 
-        <!-- Save/Delete action row, copied from the bank card form: twin 44dp
-             outline buttons side by side (save left, delete right in edit mode
-             only), each with a leading icon. Single source of the pattern is
-             activity_bank_card_form.xml — keep the two rows in sync. -->
+        <!-- Save/Delete action row: shared form_action_row include (twin 44dp
+             outline buttons; delete visible in edit mode only). -->
         <include layout="@layout/form_action_row" />
 
     </LinearLayout>

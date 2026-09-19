@@ -26,17 +26,17 @@ import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
 
-public class BankCardFormActivity extends AppCompatActivity {
+public class BankCardActivity extends AppCompatActivity {
 
     public static final String EXTRA_ID = "extra_id";
 
     /**
-     * Intent that opens this form to edit an existing card. Carries the row
-     * id only — the form re-queries the vault, so secrets never travel as
+     * Intent that opens this screen to edit an existing card. Carries the row
+     * id only — the screen re-queries the vault, so secrets never travel as
      * Intent extras and edits always start current.
      */
     public static Intent editIntent(@NonNull Context context, @NonNull BankCardItem item) {
-        return new Intent(context, BankCardFormActivity.class)
+        return new Intent(context, BankCardActivity.class)
                 .putExtra(EXTRA_ID, item.getId());
     }
 
@@ -110,7 +110,7 @@ public class BankCardFormActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bank_card_form);
+        setContentView(R.layout.activity_bank_card);
 
         dbHelper = new AppDatabaseHelper(this);
 

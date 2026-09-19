@@ -49,7 +49,7 @@ import java.util.concurrent.Executors;
  * onResume. (Merged from DashboardFragment: one screen never needed the
  * fragment back stack.)
  */
-public class MainActivity extends AppCompatActivity {
+public class DashboardActivity extends AppCompatActivity {
 
     private AppDatabaseHelper dbHelper;
     private DashboardCardAdapter cardAdapter;
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_dashboard);
         setupSystemBars();
 
         dbHelper = new AppDatabaseHelper(this);
@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerSearchCards.addItemDecoration(sharedGap);
         searchHeaderCards = findViewById(R.id.search_header_cards);
 
-        // Row taps open the account's edit form, same as the dashboard list.
+        // Row taps open the account's edit screen, same as the dashboard list.
         searchSocialAdapter = new DashboardSocialAccountAdapter(this::openSocialEditor);
         recyclerSearchSocial = findViewById(R.id.recycler_search_social);
         recyclerSearchSocial.setLayoutManager(new LinearLayoutManager(this));
@@ -559,24 +559,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /** Opens a social edit form directly (dashboard rows open the editor). */
+    /** Opens a social edit screen directly (dashboard rows open the editor). */
     private void openSocialEditor(CredentialItem item) {
         // Recency bump rides the I/O thread; navigation never waits for it.
         final int id = item.getId();
         dbIo.execute(() -> dbHelper.touchLoginUpdatedAt(id));
-        startActivity(SocialAccountFormActivity.editIntent(this, item));
+        startActivity(SocialAccountActivity.editIntent(this, item));
     }
 
-    /** Opens the ID creation form directly (FAB is the only entry). */
+    /** Opens the ID creation screen directly (FAB is the only entry). */
     private void openIdCreator() {
         if (isFabMenuOpen) {
             toggleAddMenu();
         }
-        startActivity(new Intent(this, GovermentIDFormActivity.class));
+        startActivity(new Intent(this, GovermentIDActivity.class));
     }
 
     /**
-     * Opens an ID edit form directly (dashboard is the editor). The tap itself
+     * Opens an ID edit screen directly (dashboard is the editor). The tap itself
      * is a recency signal: updated_at is bumped first so the ID sorts
      * newest-first on return — mirroring the bank-card and login open paths.
      * No immediate refresh here; onResume re-queries after the editor closes.
@@ -584,15 +584,15 @@ public class MainActivity extends AppCompatActivity {
     private void openIdEditor(IdCardItem item) {
         final int id = item.getId();
         dbIo.execute(() -> dbHelper.touchIdCardUpdatedAt(id));
-        startActivity(GovermentIDFormActivity.editIntent(this, item));
+        startActivity(GovermentIDActivity.editIntent(this, item));
     }
 
-    /** Opens the bank creation form directly (FAB is the only entry). */
+    /** Opens the bank creation screen directly (FAB is the only entry). */
     private void openBankCreator() {
         if (isFabMenuOpen) {
             toggleAddMenu();
         }
-        startActivity(new Intent(this, BankCardFormActivity.class));
+        startActivity(new Intent(this, BankCardActivity.class));
     }
 
     /**
@@ -604,15 +604,15 @@ public class MainActivity extends AppCompatActivity {
     private void openBankEditor(BankCardItem item) {
         final int id = item.getId();
         dbIo.execute(() -> dbHelper.touchBankCardUpdatedAt(id));
-        startActivity(BankCardFormActivity.editIntent(this, item));
+        startActivity(BankCardActivity.editIntent(this, item));
     }
 
-    /** Opens the login creation form directly (dashboard rows open the editor). */
+    /** Opens the login creation screen directly (dashboard rows open the editor). */
     private void openSocialCreator() {
         if (isFabMenuOpen) {
             toggleAddMenu();
         }
-        startActivity(new Intent(this, SocialAccountFormActivity.class));
+        startActivity(new Intent(this, SocialAccountActivity.class));
     }
 
     /** Horizontal snap carousel rendering the user's real bank cards. */
@@ -736,7 +736,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerSocialAccounts = findViewById(R.id.recycler_social_accounts);
         emptySocialAccounts = findViewById(R.id.empty_social_accounts);
 
-        // Row taps open the account's edit form, same as the IDs and cards above.
+        // Row taps open the account's edit screen, same as the IDs and cards above.
         socialAdapter = new DashboardSocialAccountAdapter(this::openSocialEditor);
         recyclerSocialAccounts.setLayoutManager(new LinearLayoutManager(this));
         recyclerSocialAccounts.setAdapter(socialAdapter);

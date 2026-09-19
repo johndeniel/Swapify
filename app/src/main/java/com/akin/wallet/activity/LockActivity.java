@@ -25,7 +25,7 @@ import com.akin.wallet.util.Ui;
  * unlock-success routing per launch mode:
  *
  * <ul>
- *   <li>{@link #MODE_START} (launcher): success opens MainActivity.</li>
+ *   <li>{@link #MODE_START} (launcher): success opens DashboardActivity.</li>
  *   <li>{@link #MODE_VERIFY}: success just returns RESULT_OK.</li>
  *   <li>{@link #MODE_CHANGE}: verifies the current PIN, then sets a new one.</li>
  * </ul>
@@ -435,7 +435,7 @@ public class LockActivity extends AppCompatActivity {
             setResult(RESULT_OK);
             finish();
         } else {
-            startActivity(new Intent(this, MainActivity.class));
+            startActivity(new Intent(this, DashboardActivity.class));
             finish();
         }
     }

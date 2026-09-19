@@ -40,22 +40,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Government ID creation/edit form as a full screen. Add mode when no ID is
- * passed; edit mode otherwise. The type-picker carousel lives in the form
+ * Government ID creation/edit screen as a full screen. Add mode when no ID is
+ * passed; edit mode otherwise. The type-picker carousel lives in the screen
  * content; dropdowns stay alert dialogs. Callers refresh in onResume;
  * RESULT_OK is set on save.
  */
-public class GovermentIDFormActivity extends AppCompatActivity {
+public class GovermentIDActivity extends AppCompatActivity {
 
     public static final String EXTRA_ID = "extra_id";
 
     /**
-     * Intent that opens this form to edit an existing ID. Carries the row id
-     * only — the form re-queries the vault, so document data never travels
+     * Intent that opens this screen to edit an existing ID. Carries the row id
+     * only — the screen re-queries the vault, so document data never travels
      * as Intent extras and edits always start current.
      */
     public static Intent editIntent(@NonNull Context context, @NonNull IdCardItem item) {
-        return new Intent(context, GovermentIDFormActivity.class)
+        return new Intent(context, GovermentIDActivity.class)
                 .putExtra(EXTRA_ID, item.getId());
     }
 
@@ -77,11 +77,11 @@ public class GovermentIDFormActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_goverment_id_form);
+        setContentView(R.layout.activity_goverment_id);
 
         dbHelper = new AppDatabaseHelper(this);
 
-        // Back chevron, same as the bank card form: plain finish, no save.
+        // Back chevron, same as the bank card screen: plain finish, no save.
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
@@ -146,7 +146,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
 
         LinearLayout formContainer = findViewById(R.id.form_container);
-        // Action row mirrors the bank card form: btn_save is the outline
+        // Action row mirrors the bank card screen: btn_save is the outline
         // container, text_save_label carries the Save/Update caption.
         View btnSave = findViewById(R.id.btn_save);
         TextView textSaveLabel = findViewById(R.id.text_save_label);
@@ -229,7 +229,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         RecyclerView recyclerDesign = findViewById(R.id.recycler_card_design);
         carouselRef[0] = recyclerDesign;
         LinearLayoutManager layoutManager =
-                new LinearLayoutManager(GovermentIDFormActivity.this, LinearLayoutManager.HORIZONTAL, false);
+                new LinearLayoutManager(GovermentIDActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerDesign.setLayoutManager(layoutManager);
         recyclerDesign.setAdapter(designAdapter);
         // Same 12dp inter-card gap as the dashboard carousel so the form
@@ -332,7 +332,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         });
 
         // Delete on this screen (no IDs tab), shown in-row in edit mode
-        // only — same placement and outline-red style as the bank card form.
+        // only — same placement and outline-red style as the bank card screen.
         // Soft-delete behind the scenes: the dialog reads as a normal delete
         // while the row moves to Trash (Settings). Copy and toasts stay ID-specific.
         View btnDelete = findViewById(R.id.btn_delete);
@@ -342,7 +342,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
                 if (activeDialog != null && activeDialog.isShowing()) {
                     activeDialog.dismiss();
                 }
-                activeDialog = Dialogs.confirmDelete(GovermentIDFormActivity.this,
+                activeDialog = Dialogs.confirmDelete(GovermentIDActivity.this,
                         "Delete ID",
                         "Are you sure you want to delete this "
                                 + existing.getIdType() + "?",
@@ -461,7 +461,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
     private View buildPairRow(IdTypeSpec.IdField first, IdTypeSpec.IdField second,
                               Map<String, String> draft, Map<String, EditText> textInputs,
                               Map<String, TextView> dropdownValues, Runnable onChanged) {
-        LinearLayout row = new LinearLayout(GovermentIDFormActivity.this);
+        LinearLayout row = new LinearLayout(GovermentIDActivity.this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -487,20 +487,20 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
     private View buildTextField(IdTypeSpec.IdField field, Map<String, String> draft,
                                 Map<String, EditText> textInputs, Runnable onChanged) {
-        LinearLayout wrap = new LinearLayout(GovermentIDFormActivity.this);
+        LinearLayout wrap = new LinearLayout(GovermentIDActivity.this);
         wrap.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         wrapParams.topMargin = Ui.dp(this, 16);
         wrap.setLayoutParams(wrapParams);
 
-        TextView label = new TextView(GovermentIDFormActivity.this);
+        TextView label = new TextView(GovermentIDActivity.this);
         label.setText(field.required ? field.label + " *" : field.label);
         label.setTextColor(getResources().getColor(R.color.dashboard_muted, null));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         wrap.addView(label);
 
-        EditText input = new EditText(GovermentIDFormActivity.this);
+        EditText input = new EditText(GovermentIDActivity.this);
         LinearLayout.LayoutParams inputParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         inputParams.topMargin = Ui.dp(this, 8);
@@ -545,20 +545,20 @@ public class GovermentIDFormActivity extends AppCompatActivity {
 
     private View buildDropdownField(IdTypeSpec.IdField field, Map<String, String> draft,
                                     Map<String, TextView> dropdownValues, Runnable onChanged) {
-        LinearLayout wrap = new LinearLayout(GovermentIDFormActivity.this);
+        LinearLayout wrap = new LinearLayout(GovermentIDActivity.this);
         wrap.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         wrapParams.topMargin = Ui.dp(this, 16);
         wrap.setLayoutParams(wrapParams);
 
-        TextView label = new TextView(GovermentIDFormActivity.this);
+        TextView label = new TextView(GovermentIDActivity.this);
         label.setText(field.required ? field.label + " *" : field.label);
         label.setTextColor(getResources().getColor(R.color.dashboard_muted, null));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         wrap.addView(label);
 
-        LinearLayout row = new LinearLayout(GovermentIDFormActivity.this);
+        LinearLayout row = new LinearLayout(GovermentIDActivity.this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
@@ -572,7 +572,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         row.setClickable(true);
         row.setFocusable(true);
 
-        TextView valueView = new TextView(GovermentIDFormActivity.this);
+        TextView valueView = new TextView(GovermentIDActivity.this);
         LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         valueView.setLayoutParams(valueParams);
@@ -597,7 +597,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             valueView.setAlpha(1f);
         }
 
-        ImageView chevron = new ImageView(GovermentIDFormActivity.this);
+        ImageView chevron = new ImageView(GovermentIDActivity.this);
         chevron.setImageResource(R.drawable.ic_dropdown);
         LinearLayout.LayoutParams chevParams = new LinearLayout.LayoutParams(Ui.dp(this, 20), Ui.dp(this, 20));
         chevron.setLayoutParams(chevParams);
@@ -611,7 +611,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
             if (activeDialog != null && activeDialog.isShowing()) {
                 activeDialog.dismiss();
             }
-            activeDialog = Dialogs.singleChoice(GovermentIDFormActivity.this,
+            activeDialog = Dialogs.singleChoice(GovermentIDActivity.this,
                     field.label, field.options, checked, which -> {
                         String picked = field.options[which];
                         draft.put(field.key, picked);
@@ -910,7 +910,7 @@ public class GovermentIDFormActivity extends AppCompatActivity {
         int size = Ui.dp(this, 8);
         int margin = Ui.dp(this, 4);
         for (int i = 0; i < count; i++) {
-            View dot = new View(GovermentIDFormActivity.this);
+            View dot = new View(GovermentIDActivity.this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
             params.setMargins(margin, 0, margin, 0);
             dot.setLayoutParams(params);

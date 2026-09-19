@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ============================================================
-     Akin Wallet — Dashboard (Home), hosted directly by MainActivity.
+     Akin Wallet — Dashboard (Home), hosted directly by DashboardActivity.
      M3 TopAppBar (wordmark + tagline) with search + settings IconButtons;
      the search icon opens the full-screen M3 SearchView which filters the
      vault; Government ID + Bank Card carousels, Social Account M3 card
@@ -14,7 +14,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_dashboard_root"
     android:fitsSystemWindows="false"
-    tools:context=".activity.MainActivity">
+    tools:context=".activity.DashboardActivity">
 
         <!-- Fixed dashboard content (not scrollable); FAB floats over it, no reserved gap.
              The screen header (wordmark + tagline + bell) lives here in-content;

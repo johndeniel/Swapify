@@ -34,12 +34,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Social login creation/edit form as a full screen. Add mode when no login
+ * Social login creation/edit screen as a full screen. Add mode when no login
  * id is passed; edit mode otherwise. The platform and link pickers open as
  * full-screen activities. Callers refresh in onResume; RESULT_OK is set on
  * successful save.
  */
-public class SocialAccountFormActivity extends AppCompatActivity {
+public class SocialAccountActivity extends AppCompatActivity {
 
     public static final String EXTRA_LOGIN_ID = "extra_login_id";
 
@@ -47,13 +47,13 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     public static final String DEFAULT_PLATFORM_NAME = "Google";
 
     /**
-     * Intent that opens this form to edit an existing credential. Carries the
-     * row id only — the form re-queries the vault, so secrets never travel
+     * Intent that opens this screen to edit an existing credential. Carries the
+     * row id only — the screen re-queries the vault, so secrets never travel
      * as Intent extras (recents/dumps) and edits always start current.
      */
     public static Intent editIntent(@NonNull Context context,
                                     @NonNull CredentialItem item) {
-        return new Intent(context, SocialAccountFormActivity.class)
+        return new Intent(context, SocialAccountActivity.class)
                 .putExtra(EXTRA_LOGIN_ID, (long) item.getId());
     }
 
@@ -103,11 +103,11 @@ public class SocialAccountFormActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_social_account_form);
+        setContentView(R.layout.activity_social_account);
 
         dbHelper = new AppDatabaseHelper(this);
 
-        // Back chevron, same as the bank and government ID forms.
+        // Back chevron, same as the bank and government ID screens.
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
@@ -402,7 +402,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         setupAssociateSection(dbHelper.getAllLogins(), -1);
 
         // Add mode keeps a single full-width Save button, same as the bank
-        // form: the delete view is GONE, so its row margin is dropped.
+        // screen: the delete view is GONE, so its row margin is dropped.
         View btnSaveAdd = findViewById(R.id.btn_save);
         LinearLayout.LayoutParams saveParams =
                 (LinearLayout.LayoutParams) btnSaveAdd.getLayoutParams();
@@ -559,7 +559,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
         });
 
         // Delete in edit mode (the standalone list screen is gone), same
-        // in-row outline-red pattern as the bank and government ID forms.
+        // in-row outline-red pattern as the bank and government ID screens.
         // Soft-delete behind the scenes: the row moves to Trash (Settings)
         // but the dialog reads as a normal delete. deleteLogin stays for
         // edit reinsert + Trash permanent delete only.
@@ -569,7 +569,7 @@ public class SocialAccountFormActivity extends AppCompatActivity {
             if (deleteDialog != null && deleteDialog.isShowing()) {
                 deleteDialog.dismiss();
             }
-            deleteDialog = Dialogs.confirmDelete(SocialAccountFormActivity.this,
+            deleteDialog = Dialogs.confirmDelete(SocialAccountActivity.this,
                     "Delete Account",
                     "Are you sure you want to delete this "
                             + item.getPlatform() + " account?",
