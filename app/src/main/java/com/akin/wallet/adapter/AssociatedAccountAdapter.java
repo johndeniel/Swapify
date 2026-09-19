@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Linked Social Account rows for the Social Account screen: the current
+ * Associated account rows for the Social Account screen: the current
  * link set with remove actions, reused in pick mode by the link search.
  * The host owns the displayed list (saves read it directly); the adapter
  * keeps a private copy as the filter source.
  */
-public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocialAccountAdapter.AccountViewHolder> implements Filterable {
+public class AssociatedAccountAdapter extends RecyclerView.Adapter<AssociatedAccountAdapter.AccountViewHolder> implements Filterable {
 
     public interface OnActionListener {
         void onAction(SocialAccountModel account, boolean removed);
@@ -44,7 +44,7 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
         this.pickActionVisible = pickActionVisible;
     }
 
-    public LinkedSocialAccountAdapter(List<SocialAccountModel> accounts, boolean unlinkMode, OnActionListener listener) {
+    public AssociatedAccountAdapter(List<SocialAccountModel> accounts, boolean unlinkMode, OnActionListener listener) {
         this.visibleAccounts = accounts;
         this.filterSource = new ArrayList<>(accounts);
         this.unlinkMode = unlinkMode;
@@ -80,8 +80,8 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
                 listener.onAction(removed, true);
             });
         } else {
-            // Pick mode (link search): the row itself links, like the
-            // platform picker rows. The [+] icon stays hidden; row tap picks.
+            // Pick mode (link search): the [+] icon mirrors the row tap when
+            // visible; either one links the account.
             if (pickActionVisible) {
                 holder.action.setVisibility(View.VISIBLE);
                 holder.action.setImageResource(R.drawable.ic_add_circle);
@@ -168,7 +168,7 @@ public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocia
             DiffUtil.DiffResult diff = accountDiff(nextAccounts);
             visibleAccounts.clear();
             visibleAccounts.addAll(nextAccounts);
-            diff.dispatchUpdatesTo(LinkedSocialAccountAdapter.this);
+            diff.dispatchUpdatesTo(AssociatedAccountAdapter.this);
         }
     };
 

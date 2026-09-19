@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.adapter.LinkedSocialAccountAdapter;
+import com.akin.wallet.adapter.AssociatedAccountAdapter;
 import com.akin.wallet.adapter.SocialPlatformAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.SocialAccountModel;
@@ -58,11 +58,10 @@ public class SocialAccountActivity extends AppCompatActivity {
     private String selectedName = DEFAULT_PLATFORM_NAME;
     private ImageView platformIcon;
     private TextView platformName;
-    private RecyclerView recyclerLinked;
-    private TextView emptyLinked;
+    private View linkedCard;
     private List<SocialAccountModel> linkPool = new ArrayList<>();
     private List<SocialAccountModel> linkedItems = new ArrayList<>();
-    private LinkedSocialAccountAdapter linkedAdapter;
+    private AssociatedAccountAdapter linkedAdapter;
     private int linkSelfId = -1;
 
     // In-place M3 platform picker: full-screen SearchView reusing the old
@@ -87,7 +86,7 @@ public class SocialAccountActivity extends AppCompatActivity {
     private static final String KEY_LINK_QUERY = "link_search_query";
     private static final String KEY_LINK_OPEN = "link_search_open";
     private SearchView linkSearchView;
-    private LinkedSocialAccountAdapter linkSearchAdapter;
+    private AssociatedAccountAdapter linkSearchAdapter;
     private RecyclerView recyclerLinkSearch;
     private View emptyLinkResults;
     private String linkQuery = "";
@@ -330,7 +329,7 @@ public class SocialAccountActivity extends AppCompatActivity {
             return;
         }
 
-        linkSearchAdapter = new LinkedSocialAccountAdapter(available, false, (picked, removed) -> {
+        linkSearchAdapter = new AssociatedAccountAdapter(available, false, (picked, removed) -> {
             boolean dup = false;
             for (SocialAccountModel alreadyLinked : linkedItems) {
                 if (alreadyLinked.getId() == picked.getId()) {
@@ -348,8 +347,8 @@ public class SocialAccountActivity extends AppCompatActivity {
             }
             linkSearchView.hide();
         });
-        // No [+] icon in search: tapping the row itself links (platform style).
-        linkSearchAdapter.setPickActionVisible(false);
+        // [+] icon on each row mirrors the row tap: both link the account.
+        linkSearchAdapter.setPickActionVisible(true);
         linkSearchAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -434,8 +433,8 @@ public class SocialAccountActivity extends AppCompatActivity {
         linkSelfId = selfId;
         linkedItems = new ArrayList<>();
         LinearLayout associateSection = findViewById(R.id.associate_section);
-        recyclerLinked = findViewById(R.id.recycler_linked);
-        emptyLinked = findViewById(R.id.empty_linked);
+        RecyclerView recyclerLinked = findViewById(R.id.recycler_linked);
+        linkedCard = findViewById(R.id.linked_card);
 
         if (selfId != -1) {
             List<Integer> linkedIds = dbHelper.getLinkedAccountIds(selfId);
@@ -449,12 +448,11 @@ public class SocialAccountActivity extends AppCompatActivity {
             }
         }
 
-        // The section always stays on screen: an empty link set shows the
-        // muted empty line inside the card (Add stays reachable) instead of
-        // the whole section vanishing.
+        // The header (and its icon-only Add action) always stays on screen;
+        // the rows card shows only when something is linked.
         associateSection.setVisibility(View.VISIBLE);
 
-        linkedAdapter = new LinkedSocialAccountAdapter(linkedItems, true,
+        linkedAdapter = new AssociatedAccountAdapter(linkedItems, true,
                 (linkedAccount, removed) -> refreshLinkedVisibility());
         recyclerLinked.setLayoutManager(new LinearLayoutManager(this));
         recyclerLinked.setAdapter(linkedAdapter);
@@ -464,17 +462,14 @@ public class SocialAccountActivity extends AppCompatActivity {
     }
 
     /**
-     * Empty-state toggle for the associate card: muted line when nothing is
-     * linked, rows otherwise. The section header (and its Add pill) stays
-     * visible in both states.
+     * Rows-card toggle: hidden entirely when nothing is linked, rows
+     * otherwise. The section header (and its Add action) stays visible in
+     * both states.
      */
     private void refreshLinkedVisibility() {
         boolean empty = linkedItems == null || linkedItems.isEmpty();
-        if (emptyLinked != null) {
-            emptyLinked.setVisibility(empty ? View.VISIBLE : View.GONE);
-        }
-        if (recyclerLinked != null) {
-            recyclerLinked.setVisibility(empty ? View.GONE : View.VISIBLE);
+        if (linkedCard != null) {
+            linkedCard.setVisibility(empty ? View.GONE : View.VISIBLE);
         }
     }
 

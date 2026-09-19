@@ -27,7 +27,6 @@
     <string name="msg_card_saved">Card Saved</string>
     <string name="msg_id_saved">ID Saved</string>
     <!-- Shared actions (also reused as content descriptions) -->
-    <string name="action_add">Add</string>
     <string name="action_save">Save</string>
     <string name="action_update">Update</string>
     <string name="action_delete">Delete</string>
@@ -110,7 +109,6 @@
     <string name="empty_social_title">No social account</string>
     <string name="empty_social_sub">An account you add will appear here</string>
     <!-- Picker empty states -->
-    <string name="empty_associated">No associated accounts</string>
     <string name="empty_platforms">No platforms found</string>
     <string name="empty_accounts">No accounts found</string>
     <!-- Form sections -->

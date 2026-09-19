@@ -262,7 +262,8 @@
     </LinearLayout>
 
     <!-- Associated accounts: dashboard-style section header (bold title left,
-         outline Add pill right) over a dashboard card holding the rows. -->
+         icon-only Add button right) over a dashboard card holding the rows.
+         The card is hidden entirely when nothing is linked. -->
     <LinearLayout
         android:id="@+id/associate_section"
         android:layout_width="match_parent"
@@ -296,31 +297,23 @@
                 android:background="@drawable/bg_button_outline"
                 android:clickable="true"
                 android:focusable="true"
-                android:gravity="center_vertical"
+                android:gravity="center"
                 android:orientation="horizontal"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="8dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/action_add"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
+                android:padding="8dp"
+                android:contentDescription="@string/cd_add_account">
 
                 <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_marginStart="6dp"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
                     android:src="@drawable/ic_add_circle"
-                    android:contentDescription="@string/cd_add_account" />
+                    android:importantForAccessibility="no" />
 
             </LinearLayout>
 
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/linked_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -337,19 +330,6 @@
                 android:layout_height="wrap_content"
                 android:overScrollMode="never"
                 android:nestedScrollingEnabled="false" />
-
-            <!-- Empty state: muted line inside the card so the section (and
-                 its Add action) stays on screen with nothing linked. -->
-            <TextView
-                android:id="@+id/empty_linked"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:padding="16dp"
-                android:text="@string/empty_associated"
-                android:textColor="@color/dashboard_muted"
-                android:textSize="12sp"
-                android:visibility="gone" />
 
         </LinearLayout>
 
