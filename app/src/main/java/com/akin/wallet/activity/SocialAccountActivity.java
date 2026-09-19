@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.adapter.LinkedAccountAdapter;
+import com.akin.wallet.adapter.LinkedSocialAccountAdapter;
 import com.akin.wallet.adapter.SocialPlatformAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.CredentialItem;
@@ -67,7 +67,7 @@ public class SocialAccountActivity extends AppCompatActivity {
     private TextView emptyLinked;
     private List<CredentialItem> linkPool = new ArrayList<>();
     private List<CredentialItem> linkedItems = new ArrayList<>();
-    private LinkedAccountAdapter linkedAdapter;
+    private LinkedSocialAccountAdapter linkedAdapter;
     private int linkSelfId = -1;
 
     // In-place M3 platform picker: full-screen SearchView reusing the old
@@ -92,7 +92,7 @@ public class SocialAccountActivity extends AppCompatActivity {
     private static final String KEY_LINK_QUERY = "link_search_query";
     private static final String KEY_LINK_OPEN = "link_search_open";
     private SearchView linkSearchView;
-    private LinkedAccountAdapter linkSearchAdapter;
+    private LinkedSocialAccountAdapter linkSearchAdapter;
     private RecyclerView recyclerLinkSearch;
     private View emptyLinkResults;
     private String linkQuery = "";
@@ -344,7 +344,7 @@ public class SocialAccountActivity extends AppCompatActivity {
             return;
         }
 
-        linkSearchAdapter = new LinkedAccountAdapter(available, false, (picked, isRemove) -> {
+        linkSearchAdapter = new LinkedSocialAccountAdapter(available, false, (picked, removed) -> {
             boolean dup = false;
             for (CredentialItem l : linkedItems) {
                 if (l.getId() == picked.getId()) {
@@ -363,7 +363,7 @@ public class SocialAccountActivity extends AppCompatActivity {
             linkSearchView.hide();
         });
         // No [+] icon in search: tapping the row itself links (platform style).
-        linkSearchAdapter.setShowPickAction(false);
+        linkSearchAdapter.setPickActionVisible(false);
         linkSearchAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -478,8 +478,8 @@ public class SocialAccountActivity extends AppCompatActivity {
         // the whole section vanishing.
         associateSection.setVisibility(View.VISIBLE);
 
-        linkedAdapter = new LinkedAccountAdapter(linkedItems, true,
-                (linkedItem, isRemove) -> refreshLinkedVisibility());
+        linkedAdapter = new LinkedSocialAccountAdapter(linkedItems, true,
+                (linkedAccount, removed) -> refreshLinkedVisibility());
         recyclerLinked.setLayoutManager(new LinearLayoutManager(this));
         recyclerLinked.setAdapter(linkedAdapter);
         refreshLinkedVisibility();

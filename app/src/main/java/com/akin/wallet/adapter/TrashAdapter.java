@@ -198,8 +198,10 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             }
         }
         selectedKeys.retainAll(selectableKeys());
-        if (!selectedKeys.isEmpty()) {
-            notifyDataSetChanged();
+        for (int position = 0; position < entries.size(); position++) {
+            if (selectedKeys.contains(entries.get(position).key())) {
+                notifyItemChanged(position);
+            }
         }
         emitSelection();
     }
@@ -234,7 +236,7 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             return;
         }
         selectedKeys.clear();
-        notifyDataSetChanged();
+        notifySelectableChanged();
         emitSelection();
     }
 
@@ -244,8 +246,16 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 selectedKeys.add(entry.key());
             }
         }
-        notifyDataSetChanged();
+        notifySelectableChanged();
         emitSelection();
+    }
+
+    private void notifySelectableChanged() {
+        for (int position = 0; position < entries.size(); position++) {
+            if (entries.get(position).isSelectable()) {
+                notifyItemChanged(position);
+            }
+        }
     }
 
     private Set<String> selectableKeys() {
@@ -330,7 +340,8 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private static void bindBankCard(TileHolder tile, BankCardItem bankCard) {
         tile.icon.setImageResource(R.drawable.chip);
         tile.title.setText(cardTitle(tile.itemView.getContext(), bankCard));
-        tile.sub.setText("•••• " + CardText.last4(bankCard.getCardNumber()));
+        tile.sub.setText(tile.itemView.getContext().getString(R.string.mask_card_last4,
+                CardText.last4(bankCard.getCardNumber())));
     }
 
     private static void bindSocialAccount(TileHolder tile, CredentialItem socialAccount) {
@@ -361,9 +372,8 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
         card.setOnClickListener(v -> {
             // Bind-time positions go stale after reloads; resolve at click time.
-            int clicked = tile.getAdapterPosition();
-            if (clicked == RecyclerView.NO_POSITION
-                    || clicked < 0 || clicked >= entries.size()) {
+            int clicked = tile.getBindingAdapterPosition();
+            if (clicked < 0 || clicked >= entries.size()) {
                 return;
             }
             String key = entries.get(clicked).key();
@@ -397,7 +407,7 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return context.getString(R.string.trash_section_cards);
     }
 
-    static class HeaderHolder extends RecyclerView.ViewHolder {
+    public static class HeaderHolder extends RecyclerView.ViewHolder {
         TextView title;
         TextView count;
 
@@ -408,7 +418,7 @@ public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
     }
 
-    static class TileHolder extends RecyclerView.ViewHolder {
+    public static class TileHolder extends RecyclerView.ViewHolder {
         MaterialCardView card;
         View badge;
         ImageView icon;

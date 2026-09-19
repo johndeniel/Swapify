@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.widget.Filter;
@@ -26,30 +27,27 @@ import java.util.Locale;
  * The host owns the displayed list (saves read it directly); the adapter
  * keeps a private copy as the filter source.
  */
-public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdapter.AccountViewHolder> implements Filterable {
+public class LinkedSocialAccountAdapter extends RecyclerView.Adapter<LinkedSocialAccountAdapter.AccountViewHolder> implements Filterable {
 
     public interface OnActionListener {
-        void onAction(CredentialItem item, boolean isRemove);
+        void onAction(CredentialItem account, boolean removed);
     }
 
-    private final List<CredentialItem> items;
-    // Filter source. Displayed items mutate in place so unlinking keeps the
-    // host's list in sync for save; both lists hold the same references, so
-    // removals apply to each by identity.
-    private final List<CredentialItem> itemsFull;
-    private final boolean showRemove;
+    private final List<CredentialItem> visibleAccounts;
+    private final List<CredentialItem> filterSource;
+    private final boolean unlinkMode;
     private final OnActionListener listener;
     /** Pick mode only: false hides the [+] icon, the row itself taps. */
-    private boolean showPickAction = true;
+    private boolean pickActionVisible = true;
 
-    public void setShowPickAction(boolean showPickAction) {
-        this.showPickAction = showPickAction;
+    public void setPickActionVisible(boolean pickActionVisible) {
+        this.pickActionVisible = pickActionVisible;
     }
 
-    public LinkedAccountAdapter(List<CredentialItem> items, boolean showRemove, OnActionListener listener) {
-        this.items = items;
-        this.itemsFull = new ArrayList<>(items);
-        this.showRemove = showRemove;
+    public LinkedSocialAccountAdapter(List<CredentialItem> accounts, boolean unlinkMode, OnActionListener listener) {
+        this.visibleAccounts = accounts;
+        this.filterSource = new ArrayList<>(accounts);
+        this.unlinkMode = unlinkMode;
         this.listener = listener;
     }
 
@@ -62,55 +60,51 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
 
     @Override
     public void onBindViewHolder(@NonNull AccountViewHolder holder, int position) {
-        CredentialItem item = items.get(position);
-        holder.name.setText(item.getPlatform());
-        holder.username.setText(item.getUsername());
-        PlatformIcons.bindIcon(holder.icon, item.getPlatform(), item.getIconRes());
+        CredentialItem account = visibleAccounts.get(position);
+        holder.name.setText(account.getPlatform());
+        holder.username.setText(account.getUsername());
+        PlatformIcons.bindIcon(holder.icon, account.getPlatform(), account.getIconRes());
 
-        if (showRemove) {
+        if (unlinkMode) {
             holder.action.setImageResource(R.drawable.ic_remove_circle);
             holder.action.setOnClickListener(v -> {
-                // Resolve position at click time (bind-time positions go stale
-                // after prior removals) and refresh AFTER mutating: listeners
-                // read the list, so notifying first leaves the empty state
-                // one removal behind — the last unlink never showed it.
-                int pos = holder.getAdapterPosition();
-                if (pos == RecyclerView.NO_POSITION || pos >= items.size()) {
+                int clicked = holder.getBindingAdapterPosition();
+                if (clicked < 0 || clicked >= visibleAccounts.size()) {
                     return;
                 }
-                CredentialItem removed = items.get(pos);
-                items.remove(pos);
-                itemsFull.remove(removed);
-                notifyItemRemoved(pos);
-                notifyItemRangeChanged(pos, items.size());
+                CredentialItem removed = visibleAccounts.get(clicked);
+                visibleAccounts.remove(clicked);
+                filterSource.remove(removed);
+                notifyItemRemoved(clicked);
+                notifyItemRangeChanged(clicked, visibleAccounts.size() - clicked);
                 listener.onAction(removed, true);
             });
         } else {
             // Pick mode (link search): the row itself links, like the
             // platform picker rows. The [+] icon stays hidden; row tap picks.
-            if (showPickAction) {
+            if (pickActionVisible) {
                 holder.action.setVisibility(View.VISIBLE);
                 holder.action.setImageResource(R.drawable.ic_add_circle);
-                holder.action.setOnClickListener(v -> listener.onAction(item, false));
+                holder.action.setOnClickListener(v -> listener.onAction(account, false));
             } else {
                 holder.action.setVisibility(View.GONE);
             }
-            holder.itemView.setOnClickListener(v -> listener.onAction(item, false));
+            holder.itemView.setOnClickListener(v -> listener.onAction(account, false));
         }
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return visibleAccounts.size();
     }
 
     /**
      * Keeps the search source in sync when the caller appends to its own list
      * externally (link picker result); identity match, same references.
      */
-    public void onExternalAdd(CredentialItem item) {
-        if (item != null && !itemsFull.contains(item)) {
-            itemsFull.add(item);
+    public void onExternalAdd(CredentialItem account) {
+        if (account != null && !filterSource.contains(account)) {
+            filterSource.add(account);
         }
     }
 
@@ -119,11 +113,36 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
      * in place alongside the search source, so save still reads one list.
      */
     public void onExternalRestore(@NonNull List<CredentialItem> restored) {
-        items.clear();
-        items.addAll(restored);
-        itemsFull.clear();
-        itemsFull.addAll(restored);
-        notifyDataSetChanged();
+        DiffUtil.DiffResult diff = accountDiff(new ArrayList<>(restored));
+        visibleAccounts.clear();
+        visibleAccounts.addAll(restored);
+        filterSource.clear();
+        filterSource.addAll(restored);
+        diff.dispatchUpdatesTo(this);
+    }
+
+    private DiffUtil.DiffResult accountDiff(List<CredentialItem> next) {
+        return DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return visibleAccounts.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return next.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldPos, int newPos) {
+                return visibleAccounts.get(oldPos).getId() == next.get(newPos).getId();
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldPos, int newPos) {
+                return visibleAccounts.get(oldPos).equals(next.get(newPos));
+            }
+        });
     }
 
     @Override
@@ -131,23 +150,21 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
         return accountFilter;
     }
 
-    // Search mirrors the platform picker: case-insensitive contains on
-    // platform or username, full list restored on empty query.
     private final Filter accountFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
             List<CredentialItem> filtered = new ArrayList<>();
             if (constraint == null || constraint.length() == 0) {
-                filtered.addAll(itemsFull);
+                filtered.addAll(filterSource);
             } else {
                 String filterPattern = constraint.toString().toLowerCase(Locale.ROOT).trim();
-                for (CredentialItem item : itemsFull) {
-                    String platform = item.getPlatform() != null
-                            ? item.getPlatform().toLowerCase(Locale.ROOT) : "";
-                    String username = item.getUsername() != null
-                            ? item.getUsername().toLowerCase(Locale.ROOT) : "";
+                for (CredentialItem account : filterSource) {
+                    String platform = account.getPlatform() != null
+                            ? account.getPlatform().toLowerCase(Locale.ROOT) : "";
+                    String username = account.getUsername() != null
+                            ? account.getUsername().toLowerCase(Locale.ROOT) : "";
                     if (platform.contains(filterPattern) || username.contains(filterPattern)) {
-                        filtered.add(item);
+                        filtered.add(account);
                     }
                 }
             }
@@ -159,13 +176,18 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
         @Override
         @SuppressWarnings("unchecked")
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            items.clear();
-            items.addAll((List<CredentialItem>) results.values);
-            notifyDataSetChanged();
+            List<CredentialItem> next = (List<CredentialItem>) results.values;
+            DiffUtil.DiffResult diff =
+                    accountDiff(next != null ? next : new ArrayList<>());
+            visibleAccounts.clear();
+            if (next != null) {
+                visibleAccounts.addAll(next);
+            }
+            diff.dispatchUpdatesTo(LinkedSocialAccountAdapter.this);
         }
     };
 
-    static class AccountViewHolder extends RecyclerView.ViewHolder {
+    public static class AccountViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
         TextView name;
         TextView username;

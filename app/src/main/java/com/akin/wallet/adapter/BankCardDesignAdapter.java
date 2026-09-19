@@ -54,7 +54,9 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         this.expiry = nextExpiry;
         this.cardType = nextType;
         this.cardNetwork = nextNetwork;
-        notifyDataSetChanged();
+        // Every face shows the same preview text: repaint the fixed page set,
+        // not the whole list pipeline.
+        notifyItemRangeChanged(0, getDesignCount());
     }
 
     @NonNull
@@ -85,8 +87,10 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         applyCardOutline(holder.cardRoot);
         holder.cardRoot.setBackgroundResource(BankCardAdapter.BACKGROUNDS[position]);
         holder.bank.setText(bankName.isEmpty() ? "YOUR BANK" : bankName.toUpperCase(java.util.Locale.ROOT));
-        holder.holder.setText(holderName.isEmpty() ? "CARDHOLDER NAME" : holderName.toUpperCase(java.util.Locale.ROOT));
-        holder.number.setText("•••• •••• •••• " + (last4.isEmpty() ? "••••" : last4));
+        holder.cardholder.setText(holderName.isEmpty() ? "CARDHOLDER NAME" : holderName.toUpperCase(java.util.Locale.ROOT));
+        android.content.Context context = holder.itemView.getContext();
+        holder.number.setText(context.getString(R.string.mask_card_number,
+                last4.isEmpty() ? context.getString(R.string.mask_pin) : last4));
         holder.expiry.setText(expiry.isEmpty() ? "MM/YY" : expiry);
         applyNetworkLogo(holder.network, cardNetwork);
         holder.type.setText(cardType.isEmpty() ? "DEBIT" : cardType.toUpperCase(java.util.Locale.ROOT));
@@ -116,10 +120,14 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         }
     }
 
+    /** Network keys are lowercase: names are lowercased before comparison. */
+    private static final String NETWORK_VISA = "visa";
+
     static void applyNetworkLogo(ImageView logoView, String network) {
-        String name = network != null ? network.trim().toLowerCase(java.util.Locale.ROOT) : "visa";
+        String name = network != null ? network.trim().toLowerCase(java.util.Locale.ROOT) : NETWORK_VISA;
         int icon;
         int heightDp;
+        //noinspection SpellCheckingInspection
         if ("mastercard".equals(name)) {
             icon = R.drawable.mastercard;
             heightDp = 20;
@@ -131,7 +139,7 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         // when the logo or its height actually changed.
         Object tag = logoView.getTag(com.akin.wallet.R.id.tag_network);
         int key = icon * 100 + heightDp;
-        if (tag instanceof Integer && ((Integer) tag).intValue() == key) {
+        if (Integer.valueOf(key).equals(tag)) {
             return;
         }
         logoView.setImageResource(icon);
@@ -142,13 +150,13 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
         logoView.setTag(com.akin.wallet.R.id.tag_network, key);
     }
 
-    static class CardViewHolder extends RecyclerView.ViewHolder {
+    public static class CardViewHolder extends RecyclerView.ViewHolder {
         View cardRoot;
         TextView bank;
         ImageView network;
         TextView type;
         TextView number;
-        TextView holder;
+        TextView cardholder;
         TextView expiry;
 
         CardViewHolder(@NonNull View itemView) {
@@ -158,7 +166,7 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
             network = itemView.findViewById(R.id.preview_network);
             type = itemView.findViewById(R.id.preview_type);
             number = itemView.findViewById(R.id.preview_number);
-            holder = itemView.findViewById(R.id.preview_holder);
+            cardholder = itemView.findViewById(R.id.preview_holder);
             expiry = itemView.findViewById(R.id.preview_expiry);
         }
     }

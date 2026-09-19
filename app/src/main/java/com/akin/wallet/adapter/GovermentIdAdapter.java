@@ -23,26 +23,26 @@ import java.util.Map;
  * are sized exactly like the Bank Card carousel. Tapping a card opens its
  * editor.
  */
-public class GovermentIdAdapter extends RecyclerView.Adapter<GovermentIdAdapter.IdViewHolder> {
+public class GovermentIdAdapter extends RecyclerView.Adapter<GovermentIdAdapter.IdCardViewHolder> {
 
     public interface OnIdClickListener {
         void onIdClick(IdCardItem item);
     }
 
-    private final List<IdCardItem> items = new ArrayList<>();
+    private final List<IdCardItem> idCards = new ArrayList<>();
     private final OnIdClickListener listener;
 
     public GovermentIdAdapter(OnIdClickListener listener) {
         this.listener = listener;
     }
 
-    public void updateData(List<IdCardItem> newItems) {
+    public void updateData(List<IdCardItem> newIdCards) {
         List<IdCardItem> next =
-                newItems != null ? new ArrayList<>(newItems) : new ArrayList<>();
+                newIdCards != null ? new ArrayList<>(newIdCards) : new ArrayList<>();
         DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
             public int getOldListSize() {
-                return items.size();
+                return idCards.size();
             }
 
             @Override
@@ -52,22 +52,22 @@ public class GovermentIdAdapter extends RecyclerView.Adapter<GovermentIdAdapter.
 
             @Override
             public boolean areItemsTheSame(int oldPos, int newPos) {
-                return items.get(oldPos).getId() == next.get(newPos).getId();
+                return idCards.get(oldPos).getId() == next.get(newPos).getId();
             }
 
             @Override
             public boolean areContentsTheSame(int oldPos, int newPos) {
-                return items.get(oldPos).equals(next.get(newPos));
+                return idCards.get(oldPos).equals(next.get(newPos));
             }
         });
-        items.clear();
-        items.addAll(next);
+        idCards.clear();
+        idCards.addAll(next);
         diff.dispatchUpdatesTo(this);
     }
 
     @NonNull
     @Override
-    public IdViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public IdCardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_dashboard_id_card, parent, false);
         // Same page size as the bank-card carousel.
@@ -83,42 +83,42 @@ public class GovermentIdAdapter extends RecyclerView.Adapter<GovermentIdAdapter.
             lp.width = (int) (parentWidth * BankCardAdapter.PAGE_WIDTH_RATIO);
             view.setLayoutParams(lp);
         }
-        return new IdViewHolder(view);
+        return new IdCardViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull IdViewHolder holder, int position) {
-        IdCardItem item = items.get(position);
-        Map<String, String> fields = item.getFields();
-        String rawType = item.getIdType() == null ? "" : item.getIdType().trim();
+    public void onBindViewHolder(@NonNull IdCardViewHolder holder, int position) {
+        IdCardItem idCard = idCards.get(position);
+        Map<String, String> fields = idCard.getFields();
+        String rawType = idCard.getIdType() == null ? "" : idCard.getIdType().trim();
         // Unknown types render through the generic face — never masqueraded
         // as another document. forName() falls back to the first type, so it
         // is only called for known types.
-        IdTypeSpec.IdType spec = IdTypeSpec.isKnownType(item.getIdType())
-                ? IdTypeSpec.forName(item.getIdType())
-                : IdTypeSpec.genericType(item.getIdType(), fields);
+        IdTypeSpec.IdType spec = IdTypeSpec.isKnownType(idCard.getIdType())
+                ? IdTypeSpec.forName(idCard.getIdType())
+                : IdTypeSpec.genericType(idCard.getIdType(), fields);
         GovermentIdFaceRenderer.render(holder.face,
                 spec,
-                item.getIdType(),
+                idCard.getIdType(),
                 rawType.isEmpty() ? "GOVERNMENT ID" : rawType,
                 fields);
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onIdClick(item);
+                listener.onIdClick(idCard);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return idCards.size();
     }
 
-    static class IdViewHolder extends RecyclerView.ViewHolder {
+    public static class IdCardViewHolder extends RecyclerView.ViewHolder {
         final GovermentIdFaceRenderer.FaceViews face;
 
-        IdViewHolder(@NonNull View itemView) {
+        IdCardViewHolder(@NonNull View itemView) {
             super(itemView);
             face = GovermentIdFaceRenderer.FaceViews.bind(itemView);
         }

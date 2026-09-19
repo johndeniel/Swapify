@@ -18,49 +18,51 @@ import java.util.Map;
 /**
  * Goverment ID type picker for the Goverment ID screen — each page is an ID
  * type rendered with the single shared dashboard item and face metrics,
- * driven by the shared draft. Same 0.68 page width, 12dp gap and snap as
+ * driven by the shared draft. Same 0.68-page width, 12dp gap and snap as
  * the dashboard. Swiping pages selects the type; typing updates live.
  */
-public class GovermentIdDesignAdapter extends RecyclerView.Adapter<GovermentIdDesignAdapter.CardViewHolder> {
+public class GovermentIdDesignAdapter extends RecyclerView.Adapter<GovermentIdDesignAdapter.FaceViewHolder> {
 
     public interface OnTypePageListener {
         void onTypePageSelected(int typeIndex);
     }
 
-    private final List<IdTypeSpec.IdType> types = IdTypeSpec.getAllTypes();
+    private final List<IdTypeSpec.IdType> idTypes = IdTypeSpec.getAllTypes();
     private final OnTypePageListener listener;
-    private Map<String, String> fields = new LinkedHashMap<>();
+    private Map<String, String> draftFields = new LinkedHashMap<>();
 
     public GovermentIdDesignAdapter(OnTypePageListener listener) {
         this.listener = listener;
     }
 
     public int getTypeCount() {
-        return types.size();
+        return idTypes.size();
     }
 
-    private String getTypeAt(int position) {
+    private String typeNameAt(int position) {
         // Clamp, don't fall back: every position here comes from the adapter
         // itself, so an out-of-range index is a bug that must stay visible
         // next to valid data instead of silently rendering another type.
-        int clamped = Math.max(0, Math.min(position, types.size() - 1));
-        return types.get(clamped).name;
+        int clamped = Math.max(0, Math.min(position, idTypes.size() - 1));
+        return idTypes.get(clamped).name;
     }
 
     public void updatePreview(Map<String, String> fields) {
         Map<String, String> next =
                 fields != null ? new LinkedHashMap<>(fields) : new LinkedHashMap<>();
-        if (next.equals(this.fields)) {
-            // Keystroke changed nothing visible: skip the carousel rebind.
+        if (next.equals(this.draftFields)) {
+            // Keystroke changed nothing visible: skip the carousel repaint.
             return;
         }
-        this.fields = next;
-        notifyDataSetChanged();
+        this.draftFields = next;
+        // Every page shows the same draft: repaint the fixed page set, not
+        // the whole list pipeline.
+        notifyItemRangeChanged(0, getTypeCount());
     }
 
     @NonNull
     @Override
-    public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public FaceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Single shared face: same XML + same 0.68 page-width ratio as the
         // dashboard carousel so the form picker looks identical to Home.
         View view = LayoutInflater.from(parent.getContext())
@@ -77,40 +79,40 @@ public class GovermentIdDesignAdapter extends RecyclerView.Adapter<GovermentIdDe
             lp.width = (int) (parentWidth * BankCardAdapter.PAGE_WIDTH_RATIO);
             view.setLayoutParams(lp);
         }
-        return new CardViewHolder(view);
+        return new FaceViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
-        String pageType = getTypeAt(position);
+    public void onBindViewHolder(@NonNull FaceViewHolder holder, int position) {
+        String pageType = typeNameAt(position);
         IdTypeSpec.IdType spec = IdTypeSpec.forName(pageType);
 
         // Each page shows its own type's values from the shared draft so the
         // user can compare faces while typing (common keys carry over).
         Map<String, String> pageFields = new LinkedHashMap<>();
-        for (IdTypeSpec.IdField f : spec.fields) {
-            String v = fields.get(f.key);
-            pageFields.put(f.key, v != null ? v : "");
+        for (IdTypeSpec.IdField field : spec.fields) {
+            String value = draftFields.get(field.key);
+            pageFields.put(field.key, value != null ? value : "");
         }
         GovermentIdFaceRenderer.render(holder.face, spec, pageType, pageType, pageFields);
 
         holder.face.cardRoot.setOnClickListener(v -> {
-            int adapterPosition = holder.getAdapterPosition();
-            if (adapterPosition != RecyclerView.NO_POSITION && listener != null) {
-                listener.onTypePageSelected(adapterPosition);
+            int clicked = holder.getBindingAdapterPosition();
+            if (clicked != RecyclerView.NO_POSITION && listener != null) {
+                listener.onTypePageSelected(clicked);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return types.size();
+        return idTypes.size();
     }
 
-    static class CardViewHolder extends RecyclerView.ViewHolder {
+    public static class FaceViewHolder extends RecyclerView.ViewHolder {
         final GovermentIdFaceRenderer.FaceViews face;
 
-        CardViewHolder(@NonNull View itemView) {
+        FaceViewHolder(@NonNull View itemView) {
             super(itemView);
             face = GovermentIdFaceRenderer.FaceViews.bind(itemView);
         }

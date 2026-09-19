@@ -27,20 +27,20 @@ public class SocialAccountAdapter extends RecyclerView.Adapter<SocialAccountAdap
         void onAccountClick(CredentialItem item);
     }
 
-    private final List<CredentialItem> items = new ArrayList<>();
+    private final List<CredentialItem> accounts = new ArrayList<>();
     private final OnAccountClickListener listener;
 
     public SocialAccountAdapter(OnAccountClickListener listener) {
         this.listener = listener;
     }
 
-    public void updateData(List<CredentialItem> newItems) {
+    public void updateData(List<CredentialItem> newAccounts) {
         List<CredentialItem> next =
-                newItems != null ? new ArrayList<>(newItems) : new ArrayList<>();
+                newAccounts != null ? new ArrayList<>(newAccounts) : new ArrayList<>();
         DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
             public int getOldListSize() {
-                return items.size();
+                return accounts.size();
             }
 
             @Override
@@ -50,20 +50,20 @@ public class SocialAccountAdapter extends RecyclerView.Adapter<SocialAccountAdap
 
             @Override
             public boolean areItemsTheSame(int oldPos, int newPos) {
-                return items.get(oldPos).getId() == next.get(newPos).getId();
+                return accounts.get(oldPos).getId() == next.get(newPos).getId();
             }
 
             @Override
             public boolean areContentsTheSame(int oldPos, int newPos) {
-                if (!items.get(oldPos).equals(next.get(newPos))) {
+                if (!accounts.get(oldPos).equals(next.get(newPos))) {
                     return false;
                 }
                 // Divider visibility is positional (hidden on the last row).
-                return (oldPos == items.size() - 1) == (newPos == next.size() - 1);
+                return (oldPos == accounts.size() - 1) == (newPos == next.size() - 1);
             }
         });
-        items.clear();
-        items.addAll(next);
+        accounts.clear();
+        accounts.addAll(next);
         diff.dispatchUpdatesTo(this);
     }
 
@@ -77,17 +77,17 @@ public class SocialAccountAdapter extends RecyclerView.Adapter<SocialAccountAdap
 
     @Override
     public void onBindViewHolder(@NonNull AccountViewHolder holder, int position) {
-        CredentialItem item = items.get(position);
+        CredentialItem account = accounts.get(position);
         String fallback = holder.itemView.getContext().getString(R.string.label_social_account);
-        String platform = item.getPlatform() != null && !item.getPlatform().trim().isEmpty()
-                ? item.getPlatform().trim() : fallback;
-        String username = item.getUsername() != null ? item.getUsername().trim() : "";
+        String platform = account.getPlatform() != null && !account.getPlatform().trim().isEmpty()
+                ? account.getPlatform().trim() : fallback;
+        String username = account.getUsername() != null ? account.getUsername().trim() : "";
         holder.title.setText(platform);
         holder.sub.setText(username.isEmpty() ? fallback : username);
-        PlatformIcons.bindIcon(holder.icon, item.getPlatform(), item.getIconRes());
+        PlatformIcons.bindIcon(holder.icon, account.getPlatform(), account.getIconRes());
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onAccountClick(item);
+                listener.onAccountClick(account);
             }
         });
         holder.divider.setVisibility(
@@ -96,10 +96,10 @@ public class SocialAccountAdapter extends RecyclerView.Adapter<SocialAccountAdap
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return accounts.size();
     }
 
-    static class AccountViewHolder extends RecyclerView.ViewHolder {
+    public static class AccountViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
         TextView title;
         TextView sub;

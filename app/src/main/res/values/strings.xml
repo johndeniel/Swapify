@@ -144,6 +144,8 @@
     <!-- Masked / empty placeholders -->
     <string name="mask_password">••••••••</string>
     <string name="mask_pin">••••</string>
+    <string name="mask_card_number">•••• •••• •••• %1$s</string>
+    <string name="mask_card_last4">•••• %1$s</string>
     <string name="empty_value">—</string>
     <!-- Document face field labels -->
     <string name="label_date_of_birth">DATE OF BIRTH</string>

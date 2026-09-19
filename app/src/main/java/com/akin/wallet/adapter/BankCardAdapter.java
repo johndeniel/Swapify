@@ -44,20 +44,20 @@ public class BankCardAdapter extends RecyclerView.Adapter<BankCardAdapter.CardVi
         void onCardClick(BankCardItem item);
     }
 
-    private final List<BankCardItem> items = new ArrayList<>();
+    private final List<BankCardItem> cards = new ArrayList<>();
     private final OnCardClickListener listener;
 
     public BankCardAdapter(OnCardClickListener listener) {
         this.listener = listener;
     }
 
-    public void updateData(List<BankCardItem> newItems) {
+    public void updateData(List<BankCardItem> newCards) {
         List<BankCardItem> next =
-                newItems != null ? new ArrayList<>(newItems) : new ArrayList<>();
+                newCards != null ? new ArrayList<>(newCards) : new ArrayList<>();
         DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
             public int getOldListSize() {
-                return items.size();
+                return cards.size();
             }
 
             @Override
@@ -67,16 +67,16 @@ public class BankCardAdapter extends RecyclerView.Adapter<BankCardAdapter.CardVi
 
             @Override
             public boolean areItemsTheSame(int oldPos, int newPos) {
-                return items.get(oldPos).getId() == next.get(newPos).getId();
+                return cards.get(oldPos).getId() == next.get(newPos).getId();
             }
 
             @Override
             public boolean areContentsTheSame(int oldPos, int newPos) {
-                return items.get(oldPos).equals(next.get(newPos));
+                return cards.get(oldPos).equals(next.get(newPos));
             }
         });
-        items.clear();
-        items.addAll(next);
+        cards.clear();
+        cards.addAll(next);
         diff.dispatchUpdatesTo(this);
     }
 
@@ -104,39 +104,40 @@ public class BankCardAdapter extends RecyclerView.Adapter<BankCardAdapter.CardVi
 
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
-        BankCardItem item = items.get(position);
+        BankCardItem card = cards.get(position);
         BankCardDesignAdapter.applyCardOutline(holder.cardRoot);
-        int design = item.getDesign();
+        int design = card.getDesign();
         if (design < 0 || design >= BACKGROUNDS.length) {
             design = 0;
         }
         holder.cardRoot.setBackgroundResource(BACKGROUNDS[design]);
-        holder.bank.setText(CardText.safe(item.getBankName(), "YOUR BANK").toUpperCase(java.util.Locale.ROOT));
-        holder.holder.setText(CardText.safe(item.getHolderName(), "CARDHOLDER NAME").toUpperCase(java.util.Locale.ROOT));
-        holder.number.setText("•••• •••• •••• " + CardText.last4(item.getCardNumber()));
-        holder.expiry.setText(CardText.formatExpiry(item.getExpiry()));
-        BankCardDesignAdapter.applyNetworkLogo(holder.network, item.getCardNetwork());
-        holder.type.setText(CardText.safe(item.getCardType(), "DEBIT").toUpperCase(java.util.Locale.ROOT));
+        holder.bank.setText(CardText.safe(card.getBankName(), "YOUR BANK").toUpperCase(java.util.Locale.ROOT));
+        holder.cardholder.setText(CardText.safe(card.getHolderName(), "CARDHOLDER NAME").toUpperCase(java.util.Locale.ROOT));
+        holder.number.setText(holder.itemView.getContext().getString(R.string.mask_card_number,
+                CardText.last4(card.getCardNumber())));
+        holder.expiry.setText(CardText.formatExpiry(card.getExpiry()));
+        BankCardDesignAdapter.applyNetworkLogo(holder.network, card.getCardNetwork());
+        holder.type.setText(CardText.safe(card.getCardType(), "DEBIT").toUpperCase(java.util.Locale.ROOT));
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onCardClick(item);
+                listener.onCardClick(card);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return cards.size();
     }
 
-    static class CardViewHolder extends RecyclerView.ViewHolder {
+    public static class CardViewHolder extends RecyclerView.ViewHolder {
         View cardRoot;
         TextView bank;
         ImageView network;
         TextView type;
         TextView number;
-        TextView holder;
+        TextView cardholder;
         TextView expiry;
 
         CardViewHolder(@NonNull View itemView) {
@@ -146,7 +147,7 @@ public class BankCardAdapter extends RecyclerView.Adapter<BankCardAdapter.CardVi
             network = itemView.findViewById(R.id.preview_network);
             type = itemView.findViewById(R.id.preview_type);
             number = itemView.findViewById(R.id.preview_number);
-            holder = itemView.findViewById(R.id.preview_holder);
+            cardholder = itemView.findViewById(R.id.preview_holder);
             expiry = itemView.findViewById(R.id.preview_expiry);
         }
     }
