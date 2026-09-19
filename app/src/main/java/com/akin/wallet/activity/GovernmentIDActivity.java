@@ -27,7 +27,6 @@ import com.akin.wallet.R;
 import com.akin.wallet.adapter.GovermentIdDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.GovernmentIDModel;
-import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -339,7 +338,7 @@ public class GovernmentIDActivity extends AppCompatActivity {
             btnDelete.setVisibility(View.VISIBLE);
             btnDelete.setOnClickListener(v -> {
                 Ui.dismissOwnedDialog(activeDialog);
-                activeDialog = Dialogs.confirmDelete(GovernmentIDActivity.this,
+                activeDialog = Ui.confirmDelete(GovernmentIDActivity.this,
                         "Delete ID",
                         "Are you sure you want to delete this "
                                 + existing.getIdType() + "?",
@@ -598,7 +597,7 @@ public class GovernmentIDActivity extends AppCompatActivity {
         row.setOnClickListener(v -> {
             int checkedPosition = Ui.indexOfIgnoreCase(field.options, draft.get(field.key));
             Ui.dismissOwnedDialog(activeDialog);
-            activeDialog = Dialogs.singleChoice(GovernmentIDActivity.this,
+            activeDialog = Ui.singleChoice(GovernmentIDActivity.this,
                     field.label, field.options, checkedPosition, selectedPosition -> {
                         String picked = field.options[selectedPosition];
                         draft.put(field.key, picked);

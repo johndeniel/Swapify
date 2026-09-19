@@ -6,6 +6,8 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 /**
  * Tiny static decorative barcode for ID faces (sits under the avatar).
  * The bar pattern is fixed and identical on every card (it encodes
@@ -65,13 +67,13 @@ public class BarcodeView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
         float x = getPaddingLeft();
         float top = getPaddingTop();
         float bottom = getMeasuredHeight() - getPaddingBottom();
-        for (int i = 0; i < BARS.length; i++) {
-            float w = BARS[i] * unitPx;
+        for (int bar : BARS) {
+            float w = bar * unitPx;
             canvas.drawRect(x, top, x + w, bottom, paint);
             x += w + unitPx;
         }

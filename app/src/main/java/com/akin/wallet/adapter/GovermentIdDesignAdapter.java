@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 import com.akin.wallet.model.GovernmentIDModel;
-import com.akin.wallet.util.GovermentIdFaceRenderer;
+import com.akin.wallet.util.GovernmentIdFaceRenderer;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -94,7 +94,7 @@ public class GovermentIdDesignAdapter extends RecyclerView.Adapter<GovermentIdDe
             String value = draftFields.get(field.key);
             pageFields.put(field.key, value != null ? value : "");
         }
-        GovermentIdFaceRenderer.render(holder.face, spec, pageType, pageType, pageFields);
+        GovernmentIdFaceRenderer.render(holder.face, spec, pageType, pageType, pageFields);
 
         holder.face.cardRoot.setOnClickListener(v -> {
             int clicked = holder.getBindingAdapterPosition();
@@ -110,11 +110,11 @@ public class GovermentIdDesignAdapter extends RecyclerView.Adapter<GovermentIdDe
     }
 
     public static class FaceViewHolder extends RecyclerView.ViewHolder {
-        final GovermentIdFaceRenderer.FaceViews face;
+        final GovernmentIdFaceRenderer.FaceViews face;
 
         FaceViewHolder(@NonNull View itemView) {
             super(itemView);
-            face = GovermentIdFaceRenderer.FaceViews.bind(itemView);
+            face = GovernmentIdFaceRenderer.FaceViews.bind(itemView);
         }
     }
 }

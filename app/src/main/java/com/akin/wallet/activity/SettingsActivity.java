@@ -36,10 +36,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         Ui.setupBackToolbar(this, R.id.toolbar);
 
-        // Version footer stamps the installed version (falls back to 1.0).
+        // Version footer stamps the installed version.
         TextView settingsVersion = findViewById(R.id.settings_version);
         settingsVersion.setText(
-                getString(R.string.settings_version_format, Ui.versionName(this)));
+                getString(R.string.settings_version_format, Ui.versionName()));
 
         biometricSwitch = findViewById(R.id.switch_biometric);
         biometricStatus = findViewById(R.id.biometric_status);

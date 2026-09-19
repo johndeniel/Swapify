@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 import com.akin.wallet.model.GovernmentIDModel;
-import com.akin.wallet.util.GovermentIdFaceRenderer;
+import com.akin.wallet.util.GovernmentIdFaceRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * Goverment ID carousel — the user's real IDs through the shared
- * {@link GovermentIdFaceRenderer} face (compact mode for the 0.68-width page). Pages
+ * {@link GovernmentIdFaceRenderer} face (compact mode for the 0.68-width page). Pages
  * are sized exactly like the Bank Card carousel. Tapping a card opens its
  * editor.
  */
@@ -97,7 +97,7 @@ public class GovermentIdAdapter extends RecyclerView.Adapter<GovermentIdAdapter.
         GovernmentIDModel.IdType spec = GovernmentIDModel.isKnownType(idType)
                 ? GovernmentIDModel.forName(idType)
                 : GovernmentIDModel.genericType(idType, fields);
-        GovermentIdFaceRenderer.render(holder.face,
+        GovernmentIdFaceRenderer.render(holder.face,
                 spec,
                 idType,
                 rawType.isEmpty() ? "GOVERNMENT ID" : rawType,
@@ -116,11 +116,11 @@ public class GovermentIdAdapter extends RecyclerView.Adapter<GovermentIdAdapter.
     }
 
     public static class IdCardViewHolder extends RecyclerView.ViewHolder {
-        final GovermentIdFaceRenderer.FaceViews face;
+        final GovernmentIdFaceRenderer.FaceViews face;
 
         IdCardViewHolder(@NonNull View itemView) {
             super(itemView);
-            face = GovermentIdFaceRenderer.FaceViews.bind(itemView);
+            face = GovernmentIdFaceRenderer.FaceViews.bind(itemView);
         }
     }
 }

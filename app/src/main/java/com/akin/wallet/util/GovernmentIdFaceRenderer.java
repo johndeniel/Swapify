@@ -16,16 +16,16 @@ import com.akin.wallet.model.GovernmentIDModel;
 import java.util.Map;
 
 /**
- * Single owner of Goverment ID face painting.
+ * Single owner of Government ID face painting.
  *
  * <p>There is exactly ONE ID layout: {@code item_dashboard_id_card}. The
- * dashboard carousel and the Goverment ID picker both inflate it and
+ * dashboard carousel and the Government ID picker both inflate it and
  * render it here with identical metrics, so look and feel cannot drift
  * between the two screens.
  */
-public final class GovermentIdFaceRenderer {
+public final class GovernmentIdFaceRenderer {
 
-    private GovermentIdFaceRenderer() {
+    private GovernmentIdFaceRenderer() {
     }
 
     /** Cached face views — bound once per ViewHolder, never per bind. */

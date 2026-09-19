@@ -21,7 +21,6 @@ import com.akin.wallet.R;
 import com.akin.wallet.adapter.BankCardDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardModel;
-import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
 
 public class BankCardActivity extends AppCompatActivity {
@@ -487,7 +486,7 @@ public class BankCardActivity extends AppCompatActivity {
         btnDelete.setVisibility(View.VISIBLE);
         btnDelete.setOnClickListener(v -> {
             Ui.dismissOwnedDialog(deleteDialog);
-            deleteDialog = Dialogs.confirmDelete(this,
+            deleteDialog = Ui.confirmDelete(this,
                     "Delete Card",
                     "Are you sure you want to delete this card?",
                     () -> {
@@ -661,7 +660,7 @@ public class BankCardActivity extends AppCompatActivity {
 
     private void showChoiceDialog(String title, String[] options, int checkedPosition, OnChoiceListener listener) {
         Ui.dismissOwnedDialog(choiceDialog);
-        choiceDialog = Dialogs.singleChoice(this, title, options, checkedPosition, listener::onChoice);
+        choiceDialog = Ui.singleChoice(this, title, options, checkedPosition, listener::onChoice);
     }
 
     /** Builds dots once; use updateDots() on scroll to avoid view churn. */

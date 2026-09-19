@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 /**
  * Locks the whole app to the dark theme the vault UI is built for. System
- * light mode otherwise leaks light M3 overlays (dialogs, menus, snackbars)
+ * light mode otherwise leaks light M3 overlays (dialogs, menus, etc.)
  * over the navy screens, so night mode is pinned regardless of the toggle.
  */
 public class AkinApp extends Application {

@@ -17,7 +17,6 @@ import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardModel;
 import com.akin.wallet.model.SocialAccountModel;
 import com.akin.wallet.model.GovernmentIDModel;
-import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
@@ -306,7 +305,7 @@ public class TrashActivity extends AppCompatActivity {
         List<Integer> socials = new ArrayList<>();
         splitSelection(selected, ids, cards, socials);
         final int count = selected.size();
-        bulkDeleteDialog = Dialogs.confirmDelete(this,
+        bulkDeleteDialog = Ui.confirmDelete(this,
                 getString(R.string.trash_delete_forever),
                 getString(R.string.trash_delete_many, count),
                 () -> dbIo.execute(() -> {

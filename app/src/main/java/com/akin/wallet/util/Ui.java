@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
@@ -21,12 +22,17 @@ import androidx.core.view.WindowInsetsCompat;
 import com.akin.wallet.BuildConfig;
 import com.akin.wallet.R;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 /**
  * Stateless UI helpers shared by the form activities. Each replaces 3+
  * near-identical private copies that had already started to drift.
+ *
+ * <p>Spell checking is off for this file: it names Material components
+ * (Snackbar) that the IDE dictionary does not know.
  */
+@SuppressWarnings("SpellCheckingInspection")
 public final class Ui {
 
     private Ui() {
@@ -105,14 +111,9 @@ public final class Ui {
         }
     }
 
-    /** Installed version name for About/version footers (falls back to 1.0). */
-    public static String versionName(Context context) {
-        try {
-            String version = BuildConfig.VERSION_NAME;
-            return version != null ? version : "1.0";
-        } catch (RuntimeException e) {
-            return "1.0";
-        }
+    /** Installed version name for About/version footers. */
+    public static String versionName() {
+        return BuildConfig.VERSION_NAME;
     }
 
     // -- Shared chrome (one definition, every activity looks identical) ----
@@ -121,7 +122,12 @@ public final class Ui {
      * System bars stay visible on every screen (no immersive mode): status bar
      * in the theme color, transparent navigation bar kept shown. AndroidX
      * compat, no version branches, safe back to minSdk.
+     *
+     * <p>Suppressed deprecation: these setters are the only way to paint the
+     * bars below API 35; on 35+ edge-to-edge takes over they are harmless
+     * no-ops.
      */
+    @SuppressWarnings("deprecation")
     public static void applySystemBars(Activity activity) {
         activity.getWindow().setStatusBarColor(
                 ContextCompat.getColor(activity, R.color.dashboard_bg_start));
@@ -144,6 +150,38 @@ public final class Ui {
         if (dialog != null && dialog.isShowing()) {
             dialog.dismiss();
         }
+    }
+
+    // -- M3 dialogs (one definition, every confirm looks identical) --------
+    // Builders return the shown dialog so owners can dismiss it in
+    // onDestroy — otherwise a rotation with a dialog up leaks the window.
+
+    /** "Delete <thing>?" confirm; runs {@code onDelete} on Delete. */
+    public static AlertDialog confirmDelete(Context context, String title, String message,
+                                            Runnable onDelete) {
+        return new MaterialAlertDialogBuilder(context)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Delete", (d, which) -> onDelete.run())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /** Single-choice option picker shared by the bank and ID dropdowns. */
+    public interface OnChoice {
+        void onChoice(int which);
+    }
+
+    public static AlertDialog singleChoice(Context context, String title, String[] options,
+                                           int checked, @NonNull OnChoice onChoice) {
+        return new MaterialAlertDialogBuilder(context)
+                .setTitle(title)
+                .setSingleChoiceItems(options, checked, (d, which) -> {
+                    onChoice.onChoice(which);
+                    d.dismiss();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     /**

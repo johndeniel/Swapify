@@ -54,7 +54,7 @@ public class PolicyActivity extends AppCompatActivity {
         } else if (TYPE_ABOUT.equals(type)) {
             toolbar.setTitle(R.string.settings_about);
             body = getString(R.string.policy_about_body)
-                    .replace("{version}", Ui.versionName(this));
+                    .replace("{version}", Ui.versionName());
         } else {
             toolbar.setTitle(R.string.settings_privacy);
             body = getString(R.string.policy_privacy_body);

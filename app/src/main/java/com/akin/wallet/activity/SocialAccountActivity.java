@@ -22,7 +22,6 @@ import com.akin.wallet.adapter.SocialPlatformAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.SocialAccountModel;
 import com.akin.wallet.model.SocialPlatformModel;
-import com.akin.wallet.util.Dialogs;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.search.SearchView;
@@ -564,7 +563,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         btnDelete.setVisibility(View.VISIBLE);
         btnDelete.setOnClickListener(v -> {
             Ui.dismissOwnedDialog(deleteDialog);
-            deleteDialog = Dialogs.confirmDelete(SocialAccountActivity.this,
+            deleteDialog = Ui.confirmDelete(SocialAccountActivity.this,
                     "Delete Account",
                     "Are you sure you want to delete this "
                             + item.getPlatform() + " account?",
