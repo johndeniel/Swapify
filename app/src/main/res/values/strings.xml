@@ -148,6 +148,7 @@
     <!-- Document face field labels -->
     <string name="label_date_of_birth">DATE OF BIRTH</string>
     <string name="label_expiry_date">EXPIRY DATE</string>
+    <string name="label_social_account">Social Account</string>
 
     <!-- Card faces (design-time placeholders, rebound at runtime) -->
     <!-- Bank card -->

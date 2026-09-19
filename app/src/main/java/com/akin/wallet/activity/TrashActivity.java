@@ -280,12 +280,12 @@ public class TrashActivity extends AppCompatActivity {
                                        List<Integer> ids, List<Integer> cards,
                                        List<Integer> socials) {
         for (TrashGalleryAdapter.Entry entry : selected) {
-            if (entry.kind == TrashGalleryAdapter.KIND_ID && entry.id != null) {
-                ids.add(entry.id.getId());
-            } else if (entry.kind == TrashGalleryAdapter.KIND_CARD && entry.card != null) {
-                cards.add(entry.card.getId());
-            } else if (entry.kind == TrashGalleryAdapter.KIND_SOCIAL && entry.account != null) {
-                socials.add(entry.account.getId());
+            if (entry.kind == TrashGalleryAdapter.KIND_ID && entry.idCard != null) {
+                ids.add(entry.idCard.getId());
+            } else if (entry.kind == TrashGalleryAdapter.KIND_CARD && entry.bankCard != null) {
+                cards.add(entry.bankCard.getId());
+            } else if (entry.kind == TrashGalleryAdapter.KIND_SOCIAL && entry.socialAccount != null) {
+                socials.add(entry.socialAccount.getId());
             }
         }
     }

@@ -23,9 +23,9 @@ import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.adapter.DashboardCardAdapter;
-import com.akin.wallet.adapter.DashboardIdCardAdapter;
-import com.akin.wallet.adapter.DashboardSocialAccountAdapter;
+import com.akin.wallet.adapter.BankCardAdapter;
+import com.akin.wallet.adapter.GovermentIdAdapter;
+import com.akin.wallet.adapter.SocialAccountAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.security.AppLockManager;
 import com.akin.wallet.model.BankCardItem;
@@ -52,13 +52,13 @@ import java.util.concurrent.Executors;
 public class DashboardActivity extends AppCompatActivity {
 
     private AppDatabaseHelper dbHelper;
-    private DashboardCardAdapter cardAdapter;
+    private BankCardAdapter cardAdapter;
     private RecyclerView recyclerCarousel;
     private View emptyCards;
-    private DashboardIdCardAdapter idAdapter;
+    private GovermentIdAdapter idAdapter;
     private RecyclerView recyclerIdsCarousel;
     private View emptyIds;
-    private DashboardSocialAccountAdapter socialAdapter;
+    private SocialAccountAdapter socialAdapter;
     private View cardSocialAccounts;
     private RecyclerView recyclerSocialAccounts;
     private View emptySocialAccounts;
@@ -89,13 +89,13 @@ public class DashboardActivity extends AppCompatActivity {
     private static final String KEY_SEARCH_OPEN = "dashboard_search_open";
     private SearchView searchView;
     private boolean searchShowing = false;
-    private DashboardCardAdapter searchCardAdapter;
+    private BankCardAdapter searchCardAdapter;
     private RecyclerView recyclerSearchCards;
     private View searchHeaderCards;
-    private DashboardIdCardAdapter searchIdAdapter;
+    private GovermentIdAdapter searchIdAdapter;
     private RecyclerView recyclerSearchIds;
     private View searchHeaderIds;
-    private DashboardSocialAccountAdapter searchSocialAdapter;
+    private SocialAccountAdapter searchSocialAdapter;
     private View cardSearchSocial;
     private RecyclerView recyclerSearchSocial;
     private View searchHeaderSocial;
@@ -279,7 +279,7 @@ public class DashboardActivity extends AppCompatActivity {
             return;
         }
 
-        searchIdAdapter = new DashboardIdCardAdapter(this::openIdEditor);
+        searchIdAdapter = new GovermentIdAdapter(this::openIdEditor);
         recyclerSearchIds = findViewById(R.id.recycler_search_ids);
         recyclerSearchIds.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -287,7 +287,7 @@ public class DashboardActivity extends AppCompatActivity {
         recyclerSearchIds.addItemDecoration(sharedGap);
         searchHeaderIds = findViewById(R.id.search_header_ids);
 
-        searchCardAdapter = new DashboardCardAdapter(this::openBankEditor);
+        searchCardAdapter = new BankCardAdapter(this::openBankEditor);
         recyclerSearchCards = findViewById(R.id.recycler_search_cards);
         recyclerSearchCards.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -296,7 +296,7 @@ public class DashboardActivity extends AppCompatActivity {
         searchHeaderCards = findViewById(R.id.search_header_cards);
 
         // Row taps open the account's edit screen, same as the dashboard list.
-        searchSocialAdapter = new DashboardSocialAccountAdapter(this::openSocialEditor);
+        searchSocialAdapter = new SocialAccountAdapter(this::openSocialEditor);
         recyclerSearchSocial = findViewById(R.id.recycler_search_social);
         recyclerSearchSocial.setLayoutManager(new LinearLayoutManager(this));
         recyclerSearchSocial.setAdapter(searchSocialAdapter);
@@ -620,7 +620,7 @@ public class DashboardActivity extends AppCompatActivity {
         recyclerCarousel = findViewById(R.id.recycler_cards_carousel);
         emptyCards = findViewById(R.id.empty_cards);
 
-        cardAdapter = new DashboardCardAdapter(this::openBankEditor);
+        cardAdapter = new BankCardAdapter(this::openBankEditor);
         recyclerCarousel.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerCarousel.setAdapter(cardAdapter);
@@ -680,7 +680,7 @@ public class DashboardActivity extends AppCompatActivity {
             if (viewport <= 0) {
                 return;
             }
-            int pageHeight = (int) ((viewport * DashboardCardAdapter.PAGE_WIDTH_RATIO - Ui.dp(empty.getContext(), 8))
+            int pageHeight = (int) ((viewport * BankCardAdapter.PAGE_WIDTH_RATIO - Ui.dp(empty.getContext(), 8))
                     / CARD_ASPECT_RATIO);
             if (pageHeight > 0 && empty.getLayoutParams().height != pageHeight) {
                 empty.getLayoutParams().height = pageHeight;
@@ -696,7 +696,7 @@ public class DashboardActivity extends AppCompatActivity {
         recyclerIdsCarousel = findViewById(R.id.recycler_ids_carousel);
         emptyIds = findViewById(R.id.empty_ids);
 
-        idAdapter = new DashboardIdCardAdapter(this::openIdEditor);
+        idAdapter = new GovermentIdAdapter(this::openIdEditor);
         recyclerIdsCarousel.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerIdsCarousel.setAdapter(idAdapter);
@@ -737,7 +737,7 @@ public class DashboardActivity extends AppCompatActivity {
         emptySocialAccounts = findViewById(R.id.empty_social_accounts);
 
         // Row taps open the account's edit screen, same as the IDs and cards above.
-        socialAdapter = new DashboardSocialAccountAdapter(this::openSocialEditor);
+        socialAdapter = new SocialAccountAdapter(this::openSocialEditor);
         recyclerSocialAccounts.setLayoutManager(new LinearLayoutManager(this));
         recyclerSocialAccounts.setAdapter(socialAdapter);
 

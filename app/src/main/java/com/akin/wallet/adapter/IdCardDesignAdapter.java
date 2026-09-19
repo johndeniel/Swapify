@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Type-picker carousel for the Government ID form — each page is an ID type
- * rendered with the single shared dashboard item (item_dashboard_id_card)
- * and face metrics, driven by the shared draft. Same 0.68 page width, 12dp
- * gap and snap as Home. Swiping pages selects the type; typing updates live.
+ * Goverment ID type picker for the Goverment ID screen — each page is an ID
+ * type rendered with the single shared dashboard item and face metrics,
+ * driven by the shared draft. Same 0.68 page width, 12dp gap and snap as
+ * the dashboard. Swiping pages selects the type; typing updates live.
  */
 public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapter.CardViewHolder> {
 
@@ -39,10 +39,11 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
     }
 
     private String getTypeAt(int position) {
-        if (position < 0 || position >= types.size()) {
-            return types.get(0).name;
-        }
-        return types.get(position).name;
+        // Clamp, don't fall back: every position here comes from the adapter
+        // itself, so an out-of-range index is a bug that must stay visible
+        // next to valid data instead of silently rendering another type.
+        int clamped = Math.max(0, Math.min(position, types.size() - 1));
+        return types.get(clamped).name;
     }
 
     public void updatePreview(Map<String, String> fields) {
@@ -72,7 +73,7 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
                     - parent.getPaddingStart() - parent.getPaddingEnd();
         }
         if (lp != null && parentWidth > 0) {
-            lp.width = (int) (parentWidth * DashboardCardAdapter.PAGE_WIDTH_RATIO);
+            lp.width = (int) (parentWidth * BankCardAdapter.PAGE_WIDTH_RATIO);
             view.setLayoutParams(lp);
         }
         return new CardViewHolder(view);

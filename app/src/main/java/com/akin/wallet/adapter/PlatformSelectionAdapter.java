@@ -18,6 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Platform picker rows for the Social Account screen (icon + name + URL).
+ * Tapping a row selects the platform.
+ */
+
 public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelectionAdapter.PlatformViewHolder> implements Filterable {
 
     public interface OnPlatformSelectedListener {
@@ -34,15 +39,17 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
     }
 
     public PlatformSelectionAdapter(List<PlatformIcons.Option> platforms, OnPlatformSelectedListener listener) {
-        this.platforms = platforms;
-        this.platformsFull = new ArrayList<>(platforms);
+        // Owned copy: filtering mutates the displayed list, which must never
+        // leak back into the caller's catalog.
+        this.platforms = platforms != null ? new ArrayList<>(platforms) : new ArrayList<>();
+        this.platformsFull = new ArrayList<>(this.platforms);
         this.listener = listener;
     }
 
     @NonNull
     @Override
     public PlatformViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_social_platform_option, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_platform_option, parent, false);
         return new PlatformViewHolder(view);
     }
 

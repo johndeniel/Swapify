@@ -8,7 +8,7 @@
     android:paddingHorizontal="8dp">
 
     <ImageView
-        android:id="@+id/assoc_icon"
+        android:id="@+id/linked_icon"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:adjustViewBounds="true"
@@ -25,7 +25,7 @@
         android:layout_marginStart="12dp">
 
         <TextView
-            android:id="@+id/assoc_name"
+            android:id="@+id/linked_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text_primary"
@@ -33,7 +33,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/assoc_email"
+            android:id="@+id/linked_username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/dashboard_muted"

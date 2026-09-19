@@ -11,15 +11,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 
-public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAdapter.CardViewHolder> {
+/**
+ * Bank Card design picker for the Bank Card screen: the five authentic
+ * faces in the shared dashboard card, swiped and snapped like Home. Typing
+ * previews live on every face.
+ */
 
-    private final int[] backgrounds = {
-            R.drawable.bg_bank_card_blue,
-            R.drawable.bg_bank_card_purple,
-            R.drawable.bg_bank_card_green,
-            R.drawable.bg_bank_card_orange,
-            R.drawable.bg_bank_card_slate
-    };
+public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAdapter.CardViewHolder> {
 
     private String bankName = "";
     private String holderName = "";
@@ -29,7 +27,7 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
     private String cardNetwork = "Visa";
 
     public int getDesignCount() {
-        return backgrounds.length;
+        return BankCardAdapter.BACKGROUNDS.length;
     }
 
     public void updatePreview(String bankName, String holderName, String last4,
@@ -76,7 +74,7 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
                     - parent.getPaddingStart() - parent.getPaddingEnd();
         }
         if (lp != null && parentWidth > 0) {
-            lp.width = (int) (parentWidth * DashboardCardAdapter.PAGE_WIDTH_RATIO);
+            lp.width = (int) (parentWidth * BankCardAdapter.PAGE_WIDTH_RATIO);
             view.setLayoutParams(lp);
         }
         return new CardViewHolder(view);
@@ -85,7 +83,7 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
         applyCardOutline(holder.cardRoot);
-        holder.cardRoot.setBackgroundResource(backgrounds[position]);
+        holder.cardRoot.setBackgroundResource(BankCardAdapter.BACKGROUNDS[position]);
         holder.bank.setText(bankName.isEmpty() ? "YOUR BANK" : bankName.toUpperCase(java.util.Locale.ROOT));
         holder.holder.setText(holderName.isEmpty() ? "CARDHOLDER NAME" : holderName.toUpperCase(java.util.Locale.ROOT));
         holder.number.setText("•••• •••• •••• " + (last4.isEmpty() ? "••••" : last4));
@@ -96,7 +94,7 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
 
     @Override
     public int getItemCount() {
-        return backgrounds.length;
+        return BankCardAdapter.BACKGROUNDS.length;
     }
 
     /** One outline provider for every card: radius resolves per view, no per-bind allocation. */

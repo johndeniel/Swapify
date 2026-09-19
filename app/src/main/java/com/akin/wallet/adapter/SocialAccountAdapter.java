@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Dashboard Social Account — renders only the user's created social
- * accounts (platform icon + username). Tapping a row opens the account.
+ * Social Account list — one row per account (platform icon + username).
+ * Tapping a row opens its editor.
  */
-public class DashboardSocialAccountAdapter extends RecyclerView.Adapter<DashboardSocialAccountAdapter.AccountViewHolder> {
+public class SocialAccountAdapter extends RecyclerView.Adapter<SocialAccountAdapter.AccountViewHolder> {
 
     public interface OnAccountClickListener {
         void onAccountClick(CredentialItem item);
@@ -30,7 +30,7 @@ public class DashboardSocialAccountAdapter extends RecyclerView.Adapter<Dashboar
     private final List<CredentialItem> items = new ArrayList<>();
     private final OnAccountClickListener listener;
 
-    public DashboardSocialAccountAdapter(OnAccountClickListener listener) {
+    public SocialAccountAdapter(OnAccountClickListener listener) {
         this.listener = listener;
     }
 
@@ -78,11 +78,12 @@ public class DashboardSocialAccountAdapter extends RecyclerView.Adapter<Dashboar
     @Override
     public void onBindViewHolder(@NonNull AccountViewHolder holder, int position) {
         CredentialItem item = items.get(position);
+        String fallback = holder.itemView.getContext().getString(R.string.label_social_account);
         String platform = item.getPlatform() != null && !item.getPlatform().trim().isEmpty()
-                ? item.getPlatform().trim() : "Social Login";
+                ? item.getPlatform().trim() : fallback;
         String username = item.getUsername() != null ? item.getUsername().trim() : "";
         holder.title.setText(platform);
-        holder.sub.setText(username.isEmpty() ? "Social Login" : username);
+        holder.sub.setText(username.isEmpty() ? fallback : username);
         PlatformIcons.bindIcon(holder.icon, item.getPlatform(), item.getIconRes());
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {

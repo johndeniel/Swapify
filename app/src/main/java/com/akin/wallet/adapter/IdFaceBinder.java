@@ -15,12 +15,12 @@ import com.akin.wallet.model.IdTypeSpec;
 import java.util.Map;
 
 /**
- * Single owner of government-ID face painting.
+ * Single owner of Goverment ID face painting.
  *
  * <p>There is exactly ONE ID layout: {@code item_dashboard_id_card}. The
- * dashboard carousel and the Government ID form picker both inflate it and
- * render it here with identical metrics, so look and feel can never drift
- * between the two screens again.
+ * dashboard carousel and the Goverment ID picker both inflate it and
+ * render it here with identical metrics, so look and feel cannot drift
+ * between the two screens.
  */
 public final class IdFaceBinder {
 
@@ -94,7 +94,7 @@ public final class IdFaceBinder {
         // per-type key branches.
         String number = IdTypeSpec.displayNumber(spec, fields);
         f.eyebrow.setTextColor(colorOf(f, scheme.subtitleColorRes));
-        f.title.setText(title.toUpperCase());
+        f.title.setText(title.toUpperCase(java.util.Locale.ROOT));
         f.title.setTextColor(colorOf(f, scheme.titleColorRes));
         f.title.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
         f.subtitle.setText(IdTypeSpec.previewSubtitle(typeName));
@@ -107,7 +107,8 @@ public final class IdFaceBinder {
         f.holder.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10);
         f.numberLabel.setText(IdTypeSpec.numberLabel(typeName));
         f.numberLabel.setTextColor(colorOf(f, scheme.numberLabelColorRes));
-        f.number.setText(number != null && !number.trim().isEmpty() ? number.trim() : "—");
+        f.number.setText(number != null && !number.trim().isEmpty()
+                ? number.trim() : f.res.getString(R.string.empty_value));
         f.number.setTextColor(colorOf(f, scheme.numberColorRes));
         f.number.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9);
         if (f.barcode != null) {

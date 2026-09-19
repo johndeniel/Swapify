@@ -24,18 +24,19 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Trash gallery — soft-deleted IDs, bank cards and social accounts as one
- * uniform set of selectable tiles (centered icon well + title + masked
- * hint, paired two-per-row). No real card faces or sensitive values are
- * shown. Tapping a tile toggles its selection (check badge + blue stroke);
- * headers never select. The host reads {@link #selectedEntries()} for bulk
- * restore / delete.
+ * Trash gallery — soft-deleted Goverment ID, Bank Card and Social Account
+ * rows as one uniform set of selectable tiles (centered icon well + title +
+ * masked hint, paired two-per-row). No real card faces or sensitive values
+ * are shown. Tapping a tile toggles its selection (check badge + blue
+ * stroke); headers never select. The host reads {@link #selectedEntries()}
+ * for bulk restore / delete.
  */
 public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public static final int TYPE_HEADER = 0;
     public static final int TYPE_TILE = 1;
 
+    public static final int KIND_HEADER = -1;
     public static final int KIND_ID = 0;
     public static final int KIND_CARD = 1;
     public static final int KIND_SOCIAL = 2;
@@ -46,23 +47,23 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         public final boolean header;
         public final String headerTitle;
         public final int headerCount;
-        public final IdCardItem id;
-        public final BankCardItem card;
-        public final CredentialItem account;
+        public final IdCardItem idCard;
+        public final BankCardItem bankCard;
+        public final CredentialItem socialAccount;
 
         private Entry(int kind, boolean header, String headerTitle, int headerCount,
-                      IdCardItem id, BankCardItem card, CredentialItem account) {
+                      IdCardItem idCard, BankCardItem bankCard, CredentialItem socialAccount) {
             this.kind = kind;
             this.header = header;
             this.headerTitle = headerTitle;
             this.headerCount = headerCount;
-            this.id = id;
-            this.card = card;
-            this.account = account;
+            this.idCard = idCard;
+            this.bankCard = bankCard;
+            this.socialAccount = socialAccount;
         }
 
         public static Entry header(String title, int count) {
-            return new Entry(KIND_ID, true, title, count, null, null, null);
+            return new Entry(KIND_HEADER, true, title, count, null, null, null);
         }
 
         public static Entry id(IdCardItem item) {
@@ -99,11 +100,11 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             switch (kind) {
                 case KIND_ID:
-                    return java.util.Objects.equals(id, that.id);
+                    return java.util.Objects.equals(idCard, that.idCard);
                 case KIND_CARD:
-                    return java.util.Objects.equals(card, that.card);
+                    return java.util.Objects.equals(bankCard, that.bankCard);
                 case KIND_SOCIAL:
-                    return java.util.Objects.equals(account, that.account);
+                    return java.util.Objects.equals(socialAccount, that.socialAccount);
                 default:
                     return false;
             }
@@ -114,7 +115,7 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             if (header) {
                 return java.util.Objects.hash(kind, headerTitle, headerCount);
             }
-            Object item = kind == KIND_ID ? id : kind == KIND_CARD ? card : account;
+            Object item = kind == KIND_ID ? idCard : kind == KIND_CARD ? bankCard : socialAccount;
             return java.util.Objects.hash(kind, item);
         }
 
@@ -125,11 +126,11 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             switch (kind) {
                 case KIND_ID:
-                    return "id:" + (id != null ? id.getId() : -1);
+                    return "id:" + (idCard != null ? idCard.getId() : -1);
                 case KIND_CARD:
-                    return "card:" + (card != null ? card.getId() : -1);
+                    return "card:" + (bankCard != null ? bankCard.getId() : -1);
                 case KIND_SOCIAL:
-                    return "social:" + (account != null ? account.getId() : -1);
+                    return "social:" + (socialAccount != null ? socialAccount.getId() : -1);
                 default:
                     return "header:" + headerTitle;
             }
@@ -299,26 +300,35 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             return;
         }
         TileHolder h = (TileHolder) holder;
-        if (entry.kind == KIND_ID) {
+        if (entry.kind == KIND_ID && entry.idCard != null) {
             h.icon.setImageResource(R.drawable.ic_person);
-            String rawType = entry.id.getIdType() == null ? "" : entry.id.getIdType().trim();
-            h.title.setText(rawType.isEmpty() ? "Government ID" : rawType);
-            // Same primary number the document face shows (spec-resolved key).
-            h.sub.setText(IdTypeSpec.displayNumber(
-                    IdTypeSpec.forName(entry.id.getIdType()), entry.id.getFields()));
-        } else if (entry.kind == KIND_CARD) {
+            String rawType = entry.idCard.getIdType() == null
+                    ? "" : entry.idCard.getIdType().trim();
+            h.title.setText(rawType.isEmpty()
+                    ? h.itemView.getContext().getString(R.string.trash_section_ids) : rawType);
+            // Same primary number the document face shows. Unknown types go
+            // through the generic face instead of masquerading as another
+            // document.
+            IdTypeSpec.IdType spec = IdTypeSpec.isKnownType(entry.idCard.getIdType())
+                    ? IdTypeSpec.forName(entry.idCard.getIdType())
+                    : IdTypeSpec.genericType(entry.idCard.getIdType(), entry.idCard.getFields());
+            h.sub.setText(IdTypeSpec.displayNumber(spec, entry.idCard.getFields()));
+        } else if (entry.kind == KIND_CARD && entry.bankCard != null) {
             h.icon.setImageResource(R.drawable.chip);
-            h.title.setText(cardTitle(entry.card));
-            h.sub.setText("•••• " + CardText.last4(entry.card.getCardNumber()));
-        } else {
-            String platform = entry.account.getPlatform() != null
-                    && !entry.account.getPlatform().trim().isEmpty()
-                    ? entry.account.getPlatform().trim() : "Social Login";
-            String username = entry.account.getUsername() != null
-                    ? entry.account.getUsername().trim() : "";
+            h.title.setText(cardTitle(h, entry.bankCard));
+            h.sub.setText("•••• " + CardText.last4(entry.bankCard.getCardNumber()));
+        } else if (entry.socialAccount != null) {
+            String platform = entry.socialAccount.getPlatform() != null
+                    && !entry.socialAccount.getPlatform().trim().isEmpty()
+                    ? entry.socialAccount.getPlatform().trim()
+                    : h.itemView.getContext().getString(R.string.label_social_account);
+            String username = entry.socialAccount.getUsername() != null
+                    ? entry.socialAccount.getUsername().trim() : "";
             h.title.setText(platform);
-            h.sub.setText(username.isEmpty() ? "Social Login" : username);
-            PlatformIcons.bindIcon(h.icon, entry.account.getPlatform(), entry.account.getIconRes());
+            h.sub.setText(username.isEmpty()
+                    ? h.itemView.getContext().getString(R.string.label_social_account) : username);
+            PlatformIcons.bindIcon(h.icon, entry.socialAccount.getPlatform(),
+                    entry.socialAccount.getIconRes());
         }
         bindSelectable(h, entry);
     }
@@ -361,7 +371,7 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return entries.size();
     }
 
-    private static String cardTitle(BankCardItem item) {
+    private static String cardTitle(TileHolder h, BankCardItem item) {
         String bank = item.getBankName() != null ? item.getBankName().trim() : "";
         String type = item.getCardType() != null ? item.getCardType().trim() : "";
         if (!bank.isEmpty() && !type.isEmpty()) {
@@ -373,7 +383,7 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         if (!type.isEmpty()) {
             return type;
         }
-        return "Bank Card";
+        return h.itemView.getContext().getString(R.string.trash_section_cards);
     }
 
     static class HeaderHolder extends RecyclerView.ViewHolder {

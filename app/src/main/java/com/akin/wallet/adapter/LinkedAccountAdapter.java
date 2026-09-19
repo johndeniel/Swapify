@@ -20,16 +20,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdapter.AssocViewHolder> implements Filterable {
+/**
+ * Linked Social Account rows for the Social Account screen: the current
+ * link set with remove actions, reused in pick mode by the link search.
+ * The host owns the displayed list (saves read it directly); the adapter
+ * keeps a private copy as the filter source.
+ */
+public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdapter.AccountViewHolder> implements Filterable {
 
     public interface OnActionListener {
         void onAction(CredentialItem item, boolean isRemove);
     }
 
     private final List<CredentialItem> items;
-    // Unfiltered source for search. Displayed items mutate in place (remove on
-    // unlink keeps the caller's list in sync for save); both lists hold the
-    // same object references, so removals apply to each by identity.
+    // Filter source. Displayed items mutate in place so unlinking keeps the
+    // host's list in sync for save; both lists hold the same references, so
+    // removals apply to each by identity.
     private final List<CredentialItem> itemsFull;
     private final boolean showRemove;
     private final OnActionListener listener;
@@ -54,16 +60,16 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
 
     @NonNull
     @Override
-    public AssocViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_linked_social_account, parent, false);
-        return new AssocViewHolder(view);
+    public AccountViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_linked_account, parent, false);
+        return new AccountViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull AssocViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull AccountViewHolder holder, int position) {
         CredentialItem item = items.get(position);
         holder.name.setText(item.getPlatform());
-        holder.email.setText(item.getUsername());
+        holder.username.setText(item.getUsername());
         PlatformIcons.bindIcon(holder.icon, item.getPlatform(), item.getIconRes());
 
         if (showRemove) {
@@ -167,17 +173,17 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
         }
     };
 
-    static class AssocViewHolder extends RecyclerView.ViewHolder {
+    static class AccountViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
         TextView name;
-        TextView email;
+        TextView username;
         ImageView action;
 
-        AssocViewHolder(@NonNull View itemView) {
+        AccountViewHolder(@NonNull View itemView) {
             super(itemView);
-            icon = itemView.findViewById(R.id.assoc_icon);
-            name = itemView.findViewById(R.id.assoc_name);
-            email = itemView.findViewById(R.id.assoc_email);
+            icon = itemView.findViewById(R.id.linked_icon);
+            name = itemView.findViewById(R.id.linked_name);
+            username = itemView.findViewById(R.id.linked_username);
             action = itemView.findViewById(R.id.btn_action);
         }
     }

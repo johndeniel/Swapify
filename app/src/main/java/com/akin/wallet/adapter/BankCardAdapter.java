@@ -18,21 +18,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Dashboard card carousel — renders the user's real bank cards with the
- * same face as the Cards tab (background ramp, network logo, masked
- * number). Tapping a card opens Bank Cards.
+ * Bank Card carousel — the user's real bank cards with the authentic face
+ * (background ramp, network logo, masked number). Tapping a card opens its
+ * editor.
  */
-public class DashboardCardAdapter extends RecyclerView.Adapter<DashboardCardAdapter.CardViewHolder> {
+public class BankCardAdapter extends RecyclerView.Adapter<BankCardAdapter.CardViewHolder> {
 
     /** Shared carousel page width (fraction of viewport). IDs use the same
         constant so both carousels stay pixel-identical in size. */
     public static final float PAGE_WIDTH_RATIO = 0.68f;
 
-    public interface OnCardClickListener {
-        void onCardClick(BankCardItem item);
-    }
-
-    private final int[] backgrounds = {
+    /**
+     * Card face ramps, shared with the bank picker. Order doubles as the
+     * persisted design index — never reorder without a DB migration.
+     */
+    static final int[] BACKGROUNDS = {
             R.drawable.bg_bank_card_blue,
             R.drawable.bg_bank_card_purple,
             R.drawable.bg_bank_card_green,
@@ -40,10 +40,14 @@ public class DashboardCardAdapter extends RecyclerView.Adapter<DashboardCardAdap
             R.drawable.bg_bank_card_slate
     };
 
+    public interface OnCardClickListener {
+        void onCardClick(BankCardItem item);
+    }
+
     private final List<BankCardItem> items = new ArrayList<>();
     private final OnCardClickListener listener;
 
-    public DashboardCardAdapter(OnCardClickListener listener) {
+    public BankCardAdapter(OnCardClickListener listener) {
         this.listener = listener;
     }
 
@@ -103,10 +107,10 @@ public class DashboardCardAdapter extends RecyclerView.Adapter<DashboardCardAdap
         BankCardItem item = items.get(position);
         BankCardDesignAdapter.applyCardOutline(holder.cardRoot);
         int design = item.getDesign();
-        if (design < 0 || design >= backgrounds.length) {
+        if (design < 0 || design >= BACKGROUNDS.length) {
             design = 0;
         }
-        holder.cardRoot.setBackgroundResource(backgrounds[design]);
+        holder.cardRoot.setBackgroundResource(BACKGROUNDS[design]);
         holder.bank.setText(CardText.safe(item.getBankName(), "YOUR BANK").toUpperCase(java.util.Locale.ROOT));
         holder.holder.setText(CardText.safe(item.getHolderName(), "CARDHOLDER NAME").toUpperCase(java.util.Locale.ROOT));
         holder.number.setText("•••• •••• •••• " + CardText.last4(item.getCardNumber()));

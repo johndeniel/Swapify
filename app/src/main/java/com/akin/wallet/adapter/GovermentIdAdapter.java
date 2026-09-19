@@ -17,12 +17,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Dashboard ID carousel — renders the user's real government IDs through the
- * shared {@link IdFaceBinder} face (compact mode for the 0.68-width page).
- * Pages are sized exactly like the bank-card carousel. Tapping a card opens
- * its edit sheet.
+ * Goverment ID carousel — the user's real IDs through the shared
+ * {@link IdFaceBinder} face (compact mode for the 0.68-width page). Pages
+ * are sized exactly like the Bank Card carousel. Tapping a card opens its
+ * editor.
  */
-public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCardAdapter.IdViewHolder> {
+public class GovermentIdAdapter extends RecyclerView.Adapter<GovermentIdAdapter.IdViewHolder> {
 
     public interface OnIdClickListener {
         void onIdClick(IdCardItem item);
@@ -31,7 +31,7 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
     private final List<IdCardItem> items = new ArrayList<>();
     private final OnIdClickListener listener;
 
-    public DashboardIdCardAdapter(OnIdClickListener listener) {
+    public GovermentIdAdapter(OnIdClickListener listener) {
         this.listener = listener;
     }
 
@@ -79,7 +79,7 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
                     - parent.getPaddingStart() - parent.getPaddingEnd();
         }
         if (lp != null && parentWidth > 0) {
-            lp.width = (int) (parentWidth * DashboardCardAdapter.PAGE_WIDTH_RATIO);
+            lp.width = (int) (parentWidth * BankCardAdapter.PAGE_WIDTH_RATIO);
             view.setLayoutParams(lp);
         }
         return new IdViewHolder(view);
@@ -90,8 +90,14 @@ public class DashboardIdCardAdapter extends RecyclerView.Adapter<DashboardIdCard
         IdCardItem item = items.get(position);
         Map<String, String> fields = item.getFields();
         String rawType = item.getIdType() == null ? "" : item.getIdType().trim();
+        // Unknown types render through the generic face — never masqueraded
+        // as another document. forName() falls back to the first type, so it
+        // is only called for known types.
+        IdTypeSpec.IdType spec = IdTypeSpec.isKnownType(item.getIdType())
+                ? IdTypeSpec.forName(item.getIdType())
+                : IdTypeSpec.genericType(item.getIdType(), fields);
         IdFaceBinder.render(holder.face,
-                IdTypeSpec.forName(item.getIdType()),
+                spec,
                 item.getIdType(),
                 rawType.isEmpty() ? "GOVERNMENT ID" : rawType,
                 fields);
