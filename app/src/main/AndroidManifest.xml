@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- Fingerprint is optional (Settings toggle): never filter the app to
+         fingerprint-only devices on Play. -->
+    <uses-feature
+        android:name="android.hardware.fingerprint"
+        android:required="false" />
 
         <application
             android:name=".AkinApp"

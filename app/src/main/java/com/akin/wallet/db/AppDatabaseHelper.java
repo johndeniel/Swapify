@@ -3,16 +3,24 @@ package com.akin.wallet.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+
+import androidx.annotation.NonNull;
+
 import com.akin.wallet.model.BankCardModel;
 import com.akin.wallet.model.SocialAccountModel;
 import com.akin.wallet.model.GovernmentIDModel;
 import com.akin.wallet.security.DbKeyManager;
-import net.sqlcipher.database.SQLiteDatabase;
-import net.sqlcipher.database.SQLiteOpenHelper;
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+import net.zetetic.database.sqlcipher.SQLiteOpenHelper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+// Spell checking is off for this file: it names the SQLCipher library
+// ("sqlcipher" in loadLibrary and the package path), which the IDE
+// dictionary does not know and which must stay spelled exactly so.
+@SuppressWarnings("SpellCheckingInspection")
 public class AppDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "akin_wallet.db";
@@ -57,23 +65,35 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ID_TYPE = "id_type";
     private static final String COL_ID_FIELDS_JSON = "fields_json";
 
-    private final Context appContext;
-
     public AppDatabaseHelper(Context context) {
-        super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
-        this.appContext = context.getApplicationContext();
-        SQLiteDatabase.loadLibs(appContext);
+        super(context.getApplicationContext(), DATABASE_NAME,
+                toPassword(context.getApplicationContext()),
+                null, DATABASE_VERSION, 0, null, null, false);
+        System.loadLibrary("sqlcipher");
     }
 
-    // All opens flow through the vault key. SQLCipher's helper only offers
-    // password-taking getters, so these same-named no-arg wrappers are new
-    // methods (not overrides) that keep every call site working.
+    /** Vault passphrase as a String; the char[] copy is zeroed immediately. */
+    private static String toPassword(Context appContext) {
+        char[] passphrase = DbKeyManager.getPassphrase(appContext);
+        try {
+            return new String(passphrase);
+        } finally {
+            Arrays.fill(passphrase, '\0');
+        }
+    }
+
+    // No-arg getters are overrides here: the vault key is fixed at
+    // construction, so every open below reuses it.
+    @NonNull
+    @Override
     public SQLiteDatabase getWritableDatabase() {
-        return super.getWritableDatabase(DbKeyManager.getPassphrase(appContext));
+        return super.getWritableDatabase();
     }
 
+    @NonNull
+    @Override
     public SQLiteDatabase getReadableDatabase() {
-        return super.getReadableDatabase(DbKeyManager.getPassphrase(appContext));
+        return super.getReadableDatabase();
     }
 
     @Override

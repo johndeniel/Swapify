@@ -18,10 +18,36 @@ android {
 
     }
 
+    // Release signing comes from local.properties (never committed):
+    //   release.storeFile, release.storePassword, release.keyAlias, release.keyPassword
+    // Without them the release build falls back to the debug key (local use only).
+    def localProps = new Properties()
+    def localPropsFile = rootProject.file("local.properties")
+    if (localPropsFile.exists()) {
+        localPropsFile.withInputStream { localProps.load(it) }
+    }
+    def hasReleaseKey = localProps.containsKey("release.storeFile")
+
+    signingConfigs {
+        release {
+            if (hasReleaseKey) {
+                storeFile file(localProps["release.storeFile"])
+                storePassword localProps["release.storePassword"]
+                keyAlias localProps["release.keyAlias"]
+                keyPassword localProps["release.keyPassword"]
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // AGP 9.3+ DSL: R8 code + resource optimization with the default
+            // platform rules included. SQLCipher ships its own consumer rules.
             optimization {
-                enable false
+                enable true
+            }
+            if (hasReleaseKey) {
+                signingConfig signingConfigs.release
             }
         }
     }
