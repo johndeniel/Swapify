@@ -564,11 +564,9 @@ public class SocialAccountActivity extends AppCompatActivity {
             Ui.notifyOnReturn(R.string.msg_updated);
         });
 
-        // Delete in edit mode (the standalone list screen is gone), same
-        // in-row outline-red pattern as the bank and government ID screens.
-        // Soft-delete behind the scenes: the row moves to Trash (Settings)
-        // but the dialog reads as a normal delete. deleteLogin stays for
-        // edit reinsert + Trash permanent delete only.
+        // Delete in edit mode, same in-row outline-red pattern as the bank
+        // and government ID screens. Soft-deletes to Trash behind a normal
+        // delete dialog.
         View btnDelete = findViewById(R.id.btn_delete);
         btnDelete.setVisibility(View.VISIBLE);
         btnDelete.setOnClickListener(v -> {

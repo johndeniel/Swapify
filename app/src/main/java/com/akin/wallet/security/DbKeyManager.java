@@ -9,9 +9,9 @@ import android.util.Base64;
 import androidx.annotation.NonNull;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -47,9 +47,9 @@ public final class DbKeyManager {
 
     /**
      * Hex passphrase for SQLCipher. Creates and seals a fresh random key on
-     * first run (or first run after the plaintext era); unwraps via Keystore
-     * afterwards. Never returns null; throws instead of risking data loss —
-     * callers must not catch-and-recreate, which would orphan the database.
+     * first run; unwraps via Keystore afterward. Never returns null; throws
+     * instead of risking data loss — callers must not catch-and-recreate,
+     * which would orphan the database.
      */
     @NonNull
     public static synchronized char[] getPassphrase(@NonNull Context context) {
@@ -57,30 +57,31 @@ public final class DbKeyManager {
             // Defensive copy: callers must not mutate the cached key.
             return cachedPassphrase.clone();
         }
-        Context app = context.getApplicationContext();
-        SharedPreferences prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        String wrapped = prefs.getString(KEY_WRAPPED, "");
-        byte[] raw;
+        Context appContext = context.getApplicationContext();
+        SharedPreferences preferences =
+                appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String wrapped = preferences.getString(KEY_WRAPPED, "");
+        byte[] keyBytes;
         if (wrapped.isEmpty()) {
-            raw = new byte[RAW_KEY_BYTES];
-            new SecureRandom().nextBytes(raw);
-            prefs.edit().putString(KEY_WRAPPED, seal(raw)).apply();
+            keyBytes = new byte[RAW_KEY_BYTES];
+            new SecureRandom().nextBytes(keyBytes);
+            preferences.edit().putString(KEY_WRAPPED, seal(keyBytes)).apply();
         } else {
-            raw = unseal(wrapped);
+            keyBytes = unseal(wrapped);
         }
-        cachedPassphrase = toHex(raw).toCharArray();
+        cachedPassphrase = toHex(keyBytes).toCharArray();
         // Best effort: drop the raw bytes as soon as the hex copy exists.
-        java.util.Arrays.fill(raw, (byte) 0);
-        return cachedPassphrase;
+        Arrays.fill(keyBytes, (byte) 0);
+        return cachedPassphrase.clone();
     }
 
-    private static String seal(byte[] raw) {
+    private static String seal(byte[] keyBytes) {
         try {
             SecretKey key = keystoreKey();
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] iv = cipher.getIV();
-            byte[] cipherText = cipher.doFinal(raw);
+            byte[] cipherText = cipher.doFinal(keyBytes);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             out.write(iv, 0, iv.length);
             out.write(cipherText, 0, cipherText.length);
@@ -96,8 +97,8 @@ public final class DbKeyManager {
             if (blob.length <= GCM_IV_BYTES) {
                 throw new IllegalStateException("Vault key blob truncated");
             }
-            byte[] iv = java.util.Arrays.copyOfRange(blob, 0, GCM_IV_BYTES);
-            byte[] cipherText = java.util.Arrays.copyOfRange(blob, GCM_IV_BYTES, blob.length);
+            byte[] iv = Arrays.copyOfRange(blob, 0, GCM_IV_BYTES);
+            byte[] cipherText = Arrays.copyOfRange(blob, GCM_IV_BYTES, blob.length);
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.DECRYPT_MODE, keystoreKey(),
                     new GCMParameterSpec(GCM_TAG_BITS, iv));
@@ -112,28 +113,28 @@ public final class DbKeyManager {
     }
 
     private static SecretKey keystoreKey() throws Exception {
-        KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
-        ks.load(null);
-        if (!ks.containsAlias(KEYSTORE_ALIAS)) {
-            KeyGenerator kg = KeyGenerator.getInstance(
+        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+        keyStore.load(null);
+        if (!keyStore.containsAlias(KEYSTORE_ALIAS)) {
+            KeyGenerator keyGenerator = KeyGenerator.getInstance(
                     KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
-            kg.init(new KeyGenParameterSpec.Builder(KEYSTORE_ALIAS,
+            keyGenerator.init(new KeyGenParameterSpec.Builder(KEYSTORE_ALIAS,
                     KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                     .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                     .setRandomizedEncryptionRequired(true)
                     .build());
-            return kg.generateKey();
+            return keyGenerator.generateKey();
         }
-        return (SecretKey) ks.getKey(KEYSTORE_ALIAS, null);
+        return (SecretKey) keyStore.getKey(KEYSTORE_ALIAS, null);
     }
 
-    private static String toHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            sb.append(Character.forDigit((b >> 4) & 0xF, 16));
-            sb.append(Character.forDigit(b & 0xF, 16));
+    private static String toHex(byte[] keyBytes) {
+        StringBuilder hex = new StringBuilder(keyBytes.length * 2);
+        for (byte keyByte : keyBytes) {
+            hex.append(Character.forDigit((keyByte >> 4) & 0xF, 16));
+            hex.append(Character.forDigit(keyByte & 0xF, 16));
         }
-        return sb.toString();
+        return hex.toString();
     }
 }
