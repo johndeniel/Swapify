@@ -87,6 +87,10 @@ public class TrashActivity extends AppCompatActivity {
         btnBulkRestore.setOnClickListener(v -> bulkRestore());
         btnBulkDelete.setOnClickListener(v -> confirmBulkDelete());
 
+        // Idle chrome before the first load lands: without this, Select All
+        // stays at its inflated visibility until bindTrash runs updateChrome.
+        updateChrome(0, 0);
+
         if (savedInstanceState != null) {
             pendingSelection = savedInstanceState.getStringArrayList(KEY_SELECTION);
         }

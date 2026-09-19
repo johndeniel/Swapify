@@ -469,7 +469,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
         setMenuOption(R.id.fab_option_id, this::openIdCreator);
         setMenuOption(R.id.fab_option_card, this::openBankCreator);
-        setMenuOption(R.id.fab_option_login, this::openSocialCreator);
+        setMenuOption(R.id.fab_option_account, this::openSocialCreator);
     }
 
     private void setMenuOption(int viewId, Runnable action) {
@@ -557,7 +557,7 @@ public class DashboardActivity extends AppCompatActivity {
     /**
      * Opens an ID edit screen directly (dashboard is the editor). The tap itself
      * is a recency signal: updated_at is bumped first so the ID sorts
-     * newest-first on return — mirroring the bank-card and login open paths.
+     * newest-first on return — mirroring the bank-card and account open paths.
      * No immediate refresh here; onResume re-queries after the editor closes.
      */
     private void openIdEditor(GovernmentIDModel item) {
@@ -583,7 +583,7 @@ public class DashboardActivity extends AppCompatActivity {
         startActivity(BankCardActivity.editIntent(this, item));
     }
 
-    /** Opens the login creation screen directly (dashboard rows open the editor). */
+    /** Opens the account creation screen directly (dashboard rows open the editor). */
     private void openSocialCreator() {
         openCreator(SocialAccountActivity.class);
     }

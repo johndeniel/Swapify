@@ -3,7 +3,7 @@ package com.akin.wallet.model;
 import java.util.Objects;
 
 /**
- * Social account entry (platform login: username, password, PIN).
+ * Social account entry (platform account: username, password, PIN).
  *
  * <p>Immutable value object shared by the dashboard, the social-account form,
  * and {@code social_accounts} persistence. Unsaved drafts carry {@code id = -1}

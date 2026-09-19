@@ -30,14 +30,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Social login creation/edit screen as a full screen. Add mode when no login
+ * Social account creation/edit screen as a full screen. Add mode when no account
  * id is passed; edit mode otherwise. The platform and link pickers open as
  * full-screen activities. Callers refresh in onResume; RESULT_OK is set on
  * successful save.
  */
 public class SocialAccountActivity extends AppCompatActivity {
 
-    public static final String EXTRA_LOGIN_ID = "extra_login_id";
+    public static final String EXTRA_ACCOUNT_ID = "extra_account_id";
 
     /** Default pick for a fresh form (also the icon fallback for stored rows). */
     public static final String DEFAULT_PLATFORM_NAME = "Google";
@@ -50,7 +50,7 @@ public class SocialAccountActivity extends AppCompatActivity {
     public static Intent editIntent(@NonNull Context context,
                                     @NonNull SocialAccountModel item) {
         return new Intent(context, SocialAccountActivity.class)
-                .putExtra(EXTRA_LOGIN_ID, (long) item.getId());
+                .putExtra(EXTRA_ACCOUNT_ID, (long) item.getId());
     }
 
     private AppDatabaseHelper dbHelper;
@@ -107,7 +107,7 @@ public class SocialAccountActivity extends AppCompatActivity {
 
         setupPlatformSearch(savedInstanceState);
 
-        long id = getIntent().getLongExtra(EXTRA_LOGIN_ID, -1);
+        long id = getIntent().getLongExtra(EXTRA_ACCOUNT_ID, -1);
         if (id == -1) {
             bindAddForm();
         } else {
@@ -439,10 +439,10 @@ public class SocialAccountActivity extends AppCompatActivity {
 
         if (selfId != -1) {
             List<Integer> linkedIds = dbHelper.getLinkedAccountIds(selfId);
-            for (SocialAccountModel login : linkPool) {
+            for (SocialAccountModel account : linkPool) {
                 for (int linkedId : linkedIds) {
-                    if (login.getId() == linkedId) {
-                        linkedItems.add(login);
+                    if (account.getId() == linkedId) {
+                        linkedItems.add(account);
                         break;
                     }
                 }
