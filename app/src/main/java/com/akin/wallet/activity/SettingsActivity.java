@@ -6,7 +6,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
@@ -14,6 +13,7 @@ import com.akin.wallet.R;
 import com.akin.wallet.security.AppLockManager;
 import com.akin.wallet.util.Ui;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.snackbar.Snackbar;
 
 /**
@@ -24,7 +24,7 @@ import com.google.android.material.snackbar.Snackbar;
  */
 public class SettingsActivity extends AppCompatActivity {
 
-    private SwitchCompat biometricSwitch;
+    private MaterialSwitch biometricSwitch;
     private TextView biometricStatus;
     private BiometricPrompt confirmPrompt;
     private boolean confirming;
@@ -44,7 +44,7 @@ public class SettingsActivity extends AppCompatActivity {
             version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         } catch (Exception ignored) {
         }
-        settingsVersion.setText("Version " + version);
+        settingsVersion.setText(getString(R.string.settings_version_format, version));
 
         biometricSwitch = findViewById(R.id.switch_biometric);
         biometricStatus = findViewById(R.id.biometric_status);

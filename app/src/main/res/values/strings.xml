@@ -60,6 +60,10 @@
     <string name="settings_biometric_unavailable">Not available on this device</string>
     <string name="settings_change_pin">Change app PIN</string>
     <string name="settings_change_pin_sub">Update your 4-digit PIN</string>
+    <string name="settings_section_security">SECURITY</string>
+    <string name="settings_section_wallet">WALLET</string>
+    <string name="settings_section_legal">LEGAL</string>
+    <string name="settings_version_format">Version %1$s</string>
     <!-- Trash (soft-deleted vault items) -->
     <string name="settings_trash">Trash</string>
     <string name="settings_trash_empty">Empty</string>

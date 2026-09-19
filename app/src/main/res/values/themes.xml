@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Base.Theme.AkinWallet" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.AkinWallet" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/brand_blue</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="android:colorAccent">@color/brand_blue</item>
@@ -44,6 +44,14 @@
     <style name="TextAppearance.Akin.BodyMuted" parent="TextAppearance.Material3.BodySmall">
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/dashboard_muted</item>
+    </style>
+
+    <!-- M3 settings section label (SECURITY / WALLET / LEGAL): muted label
+         with M3 label tracking, used with textAppearance in settings. -->
+    <style name="TextAppearance.Akin.SectionLabel" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/dashboard_muted</item>
+        <item name="android:letterSpacing">0.08</item>
     </style>
 
     <!-- M3 dashboard surface card: Filled card pinned to the vault navy tokens
