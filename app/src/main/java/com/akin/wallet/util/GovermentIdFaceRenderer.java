@@ -1,4 +1,4 @@
-package com.akin.wallet.adapter;
+package com.akin.wallet.util;
 
 import android.content.res.Resources;
 import android.view.View;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.akin.wallet.R;
+import com.akin.wallet.adapter.BankCardDesignAdapter;
 import com.akin.wallet.model.IdTypeSpec;
 
 import java.util.Map;
@@ -22,9 +23,9 @@ import java.util.Map;
  * render it here with identical metrics, so look and feel cannot drift
  * between the two screens.
  */
-public final class IdFaceBinder {
+public final class GovermentIdFaceRenderer {
 
-    private IdFaceBinder() {
+    private GovermentIdFaceRenderer() {
     }
 
     /** Cached face views — bound once per ViewHolder, never per bind. */

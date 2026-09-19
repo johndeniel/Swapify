@@ -22,8 +22,7 @@ import java.util.Locale;
  * Platform picker rows for the Social Account screen (icon + name + URL).
  * Tapping a row selects the platform.
  */
-
-public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelectionAdapter.PlatformViewHolder> implements Filterable {
+public class SocialPlatformAdapter extends RecyclerView.Adapter<SocialPlatformAdapter.PlatformViewHolder> implements Filterable {
 
     public interface OnPlatformSelectedListener {
         void onPlatformSelected(int iconRes, String name, String url);
@@ -32,13 +31,8 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
     private final List<PlatformIcons.Option> platforms;
     private final List<PlatformIcons.Option> platformsFull;
     private final OnPlatformSelectedListener listener;
-    private OnCountChangedListener countListener;
 
-    public void setOnCountChangedListener(OnCountChangedListener countListener) {
-        this.countListener = countListener;
-    }
-
-    public PlatformSelectionAdapter(List<PlatformIcons.Option> platforms, OnPlatformSelectedListener listener) {
+    public SocialPlatformAdapter(List<PlatformIcons.Option> platforms, OnPlatformSelectedListener listener) {
         // Owned copy: filtering mutates the displayed list, which must never
         // leak back into the caller's catalog.
         this.platforms = platforms != null ? new ArrayList<>(platforms) : new ArrayList<>();
@@ -102,9 +96,6 @@ public class PlatformSelectionAdapter extends RecyclerView.Adapter<PlatformSelec
             platforms.clear();
             platforms.addAll((List<PlatformIcons.Option>) results.values);
             notifyDataSetChanged();
-            if (countListener != null) {
-                countListener.onCountChanged(platforms.size());
-            }
         }
     };
 

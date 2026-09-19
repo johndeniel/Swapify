@@ -108,7 +108,8 @@ public class BankCardDesignAdapter extends RecyclerView.Adapter<BankCardDesignAd
                 }
             };
 
-    static void applyCardOutline(View cardRoot) {
+    /** Shared rounded-clip outline for every card face (dashboard, pickers, ID faces). */
+    public static void applyCardOutline(View cardRoot) {
         if (cardRoot.getOutlineProvider() != CARD_OUTLINE) {
             cardRoot.setOutlineProvider(CARD_OUTLINE);
             cardRoot.setClipToOutline(true);

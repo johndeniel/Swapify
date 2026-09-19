@@ -1,5 +1,6 @@
 package com.akin.wallet.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
@@ -24,14 +26,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Trash gallery — soft-deleted Goverment ID, Bank Card and Social Account
- * rows as one uniform set of selectable tiles (centered icon well + title +
- * masked hint, paired two-per-row). No real card faces or sensitive values
- * are shown. Tapping a tile toggles its selection (check badge + blue
- * stroke); headers never select. The host reads {@link #selectedEntries()}
- * for bulk restore / delete.
+ * Trash rows as one uniform set of selectable tiles (centered icon well +
+ * title + masked hint, paired two-per-row). No real card faces or sensitive
+ * values are shown. Tapping a tile toggles its selection (check badge +
+ * blue stroke); headers never select. The host reads
+ * {@link #selectedEntries()} for bulk restore / delete.
  */
-public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class TrashAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public static final int TYPE_HEADER = 0;
     public static final int TYPE_TILE = 1;
@@ -41,7 +42,7 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public static final int KIND_CARD = 1;
     public static final int KIND_SOCIAL = 2;
 
-    /** One gallery row: a header or a selectable trashed item. */
+    /** One trash row: a section header or a selectable trashed item. */
     public static final class Entry {
         public final int kind;
         public final boolean header;
@@ -151,40 +152,31 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     public void updateData(List<Entry> newEntries) {
         List<Entry> next = newEntries != null ? new ArrayList<>(newEntries) : new ArrayList<>();
-        androidx.recyclerview.widget.DiffUtil.DiffResult diff =
-                androidx.recyclerview.widget.DiffUtil.calculateDiff(
-                        new androidx.recyclerview.widget.DiffUtil.Callback() {
-                            @Override
-                            public int getOldListSize() {
-                                return entries.size();
-                            }
+        DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return entries.size();
+            }
 
-                            @Override
-                            public int getNewListSize() {
-                                return next.size();
-                            }
+            @Override
+            public int getNewListSize() {
+                return next.size();
+            }
 
-                            @Override
-                            public boolean areItemsTheSame(int oldPos, int newPos) {
-                                return entries.get(oldPos).key().equals(next.get(newPos).key());
-                            }
+            @Override
+            public boolean areItemsTheSame(int oldPos, int newPos) {
+                return entries.get(oldPos).key().equals(next.get(newPos).key());
+            }
 
-                            @Override
-                            public boolean areContentsTheSame(int oldPos, int newPos) {
-                                return entries.get(oldPos).equals(next.get(newPos));
-                            }
-                        });
+            @Override
+            public boolean areContentsTheSame(int oldPos, int newPos) {
+                return entries.get(oldPos).equals(next.get(newPos));
+            }
+        });
         entries.clear();
         entries.addAll(next);
-        // Keep selections that still exist (rotation-safe reloads); drop the rest.
         if (!selectedKeys.isEmpty()) {
-            Set<String> live = new HashSet<>();
-            for (Entry e : entries) {
-                if (e.isSelectable()) {
-                    live.add(e.key());
-                }
-            }
-            selectedKeys.retainAll(live);
+            selectedKeys.retainAll(selectableKeys());
         }
         diff.dispatchUpdatesTo(this);
         emitSelection();
@@ -205,44 +197,36 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 }
             }
         }
-        // Prune keys with no matching row, then repaint only if selecting.
-        Set<String> live = new HashSet<>();
-        for (Entry e : entries) {
-            if (e.isSelectable()) {
-                live.add(e.key());
-            }
-        }
-        selectedKeys.retainAll(live);
+        selectedKeys.retainAll(selectableKeys());
         if (!selectedKeys.isEmpty()) {
             notifyDataSetChanged();
         }
         emitSelection();
     }
 
-    /** All currently selected (selectable) entries, in gallery order. */
+    /** Currently selected entries, in display order. */
     public List<Entry> selectedEntries() {
-        List<Entry> out = new ArrayList<>();
-        for (Entry e : entries) {
-            if (e.isSelectable() && selectedKeys.contains(e.key())) {
-                out.add(e);
+        List<Entry> selected = new ArrayList<>();
+        for (Entry entry : entries) {
+            if (entry.isSelectable() && selectedKeys.contains(entry.key())) {
+                selected.add(entry);
             }
         }
-        return out;
+        return selected;
     }
 
     public int getSelectedCount() {
-        // Keys only ever hold selectable tiles (toggle/selectAll guard it).
         return selectedKeys.size();
     }
 
     public int getSelectableCount() {
-        int n = 0;
-        for (Entry e : entries) {
-            if (e.isSelectable()) {
-                n++;
+        int count = 0;
+        for (Entry entry : entries) {
+            if (entry.isSelectable()) {
+                count++;
             }
         }
-        return n;
+        return count;
     }
 
     public void clearSelection() {
@@ -255,13 +239,23 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public void selectAll() {
-        for (Entry e : entries) {
-            if (e.isSelectable()) {
-                selectedKeys.add(e.key());
+        for (Entry entry : entries) {
+            if (entry.isSelectable()) {
+                selectedKeys.add(entry.key());
             }
         }
         notifyDataSetChanged();
         emitSelection();
+    }
+
+    private Set<String> selectableKeys() {
+        Set<String> keys = new HashSet<>();
+        for (Entry entry : entries) {
+            if (entry.isSelectable()) {
+                keys.add(entry.key());
+            }
+        }
+        return keys;
     }
 
     private void emitSelection() {
@@ -293,52 +287,70 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Entry entry = entries.get(position);
         if (holder instanceof HeaderHolder) {
-            HeaderHolder h = (HeaderHolder) holder;
-            h.title.setText(entry.headerTitle);
-            h.count.setText(h.itemView.getContext()
-                    .getString(R.string.trash_header_count, entry.headerCount));
-            return;
+            bindHeader((HeaderHolder) holder, entry);
+        } else {
+            bindTile((TileHolder) holder, entry);
         }
-        TileHolder h = (TileHolder) holder;
-        if (entry.kind == KIND_ID && entry.idCard != null) {
-            h.icon.setImageResource(R.drawable.ic_person);
-            String rawType = entry.idCard.getIdType() == null
-                    ? "" : entry.idCard.getIdType().trim();
-            h.title.setText(rawType.isEmpty()
-                    ? h.itemView.getContext().getString(R.string.trash_section_ids) : rawType);
-            // Same primary number the document face shows. Unknown types go
-            // through the generic face instead of masquerading as another
-            // document.
-            IdTypeSpec.IdType spec = IdTypeSpec.isKnownType(entry.idCard.getIdType())
-                    ? IdTypeSpec.forName(entry.idCard.getIdType())
-                    : IdTypeSpec.genericType(entry.idCard.getIdType(), entry.idCard.getFields());
-            h.sub.setText(IdTypeSpec.displayNumber(spec, entry.idCard.getFields()));
-        } else if (entry.kind == KIND_CARD && entry.bankCard != null) {
-            h.icon.setImageResource(R.drawable.chip);
-            h.title.setText(cardTitle(h, entry.bankCard));
-            h.sub.setText("•••• " + CardText.last4(entry.bankCard.getCardNumber()));
-        } else if (entry.socialAccount != null) {
-            String platform = entry.socialAccount.getPlatform() != null
-                    && !entry.socialAccount.getPlatform().trim().isEmpty()
-                    ? entry.socialAccount.getPlatform().trim()
-                    : h.itemView.getContext().getString(R.string.label_social_account);
-            String username = entry.socialAccount.getUsername() != null
-                    ? entry.socialAccount.getUsername().trim() : "";
-            h.title.setText(platform);
-            h.sub.setText(username.isEmpty()
-                    ? h.itemView.getContext().getString(R.string.label_social_account) : username);
-            PlatformIcons.bindIcon(h.icon, entry.socialAccount.getPlatform(),
-                    entry.socialAccount.getIconRes());
-        }
-        bindSelectable(h, entry);
     }
 
-    /** Tap toggles selection: badge + blue stroke on, hairline off. */
-    private void bindSelectable(TileHolder h, Entry entry) {
-        MaterialCardView card = h.card;
-        View badge = h.badge;
+    private static void bindHeader(HeaderHolder header, Entry entry) {
+        header.title.setText(entry.headerTitle);
+        header.count.setText(header.itemView.getContext()
+                .getString(R.string.trash_header_count, entry.headerCount));
+    }
+
+    private void bindTile(TileHolder tile, Entry entry) {
+        if (entry.kind == KIND_ID && entry.idCard != null) {
+            bindIdCard(tile, entry.idCard);
+        } else if (entry.kind == KIND_CARD && entry.bankCard != null) {
+            bindBankCard(tile, entry.bankCard);
+        } else if (entry.socialAccount != null) {
+            bindSocialAccount(tile, entry.socialAccount);
+        }
+        applySelection(tile, entry);
+    }
+
+    private static void bindIdCard(TileHolder tile, IdCardItem idCard) {
+        Context context = tile.itemView.getContext();
+        tile.icon.setImageResource(R.drawable.ic_person);
+        String rawType = idCard.getIdType() == null ? "" : idCard.getIdType().trim();
+        tile.title.setText(rawType.isEmpty()
+                ? context.getString(R.string.trash_section_ids) : rawType);
+        tile.sub.setText(IdTypeSpec.displayNumber(faceSpec(idCard), idCard.getFields()));
+    }
+
+    private static IdTypeSpec.IdType faceSpec(IdCardItem idCard) {
+        // Unknown types render through the generic face, never masquerading
+        // as another document.
+        return IdTypeSpec.isKnownType(idCard.getIdType())
+                ? IdTypeSpec.forName(idCard.getIdType())
+                : IdTypeSpec.genericType(idCard.getIdType(), idCard.getFields());
+    }
+
+    private static void bindBankCard(TileHolder tile, BankCardItem bankCard) {
+        tile.icon.setImageResource(R.drawable.chip);
+        tile.title.setText(cardTitle(tile.itemView.getContext(), bankCard));
+        tile.sub.setText("•••• " + CardText.last4(bankCard.getCardNumber()));
+    }
+
+    private static void bindSocialAccount(TileHolder tile, CredentialItem socialAccount) {
+        Context context = tile.itemView.getContext();
+        String fallback = context.getString(R.string.label_social_account);
+        String platform = socialAccount.getPlatform() != null
+                && !socialAccount.getPlatform().trim().isEmpty()
+                ? socialAccount.getPlatform().trim() : fallback;
+        String username = socialAccount.getUsername() != null
+                ? socialAccount.getUsername().trim() : "";
+        tile.title.setText(platform);
+        tile.sub.setText(username.isEmpty() ? fallback : username);
+        PlatformIcons.bindIcon(tile.icon, socialAccount.getPlatform(),
+                socialAccount.getIconRes());
+    }
+
+    private void applySelection(TileHolder tile, Entry entry) {
+        MaterialCardView card = tile.card;
         boolean selected = selectedKeys.contains(entry.key());
-        badge.setVisibility(selected ? View.VISIBLE : View.GONE);
+        tile.badge.setVisibility(selected ? View.VISIBLE : View.GONE);
         float density = card.getResources().getDisplayMetrics().density;
         if (selected) {
             card.setStrokeColor(card.getContext().getColor(R.color.brand_blue));
@@ -348,20 +360,19 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             card.setStrokeWidth(Math.round(1 * density));
         }
         card.setOnClickListener(v -> {
-            // Position resolved at click time: bind-time positions go stale
-            // after reloads/removals.
-            int pos = h.getAdapterPosition();
-            if (pos == RecyclerView.NO_POSITION
-                    || pos < 0 || pos >= entries.size()) {
+            // Bind-time positions go stale after reloads; resolve at click time.
+            int clicked = tile.getAdapterPosition();
+            if (clicked == RecyclerView.NO_POSITION
+                    || clicked < 0 || clicked >= entries.size()) {
                 return;
             }
-            String key = entries.get(pos).key();
+            String key = entries.get(clicked).key();
             if (selectedKeys.contains(key)) {
                 selectedKeys.remove(key);
             } else {
                 selectedKeys.add(key);
             }
-            notifyItemChanged(pos);
+            notifyItemChanged(clicked);
             emitSelection();
         });
     }
@@ -371,9 +382,9 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return entries.size();
     }
 
-    private static String cardTitle(TileHolder h, BankCardItem item) {
-        String bank = item.getBankName() != null ? item.getBankName().trim() : "";
-        String type = item.getCardType() != null ? item.getCardType().trim() : "";
+    private static String cardTitle(Context context, BankCardItem card) {
+        String bank = card.getBankName() != null ? card.getBankName().trim() : "";
+        String type = card.getCardType() != null ? card.getCardType().trim() : "";
         if (!bank.isEmpty() && !type.isEmpty()) {
             return bank + " " + type;
         }
@@ -383,7 +394,7 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         if (!type.isEmpty()) {
             return type;
         }
-        return h.itemView.getContext().getString(R.string.trash_section_cards);
+        return context.getString(R.string.trash_section_cards);
     }
 
     static class HeaderHolder extends RecyclerView.ViewHolder {
@@ -392,8 +403,8 @@ public class TrashGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         HeaderHolder(@NonNull View itemView) {
             super(itemView);
-            title = itemView.findViewById(R.id.gallery_header_title);
-            count = itemView.findViewById(R.id.gallery_header_count);
+            title = itemView.findViewById(R.id.trash_header_title);
+            count = itemView.findViewById(R.id.trash_header_count);
         }
     }
 

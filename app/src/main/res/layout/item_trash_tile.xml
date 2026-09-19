@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Trash gallery tile: centered icon well + title + subtitle, paired
+<!-- Trash tile: centered icon well + title + subtitle, paired
      two-per-row for every type (IDs, bank cards, social accounts).
      Tapping toggles selection (badge + blue stroke). No real card faces
      or sensitive values are shown — titles and masked hints only. -->

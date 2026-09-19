@@ -75,7 +75,7 @@
     <string name="trash_header_count">\u2022 %1$d</string>
     <string name="err_trash_load">Couldn\'t load Trash. Please try again</string>
     <string name="trash_delete_forever">Delete</string>
-    <!-- Trash gallery: multi-select grid of soft-deleted items -->
+    <!-- Trash: multi-select grid of soft-deleted items -->
     <string name="trash_empty_title">Trash is empty</string>
     <string name="trash_empty_sub">Items you delete will appear here</string>
     <string name="trash_select_all">Select all</string>

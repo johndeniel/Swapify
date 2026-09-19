@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 import com.akin.wallet.adapter.LinkedAccountAdapter;
-import com.akin.wallet.adapter.PlatformSelectionAdapter;
+import com.akin.wallet.adapter.SocialPlatformAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.CredentialItem;
 import com.akin.wallet.model.PlatformIcons;
@@ -79,7 +79,7 @@ public class SocialAccountActivity extends AppCompatActivity {
     private static final String KEY_SELECTED_NAME = "selected_name";
     private static final String KEY_LINKED_IDS = "linked_ids";
     private SearchView platformSearchView;
-    private PlatformSelectionAdapter platformAdapter;
+    private SocialPlatformAdapter platformAdapter;
     private RecyclerView recyclerPlatformSearch;
     private View emptyPlatformResults;
     private String platformQuery = "";
@@ -206,7 +206,7 @@ public class SocialAccountActivity extends AppCompatActivity {
         recyclerPlatformSearch = findViewById(R.id.recycler_platform_search);
         emptyPlatformResults = findViewById(R.id.empty_platform_results);
 
-        platformAdapter = new PlatformSelectionAdapter(PlatformIcons.catalog(),
+        platformAdapter = new SocialPlatformAdapter(PlatformIcons.catalog(),
                 (iconRes, name, url) -> {
                     selectedIcon = iconRes;
                     selectedName = name;
@@ -221,13 +221,16 @@ public class SocialAccountActivity extends AppCompatActivity {
         recyclerPlatformSearch.setLayoutManager(new LinearLayoutManager(this));
         recyclerPlatformSearch.setAdapter(platformAdapter);
         // Empty card mirrors the filter count (register before restoring).
-        platformAdapter.setOnCountChangedListener(count -> {
-            boolean empty = count == 0;
-            if (emptyPlatformResults != null) {
-                emptyPlatformResults.setVisibility(empty ? View.VISIBLE : View.GONE);
-            }
-            if (recyclerPlatformSearch != null) {
-                recyclerPlatformSearch.setVisibility(empty ? View.GONE : View.VISIBLE);
+        platformAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                boolean empty = platformAdapter.getItemCount() == 0;
+                if (emptyPlatformResults != null) {
+                    emptyPlatformResults.setVisibility(empty ? View.VISIBLE : View.GONE);
+                }
+                if (recyclerPlatformSearch != null) {
+                    recyclerPlatformSearch.setVisibility(empty ? View.GONE : View.VISIBLE);
+                }
             }
         });
 
@@ -361,12 +364,15 @@ public class SocialAccountActivity extends AppCompatActivity {
         });
         // No [+] icon in search: tapping the row itself links (platform style).
         linkSearchAdapter.setShowPickAction(false);
-        linkSearchAdapter.setOnCountChangedListener(count -> {
-            boolean empty = count == 0;
-            if (emptyLinkResults != null) {
-                emptyLinkResults.setVisibility(empty ? View.VISIBLE : View.GONE);
+        linkSearchAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                boolean empty = linkSearchAdapter.getItemCount() == 0;
+                if (emptyLinkResults != null) {
+                    emptyLinkResults.setVisibility(empty ? View.VISIBLE : View.GONE);
+                }
+                recyclerLinkSearch.setVisibility(empty ? View.GONE : View.VISIBLE);
             }
-            recyclerLinkSearch.setVisibility(empty ? View.GONE : View.VISIBLE);
         });
         recyclerLinkSearch.setAdapter(linkSearchAdapter);
         // Fresh adapter holds the full list: reset any stale empty state and

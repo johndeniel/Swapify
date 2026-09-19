@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
 import com.akin.wallet.model.IdTypeSpec;
+import com.akin.wallet.util.GovermentIdFaceRenderer;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.Map;
  * driven by the shared draft. Same 0.68 page width, 12dp gap and snap as
  * the dashboard. Swiping pages selects the type; typing updates live.
  */
-public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapter.CardViewHolder> {
+public class GovermentIdDesignAdapter extends RecyclerView.Adapter<GovermentIdDesignAdapter.CardViewHolder> {
 
     public interface OnTypePageListener {
         void onTypePageSelected(int typeIndex);
@@ -30,7 +31,7 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
     private final OnTypePageListener listener;
     private Map<String, String> fields = new LinkedHashMap<>();
 
-    public IdCardDesignAdapter(OnTypePageListener listener) {
+    public GovermentIdDesignAdapter(OnTypePageListener listener) {
         this.listener = listener;
     }
 
@@ -91,7 +92,7 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
             String v = fields.get(f.key);
             pageFields.put(f.key, v != null ? v : "");
         }
-        IdFaceBinder.render(holder.face, spec, pageType, pageType, pageFields);
+        GovermentIdFaceRenderer.render(holder.face, spec, pageType, pageType, pageFields);
 
         holder.face.cardRoot.setOnClickListener(v -> {
             int adapterPosition = holder.getAdapterPosition();
@@ -107,11 +108,11 @@ public class IdCardDesignAdapter extends RecyclerView.Adapter<IdCardDesignAdapte
     }
 
     static class CardViewHolder extends RecyclerView.ViewHolder {
-        final IdFaceBinder.FaceViews face;
+        final GovermentIdFaceRenderer.FaceViews face;
 
         CardViewHolder(@NonNull View itemView) {
             super(itemView);
-            face = IdFaceBinder.FaceViews.bind(itemView);
+            face = GovermentIdFaceRenderer.FaceViews.bind(itemView);
         }
     }
 }

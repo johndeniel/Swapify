@@ -1,9 +1,9 @@
 package com.akin.wallet.util;
 
 /**
- * Bank-card face text rules shared by the dashboard carousel and the trash
- * gallery. Single source so masked numbers and expiries render identically
- * everywhere (both copies had already been pasted verbatim once).
+ * Bank-card face text rules shared by the dashboard carousel and trash.
+ * Single source so masked numbers and expiries render identically
+ * everywhere.
  */
 public final class CardText {
 

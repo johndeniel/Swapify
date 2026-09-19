@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.adapter.TrashGalleryAdapter;
+import com.akin.wallet.adapter.TrashAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.BankCardItem;
 import com.akin.wallet.model.CredentialItem;
@@ -28,20 +28,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Trash gallery — restorable soft-deletes as selectable thumbnails.
- * Deleting a Government ID, Bank Card or Social Account stamps deleted_at
- * (dashboard hides it); this screen groups the trashed rows gallery-style:
- * one uniform set of tiles (centered icon + title + masked hint, paired
- * two-per-row). Tapping a tile toggles its selection; the toolbar turns
- * contextual (count + select-all) and the bottom bar restores or
- * permanently deletes the selection in bulk.
+ * Trash — restorable soft-deletes as selectable tiles. Deleting a Goverment
+ * ID, Bank Card or Social Account stamps deleted_at (dashboard hides it);
+ * this screen groups the trashed rows: one uniform set of tiles (centered
+ * icon + title + masked hint, paired two-per-row). Tapping a tile toggles
+ * its selection; the toolbar turns contextual (count + select-all) and the
+ * bottom bar restores or permanently deletes the selection in bulk.
  */
 public class TrashActivity extends AppCompatActivity {
 
     private AppDatabaseHelper dbHelper;
     private MaterialToolbar toolbar;
     private RecyclerView recyclerTrash;
-    private TrashGalleryAdapter galleryAdapter;
+    private TrashAdapter trashAdapter;
     private View emptyTrash;
     private View actionBar;
     private MaterialButton btnBulkRestore;
@@ -68,7 +67,7 @@ public class TrashActivity extends AppCompatActivity {
         toolbar.inflateMenu(R.menu.trash_selection);
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_select_all) {
-                galleryAdapter.selectAll();
+                trashAdapter.selectAll();
                 return true;
             }
             return false;
@@ -81,19 +80,19 @@ public class TrashActivity extends AppCompatActivity {
         grid.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                if (galleryAdapter == null
-                        || position < 0 || position >= galleryAdapter.getItemCount()) {
+                if (trashAdapter == null
+                        || position < 0 || position >= trashAdapter.getItemCount()) {
                     return 2;
                 }
-                return galleryAdapter.getItemViewType(position)
-                        == TrashGalleryAdapter.TYPE_TILE ? 1 : 2;
+                return trashAdapter.getItemViewType(position)
+                        == TrashAdapter.TYPE_TILE ? 1 : 2;
             }
         });
         recyclerTrash.setLayoutManager(grid);
-        galleryAdapter = new TrashGalleryAdapter();
-        galleryAdapter.setOnSelectionChangedListener(
+        trashAdapter = new TrashAdapter();
+        trashAdapter.setOnSelectionChangedListener(
                 (selected, total) -> updateChrome(selected, total));
-        recyclerTrash.setAdapter(galleryAdapter);
+        recyclerTrash.setAdapter(trashAdapter);
 
         emptyTrash = findViewById(R.id.empty_trash);
         actionBar = findViewById(R.id.action_bar);
@@ -109,8 +108,8 @@ public class TrashActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (galleryAdapter.getSelectedCount() > 0) {
-                    galleryAdapter.clearSelection();
+                if (trashAdapter.getSelectedCount() > 0) {
+                    trashAdapter.clearSelection();
                 } else {
                     setEnabled(false);
                     getOnBackPressedDispatcher().onBackPressed();
@@ -122,8 +121,8 @@ public class TrashActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (galleryAdapter != null) {
-            outState.putStringArrayList(KEY_SELECTION, galleryAdapter.saveSelection());
+        if (trashAdapter != null) {
+            outState.putStringArrayList(KEY_SELECTION, trashAdapter.saveSelection());
         }
     }
 
@@ -148,8 +147,8 @@ public class TrashActivity extends AppCompatActivity {
 
     /** Back/close: clears an active selection first, finishes otherwise. */
     private void onNavigationBack() {
-        if (galleryAdapter != null && galleryAdapter.getSelectedCount() > 0) {
-            galleryAdapter.clearSelection();
+        if (trashAdapter != null && trashAdapter.getSelectedCount() > 0) {
+            trashAdapter.clearSelection();
         } else {
             finish();
         }
@@ -190,38 +189,38 @@ public class TrashActivity extends AppCompatActivity {
     /** Binds one loaded snapshot on the UI thread (adapter + chrome). */
     private void bindTrash(List<IdCardItem> ids, List<BankCardItem> cards,
                            List<CredentialItem> accounts) {
-        List<TrashGalleryAdapter.Entry> entries = new ArrayList<>();
+        List<TrashAdapter.Entry> entries = new ArrayList<>();
         if (ids != null && !ids.isEmpty()) {
-            entries.add(TrashGalleryAdapter.Entry.header(
+            entries.add(TrashAdapter.Entry.header(
                     getString(R.string.trash_section_ids), ids.size()));
             for (IdCardItem item : ids) {
-                entries.add(TrashGalleryAdapter.Entry.id(item));
+                entries.add(TrashAdapter.Entry.id(item));
             }
         }
         if (cards != null && !cards.isEmpty()) {
-            entries.add(TrashGalleryAdapter.Entry.header(
+            entries.add(TrashAdapter.Entry.header(
                     getString(R.string.trash_section_cards), cards.size()));
             for (BankCardItem item : cards) {
-                entries.add(TrashGalleryAdapter.Entry.card(item));
+                entries.add(TrashAdapter.Entry.card(item));
             }
         }
         if (accounts != null && !accounts.isEmpty()) {
-            entries.add(TrashGalleryAdapter.Entry.header(
+            entries.add(TrashAdapter.Entry.header(
                     getString(R.string.trash_section_social), accounts.size()));
             for (CredentialItem item : accounts) {
-                entries.add(TrashGalleryAdapter.Entry.social(item));
+                entries.add(TrashAdapter.Entry.social(item));
             }
         }
 
-        galleryAdapter.updateData(entries);
+        trashAdapter.updateData(entries);
         if (pendingSelection != null) {
-            galleryAdapter.restoreSelection(pendingSelection);
+            trashAdapter.restoreSelection(pendingSelection);
             pendingSelection = null;
         }
         boolean allEmpty = entries.isEmpty();
         emptyTrash.setVisibility(allEmpty ? View.VISIBLE : View.GONE);
         recyclerTrash.setVisibility(allEmpty ? View.GONE : View.VISIBLE);
-        updateChrome(galleryAdapter.getSelectedCount(), galleryAdapter.getSelectableCount());
+        updateChrome(trashAdapter.getSelectedCount(), trashAdapter.getSelectableCount());
     }
 
     /**
@@ -250,7 +249,7 @@ public class TrashActivity extends AppCompatActivity {
 
     /** Restores every selected item to its vault, then reloads. */
     private void bulkRestore() {
-        List<TrashGalleryAdapter.Entry> selected = galleryAdapter.selectedEntries();
+        List<TrashAdapter.Entry> selected = trashAdapter.selectedEntries();
         if (selected.isEmpty() || dbHelper == null) {
             return;
         }
@@ -276,15 +275,15 @@ public class TrashActivity extends AppCompatActivity {
     }
 
     /** Groups selected entries into per-table id lists for batch writes. */
-    private static void splitSelection(List<TrashGalleryAdapter.Entry> selected,
+    private static void splitSelection(List<TrashAdapter.Entry> selected,
                                        List<Integer> ids, List<Integer> cards,
                                        List<Integer> socials) {
-        for (TrashGalleryAdapter.Entry entry : selected) {
-            if (entry.kind == TrashGalleryAdapter.KIND_ID && entry.idCard != null) {
+        for (TrashAdapter.Entry entry : selected) {
+            if (entry.kind == TrashAdapter.KIND_ID && entry.idCard != null) {
                 ids.add(entry.idCard.getId());
-            } else if (entry.kind == TrashGalleryAdapter.KIND_CARD && entry.bankCard != null) {
+            } else if (entry.kind == TrashAdapter.KIND_CARD && entry.bankCard != null) {
                 cards.add(entry.bankCard.getId());
-            } else if (entry.kind == TrashGalleryAdapter.KIND_SOCIAL && entry.socialAccount != null) {
+            } else if (entry.kind == TrashAdapter.KIND_SOCIAL && entry.socialAccount != null) {
                 socials.add(entry.socialAccount.getId());
             }
         }
@@ -292,7 +291,7 @@ public class TrashActivity extends AppCompatActivity {
 
     /** Confirms, then permanently deletes every selected item. */
     private void confirmBulkDelete() {
-        List<TrashGalleryAdapter.Entry> selected = galleryAdapter.selectedEntries();
+        List<TrashAdapter.Entry> selected = trashAdapter.selectedEntries();
         if (selected.isEmpty() || dbHelper == null) {
             return;
         }

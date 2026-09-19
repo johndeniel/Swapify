@@ -26,7 +26,7 @@ import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akin.wallet.R;
-import com.akin.wallet.adapter.IdCardDesignAdapter;
+import com.akin.wallet.adapter.GovermentIdDesignAdapter;
 import com.akin.wallet.db.AppDatabaseHelper;
 import com.akin.wallet.model.IdCardItem;
 import com.akin.wallet.model.IdTypeSpec;
@@ -197,7 +197,7 @@ public class GovermentIDActivity extends AppCompatActivity {
             }
         }
 
-        final IdCardDesignAdapter[] adapterRef = new IdCardDesignAdapter[1];
+        final GovermentIdDesignAdapter[] adapterRef = new GovermentIdDesignAdapter[1];
         final RecyclerView[] carouselRef = new RecyclerView[1];
         final LinearLayout dotsContainer = findViewById(R.id.dots_container);
         dotsContainer.setVisibility(View.VISIBLE);
@@ -210,7 +210,7 @@ public class GovermentIDActivity extends AppCompatActivity {
 
         // Bank-style picker: each carousel page IS an ID type's authentic face.
         // Swiping (or tapping) a page selects that type and rebuilds the form.
-        IdCardDesignAdapter designAdapter = new IdCardDesignAdapter(pos -> {
+        GovermentIdDesignAdapter designAdapter = new GovermentIdDesignAdapter(pos -> {
             if (isEdit && !knownType[0]) {
                 Snackbar.make(findViewById(android.R.id.content),
                         "ID type is fixed for entries from a newer version",
@@ -892,7 +892,7 @@ public class GovermentIDActivity extends AppCompatActivity {
                                       Map<String, String> draft, Map<String, EditText> textInputs,
                                       Map<String, TextView> dropdownValues,
                                       Runnable refreshPreview, LinearLayout dotsContainer,
-                                      IdCardDesignAdapter designAdapter, int[] selectedType) {
+                                      GovermentIdDesignAdapter designAdapter, int[] selectedType) {
         if (pos < 0 || pos >= IdTypeSpec.getTypeNames().length) {
             return;
         }

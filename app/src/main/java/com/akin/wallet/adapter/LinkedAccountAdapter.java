@@ -39,16 +39,11 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
     private final List<CredentialItem> itemsFull;
     private final boolean showRemove;
     private final OnActionListener listener;
-    private OnCountChangedListener countListener;
     /** Pick mode only: false hides the [+] icon, the row itself taps. */
     private boolean showPickAction = true;
 
     public void setShowPickAction(boolean showPickAction) {
         this.showPickAction = showPickAction;
-    }
-
-    public void setOnCountChangedListener(OnCountChangedListener countListener) {
-        this.countListener = countListener;
     }
 
     public LinkedAccountAdapter(List<CredentialItem> items, boolean showRemove, OnActionListener listener) {
@@ -167,9 +162,6 @@ public class LinkedAccountAdapter extends RecyclerView.Adapter<LinkedAccountAdap
             items.clear();
             items.addAll((List<CredentialItem>) results.values);
             notifyDataSetChanged();
-            if (countListener != null) {
-                countListener.onCountChanged(items.size());
-            }
         }
     };
 
