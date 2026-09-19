@@ -72,7 +72,7 @@ public class GovernmentIDActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_goverment_id);
+        setContentView(R.layout.activity_government_id);
         Ui.applySystemBars(this);
 
         dbHelper = new AppDatabaseHelper(this);

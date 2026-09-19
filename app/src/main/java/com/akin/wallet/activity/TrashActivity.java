@@ -1,6 +1,7 @@
 package com.akin.wallet.activity;
 
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -65,7 +66,12 @@ public class TrashActivity extends AppCompatActivity {
 
         toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> onNavigationBack());
-        toolbar.inflateMenu(R.menu.trash_selection);
+        // Select All lives in code, not a menu XML: single always-shown item,
+        // hidden until a selection starts (see updateChrome).
+        MenuItem selectAllItem = toolbar.getMenu().add(Menu.NONE, R.id.action_select_all,
+                Menu.NONE, R.string.trash_select_all);
+        selectAllItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        selectAllItem.setVisible(false);
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_select_all) {
                 trashAdapter.selectAll();
